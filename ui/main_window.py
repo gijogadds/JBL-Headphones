@@ -125,9 +125,10 @@ class MainWindow(Adw.ApplicationWindow):
         self.toast_overlay.set_vexpand(True)
         main_box.append(self.toast_overlay)
 
-        # Área de rolagem para o conteúdo
+        # Área de rolagem para o conteúdo (com rolagem cinética desativada para evitar tremor ao mover sliders)
         scroller = Gtk.ScrolledWindow()
         scroller.set_vexpand(True)
+        scroller.set_kinetic_scrolling(False)
         self.toast_overlay.set_child(scroller)
 
         # Container Adwaita Clamp para manter a interface elegante e centralizada
@@ -321,6 +322,8 @@ class MainWindow(Adw.ApplicationWindow):
             # Label de ganho em tempo real
             val_lbl = Gtk.Label(label="0 dB")
             val_lbl.add_css_class("caption")
+            val_lbl.set_size_request(48, -1)
+            val_lbl.set_xalign(0.5)
 
             # Slider vertical (-10 dB a +10 dB)
             slider = Gtk.Scale.new_with_range(Gtk.Orientation.VERTICAL, -10.0, 10.0, 0.5)
@@ -328,6 +331,7 @@ class MainWindow(Adw.ApplicationWindow):
             slider.set_value(0.0)
             slider.set_vexpand(True)
             slider.set_size_request(-1, 140)
+            slider.set_round_digits(1)
             
             # Atualiza o label conforme move e aplica equalização em tempo real debounced
             slider.connect("value-changed", self._on_slider_value_changed, val_lbl)
@@ -555,6 +559,12 @@ class MainWindow(Adw.ApplicationWindow):
             self.backend.send_raw(pkt)
         self.tray_indicator.update_anc_mode(mode)
 
+    @staticmethod
+    def _format_db(val: float) -> str:
+        if abs(val) < 0.05:
+            return "0 dB"
+        return f"{val:+.1f} dB"
+
     def _on_preset_selected(self, combo, _):
         if self._updating_preset_ui:
             return
@@ -562,15 +572,16 @@ class MainWindow(Adw.ApplicationWindow):
         self.active_preset_idx = idx
         self.tray_indicator.update_eq_preset(idx)
 
-        preset_names = ["Jazz", "Vocal", "Bass", "Extreme Bass", "Club", "Studio", "Pop"]
+        preset_names = ["Jazz", "Vocal", "Bass", "Extreme Bass", "Club", "Studio", "Pop", "Personalizado"]
+        # Ganhos oficiais extraídos de standard_preset_eq.json
         presets_gains = {
-            0: [4.0, 3.0, 1.0, 2.5, -1.5, -1.5, 0.0, 1.0, 3.0, 4.0],  # Jazz
-            1: [-2.0, -1.5, 0.0, 1.0, 3.0, 3.5, 2.0, 1.0, 0.0, -1.0], # Vocal
-            2: [5.5, 5.0, 3.5, 1.5, 0.0, 0.0, 0.0, 0.5, 1.0, 1.5],   # Bass
-            3: [7.0, 6.5, 5.0, 2.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0],   # Extreme Bass
-            4: [4.0, 3.0, 2.0, 0.0, -1.0, 0.0, 2.0, 3.0, 4.0, 4.5],  # Club
-            5: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],   # Studio (Flat)
-            6: [3.0, 2.0, 1.0, 0.0, 2.0, 3.0, 2.0, 1.5, 2.5, 3.0],   # Pop
+            0: [4.0, 3.0, 1.0, 2.5, -1.5, -1.5, 0.0, 1.0, 3.0, 4.0],  # Jazz (Cat 1)
+            1: [-1.5, -3.0, -3.0, 1.0, 3.5, 3.5, 3.0, 1.5, 0.0, -1.5], # Vocal (Cat 2)
+            2: [4.0, 4.0, 3.0, 2.5, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0],   # Bass (Cat 3)
+            3: [4.0, 4.5, 4.5, 3.5, -1.0, 0.0, 0.0, 2.0, 2.0, 0.0],   # Extreme Bass (Cat 9)
+            4: [2.0, 1.5, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 2.0],   # Club (Cat 6)
+            5: [-2.0, -1.0, -1.0, -0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], # Studio (Cat 7)
+            6: [2.0, 2.0, 2.0, -2.0, 2.0, 0.0, 1.0, 2.0, 0.0, -3.0], # Pop (Cat 13)
         }
 
         if idx in presets_gains:
@@ -592,6 +603,9 @@ class MainWindow(Adw.ApplicationWindow):
             toast = Adw.Toast.new(f"🎵 Predefinição JBL aplicada: {p_name}")
             toast.set_timeout(2)
             self.toast_overlay.add_toast(toast)
+        elif idx == 7:
+            # Personalizado
+            self._apply_custom_eq(show_toast=True)
 
     def _apply_preset_from_external(self, idx: int):
         """Chamado a partir do menu da barra superior para selecionar um preset de equalização."""
@@ -607,7 +621,7 @@ class MainWindow(Adw.ApplicationWindow):
         self._on_preset_selected(self.preset_row, None)
 
     def _on_slider_value_changed(self, slider: Gtk.Scale, label: Gtk.Label):
-        label.set_text(f"{slider.get_value():+.1f} dB")
+        label.set_text(self._format_db(slider.get_value()))
         if self._updating_preset_ui:
             return
         # Marca predefinição como 'Personalizado' (índice 7)
@@ -617,10 +631,10 @@ class MainWindow(Adw.ApplicationWindow):
                 self.preset_row.set_selected(7)
             finally:
                 self._updating_preset_ui = False
-        # Aplicação contínua debounced (250ms) nos fones em tempo real
+        # Aplicação contínua debounced (200ms) nos fones em tempo real
         if self._eq_debounce_timer is not None:
             GLib.source_remove(self._eq_debounce_timer)
-        self._eq_debounce_timer = GLib.timeout_add(250, self._debounced_apply_eq)
+        self._eq_debounce_timer = GLib.timeout_add(200, self._debounced_apply_eq)
 
     def _debounced_apply_eq(self):
         self._eq_debounce_timer = None
@@ -629,7 +643,9 @@ class MainWindow(Adw.ApplicationWindow):
 
     def _apply_custom_eq(self, show_toast: bool = True):
         gains = [s.get_value() for s in self.eq_sliders]
-        pkt = Protocol3Handler.build_eq2_packet(gains, preset_id=0)
+        pkt_preset = Protocol3Handler.set_eq_preset(7)  # 7 mapeia para Categoria 0 (Custom)
+        pkt = Protocol3Handler.build_eq2_packet(gains, preset_id=7)
+        self.backend.send_raw(pkt_preset)
         self.backend.send_raw(pkt)
         for p4_pkt in Protocol4Handler.build_eq_curve_packet(gains):
             self.backend.send_raw(p4_pkt)

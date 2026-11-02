@@ -117,24 +117,32 @@ Implementado no pacote `com.harman.cmdctrl.imp.control.u3.protocol3`:
      - `Type = 3`: TalkThru (`Value != 0` -> TalkThru ativo).
      - *Nota técnica*: O parser oficial inspeciona iterativamente os pares `(Type, Value)` em vez de assumir índices fixos, garantindo compatibilidade quando o fone reporta pares em ordens alternadas.
 4. **Equalizador Oficial Pré-definido (`0x40`)**:
-   - Formato: `AA 40 01 [PresetID]`
-   - Presets: `0`: Jazz, `1`: Vocal, `2`: Bass, `3`: Extreme Bass, `4`: Club, `5`: Studio, `6`: Pop.
+   - Formato: `AA 40 01 [CategoryID]`
+   - Categorias oficiais Harman BES (extraídas de `assets/standard_preset_eq.json`):
+     - `1`: Jazz
+     - `2`: Vocal
+     - `3`: Bass
+     - `9`: Extreme Bass
+     - `6`: Club
+     - `7`: Studio
+     - `13`: Pop
+     - `0`: Personalizado (Custom)
 5. **Equalizador Paramétrico de Alta Fidelidade `EQSettings2` (`0xA2`)**:
-   - Decompilado de `com.harman.commands.EQCmd.sendCmd` e `com.harman.utils.HexArray.float2bytes`.
+   - Decompilado de `com.harman.commands.EQCmd.sendCmd`, `assets/standard_preset_eq.json` e `com.harman.utils.HexArray.float2bytes`.
    - Framing estendido: `AA A2 [Len_LSB] [Len_MSB] ...payload (116 bytes)`.
    - Cabeçalho do payload (16 bytes fixos):
      - Byte 0: `subSetCmd10` (`0x03` indicando escala de Q multiplicada por 10)
-     - Byte 1: `category` (`0x00` para curva personalizada ou PresetID 1 a 6)
+     - Byte 1: `category` (`0x00` para curva personalizada ou CategoryID oficial 1 a 13)
      - Bytes 2..5: `calibration` (float 32-bit Little-Endian `<f`, `0.0f`)
      - Byte 6: `sampleRate` (1 byte, `0x00`)
      - Bytes 7..10: `leftGain` (float 32-bit Little-Endian `<f`, `0.0f`)
      - Bytes 11..14: `rightGain` (float 32-bit Little-Endian `<f`, `0.0f`)
      - Byte 15: `bandCount` (1 byte, `0x0A` para 10 bandas)
    - 10 bandas de frequência consecutivas (10 bytes cada, totalizando 100 bytes):
-     - Offset + 0: `bandType` (1 byte, `0x00`)
+     - Offset + 0: `bandType` (1 byte, `0x01` = Filtro Peaking Paramétrico ativo; `0x00` = bypass/desativado)
      - Offset + 1..4: `gainValue` (float 32-bit Little-Endian `<f`, ex: `-10.0f` a `+10.0f`)
      - Offset + 5..8: `frequency` (float 32-bit Little-Endian `<f`, ex: `32.0f`, `64.0f`, etc.)
-     - Offset + 9: `qValue * 10` (1 byte unsigned, ex: `10` para Q = 1.0)
+     - Offset + 9: `qValue * 10` (1 byte unsigned, `10` para fator Q = 1.0)
    - As 10 frequências centrais oficiais extraídas dos assets são:
      `32 Hz, 64 Hz, 125 Hz, 250 Hz, 500 Hz, 1.000 Hz, 2.000 Hz, 4.000 Hz, 8.000 Hz, 16.000 Hz`.
 6. **VoiceAware / Sidetone (`0x98`)**:

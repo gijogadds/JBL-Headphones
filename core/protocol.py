@@ -68,13 +68,28 @@ class Protocol3Handler:
         else: # OFF
             return [bytes([0xAA, 0x91, 0x01, 0x13])]
 
+    # Mapeamento oficial Harman de predefinições para categorias do chip BES (standard_preset_eq.json)
+    HARMAN_PRESET_MAP = {
+        0: 1,   # Jazz -> Categoria 1
+        1: 2,   # Vocal -> Categoria 2
+        2: 3,   # Bass -> Categoria 3
+        3: 9,   # Extreme Bass -> Categoria 9
+        4: 6,   # Club -> Categoria 6
+        5: 7,   # Studio -> Categoria 7
+        6: 13,  # Pop -> Categoria 13
+        7: 0,   # Personalizado / Custom -> Categoria 0
+    }
+
     @classmethod
     def set_eq_preset(cls, preset_id: int) -> bytes:
         """
-        Define o preset do equalizador oficial JBL de acordo com CommandHeader.SET_EQ_PRESET:
-        0: Jazz, 1: Vocal, 2: Bass, 3: Extreme Bass, 4: Club, 5: Studio, 6: Pop
+        Define o preset do equalizador oficial JBL de acordo com CommandHeader.SET_EQ_PRESET (0xAA 0x40):
+        Categorias Harman BES oficiais:
+        0 (Jazz): 1, 1 (Vocal): 2, 2 (Bass): 3, 3 (Extreme Bass): 9, 
+        4 (Club): 6, 5 (Studio): 7, 6 (Pop): 13, 7 (Custom): 0
         """
-        return bytes([0xAA, 0x40, 0x01, preset_id & 0xFF])
+        harman_cat = cls.HARMAN_PRESET_MAP.get(preset_id, preset_id)
+        return bytes([0xAA, 0x40, 0x01, harman_cat & 0xFF])
 
     @classmethod
     def build_eq2_packet(cls, gains: List[float], preset_id: int = 0) -> bytes:
@@ -84,20 +99,21 @@ class Protocol3Handler:
         Utilizado por todos os fones modernos JBL BES (Tune Buds 2, Tune Beam 2, etc.).
         Header de 16 bytes:
           0: subSetCmd10 (0x03)
-          1: category (1B, preset_id ou 0 para custom)
+          1: category (1B, preset_id mapeado para Harman Category)
           2..5: calibration (4B float <f, 0.0)
           6: sampleRate (1B, 0)
           7..10: leftGain (4B float <f, 0.0)
           11..14: rightGain (4B float <f, 0.0)
           15: bandCount (1B, 10)
         Seguido por 10 bandas de 10 bytes cada:
-          offset + 0: bandType (1B, 0)
+          offset + 0: bandType (1B, 1 = Peaking filter ativo)
           offset + 1..4: gainValue (4B float <f)
           offset + 5..8: frequency (4B float <f)
           offset + 9: qValue * 10 (1B, 10 para Q=1.0)
         """
+        harman_cat = cls.HARMAN_PRESET_MAP.get(preset_id, preset_id)
         sub_set_cmd_10 = 0x03  # isQMultiply10 = True
-        category = preset_id & 0xFF
+        category = harman_cat & 0xFF
         calibration = 0.0
         sample_rate = 0
         left_gain = 0.0
@@ -114,7 +130,7 @@ class Protocol3Handler:
         payload[15] = band_count
         
         for i in range(band_count):
-            band_type = 0
+            band_type = 1  # 1 = Peaking filter ativo (standard_preset_eq.json)
             gain_val = float(gains[i])
             freq_val = float(cls.EQ_FREQUENCIES[i])
             q_val = int(round(1.0 * 10))  # Q=1.0 * 10 = 10

@@ -89,9 +89,11 @@ class JBLBluetoothListener:
         print(f"[JBLListener] Fone JBL detectado: '{dev_name}'. Iniciando na barra superior (--tray)...")
 
         env = os.environ.copy()
+        bin_wrapper = "/home/gadds/.local/bin/jbl-headphones"
+        cmd = [bin_wrapper, "--tray"] if os.path.exists(bin_wrapper) else [sys.executable, MAIN_SCRIPT, "--tray"]
         try:
             subprocess.Popen(
-                [sys.executable, MAIN_SCRIPT, "--tray"],
+                cmd,
                 cwd=APP_DIR,
                 env=env,
                 stdout=subprocess.DEVNULL,

@@ -31,6 +31,12 @@ class JBLApp(Adw.Application):
         self.backend = BluetoothBackend()
         self.main_win = None
 
+    def _present_window(self):
+        if self.main_win:
+            self.main_win.set_visible(True)
+            self.main_win.present()
+        return False
+
     def do_activate(self):
         if not self.main_win:
             self.main_win = MainWindow(
@@ -41,8 +47,7 @@ class JBLApp(Adw.Application):
                 auto_close_on_disconnect=self.auto_close_on_disconnect
             )
         if not self.start_in_tray:
-            self.main_win.set_visible(True)
-            self.main_win.present()
+            GLib.idle_add(self._present_window)
         else:
             self.main_win.set_visible(False)
             self.start_in_tray = False
