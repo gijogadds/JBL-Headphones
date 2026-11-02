@@ -1,0 +1,84 @@
+{
+  "name": "JBL Live Beam 3",
+  "pid": "20ef",
+
+  "caseConfig": {
+    "settingsBoard": [
+      {"name": "CaseInfoCard"},
+      {"name": "BrightnessCard"},
+      {"name": "ScreenSaverCard"},
+      {"name": "MsgNotificationCard"},
+      {"name": "TapToWakeCard"},
+      {"name": "FeatureSettingsCard"},
+      {"name": "SyncTimeCard"},
+      {"name": "AuraCastSettingsCard"},
+      {"name": "CaseLanguageCard"},
+      {"name": "FindMyCaseCard"}
+    ],
+    "defaultScreenSaver": {
+      "0.0.0":  [ "live_beam3_screen_saver1", "screen_saver2", "screen_saver3", "screen_saver4", "screen_saver5"]
+    },
+    "imageWidth": 320,
+    "imageHeight": 172,
+    "supportQuickAccess": false
+  },
+  "uiFeatures": [
+    {"name": "ANC", "type": ["AscCard"],  "disable":["BTMono", "BTCallingVoiceAwareOn"]},
+    {"name": "AA", "type": ["AscCard"], "disable":[ "BTCallingVoiceAwareOn"]},
+    {"name": "TT", "type": ["AscCard"],  "disable":[ "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+
+    {"name": "AdaptiveAncCard",  "type": ["CustomizeAnc"],"disable":["BTMono", "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "AutoCompensationCard",  "type": ["CustomizeAnc"],"disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+
+    {"name": "SetupCard", "type": ["General"]},
+    {"name": "UpdateAvailable", "type": ["General"], "disable":["BTMono", "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"], "visible": false},
+    {"name": "AscCard",  "type": ["General"],"disable":["BTCallingVoiceAwareOn"]},
+    {"name": "SmartCaseSettingCard", "type": ["General"], "disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff", "CaseAndEarbudsDisconnected"]},
+    {"name": "CheckMyBestFitCard", "type": ["General"], "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","DynamicEqOn"]},
+    {"name": "SpeakToChatCard", "type": ["General"], "disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","DynamicEqOn"]},
+    {"name": "PSAP2Card", "type": ["General"],"disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","DynamicEqOn"]},
+    {"name": "SmartAudioVideoCard", "type": ["General"],"disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff", "LeAudioOn"]},
+    {"name": "SmartAutomationCard", "type": ["General"]},
+    {"name": "GestureCard", "type": ["General"], "disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "VoicePromptCard", "type": ["General"], "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+
+    {"name": "EntertainmentSettingsCard", "type": ["Audio"], "group":"Entertainment"},
+    {"name": "HiResAudioCard", "type": ["Audio"],"group":"EntertainmentItems","disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","DynamicEqOn"]},
+    {"name": "EQCard", "type": ["Audio"],"group":"EntertainmentItems", "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+
+    {"name": "LowVolumeEq", "type": ["AdaptiveEQCard"]},
+    {"name": "LeakageCompensation", "type": ["AdaptiveEQCard"]},
+    {"name": "AdaptiveEQCard", "type": ["Audio"],"group":"EntertainmentItems","disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff", "HiRes"]},
+
+    {"name": "Spatial3DCard", "type": ["Audio"], "group":"EntertainmentItems", "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","LeAudioOn", "HiRes"]},
+    {"name": "PersoniFiCard", "type": ["Audio"], "group":"EntertainmentItems","disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff", "HiRes"]},
+    {"name": "LeftRightBalanceCard", "type": ["Audio"],"group":"EntertainmentItems","disable":["BTMono"]},
+    {"name": "SafeSoundCard", "type": ["Audio"],"group":"EntertainmentItems"},
+
+    {"name": "AudioChatSettingsCard", "type": ["Audio"], "group":"CallMode"},
+    {"name": "AudioLimiterCard", "type": ["Audio"],"group":"CallModeItems","disable":["BTMono"]},
+    {"name": "SoundEffectCard", "type": ["Audio"],"group":"CallModeItems","disable":["BTMono"]},
+    {"name": "VoiceSettingCard", "type": ["Audio"], "group":"CallModeItems",  "disable":["BTMono"]},
+    {"name": "VoiceAwareCard", "type": ["Audio"],"group":"CallModeItems"},
+    {"name": "PrivateCallModeCard", "type": ["Audio"],"group":"CallModeItems", "disable":["BTMono"]},
+
+    {"name": "RelaxSoundCard", "type": ["Others"],"disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "FindMyBudCard", "type": ["Others"], "disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "PowerSavingCard", "type": ["Others"]},
+    {"name": "SupportCard", "type": ["Others"]},
+
+    {"name": "SoftwareCard", "type": ["Support"], "disable":["BTMono", "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","AuracastPlaying"]},
+    {"name": "CaseCard", "type": ["Support"], "disable":["BTMono", "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","AuracastPlaying"]},
+    {"name": "ResetToFactoryRest", "type": ["Help"],"disable":["BTMono", "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "OTA", "type": ["OTAPage"],  "disable":["BTMono", "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]}
+  ],
+  "dashboardBackgroundColors": [
+    [0, "#FFA8AEAA", "#FF303433"],
+    [2, "#FFD7EFFA", "#FF374A68"],
+    [5, "#E3C8FF", "#534159"],
+    [7, "#C8CAC8", "#3F3F3F"]
+  ],
+  "typeConfig": {
+    "PsapFragmentTextSelect":"EnablingPSAPDisableSpatialSoundAndLowVolumeEQ"
+  }
+}

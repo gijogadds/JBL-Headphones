@@ -1,0 +1,39 @@
+{
+  "name": "JBL Endurance Pace",
+  "pid": "2150",
+  "uiFeatures": [
+      {"name": "UpdateAvailable", "type": ["General"], "disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"], "visible": false},
+      {"name": "EQCard", "type": ["General"],"group":"EntertainmentItems", "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+      {"name": "SmartAudioVideoCard", "type": ["General"],"disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+      {"name": "LeftRightBalanceCard", "type": ["General"],"group":"EntertainmentItems","disable":["BTMono"]},
+      {"name": "RelaxSoundCard", "type": ["General"],"disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+      {"name": "PulseDryCard", "type": ["General"], "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+      {"name": "VoicePromptCard", "type": ["General"], "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+      {"name": "AutoPowerOffCard", "type": ["General"]},
+      {"name": "SupportCard", "type": ["General"]},
+
+      {"name": "SoftwareCard", "type": ["Support"], "disable":["BTMono", "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","AuracastPlaying"]},
+      {"name": "ResetToFactoryRest", "type": ["Help"],"disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+      {"name": "OTA", "type": ["OTAPage"],  "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+      {"name": "JBLBotteomCard", "type": ["General"]}
+  ],
+  "dashboardBackgroundColors": [
+    [0, "#FFA8AEAA", "#FF303433"],
+    [1, "#B6C1CB", "#5D6A76"],
+    [2, "#B2C1F1", "#052260"],
+    [5, "#BFC1FF", "#140560"],
+    [29, "#A8AEAA", "#303433"],
+    [30, "#A8AEAA", "#303433"]
+  ],
+  "isSupportConfig2": [
+    {"name": "MultiWelcomeImages", "isSupport": true},
+    {"name": "DeviceUsageSumCard", "isSupport": true},
+    {"name": "DashBoardPowerOff", "isSupport": true},
+    {"name": "SnNumber", "isSupport": true},
+    {"name": "CaseVersion", "isSupport": false},
+    {"name": "AutoStandByCard", "isSupport": false},
+    {"name": "AutoPowerOffTime4Hour", "isSupport": false},
+    {"name": "UsingAppWhenCharging", "isSupport": true},
+    {"name": "EditEqQueue", "isSupport": true}
+  ]
+}

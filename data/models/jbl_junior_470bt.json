@@ -1,0 +1,32 @@
+{
+  "name": "JBL Junior 320BT",
+    "pid": "2105",
+
+    "uiFeatures": [
+      {"name": "ANC", "type": ["AscCard"],  "disable":["BTMono", "BTCallingVoiceAwareOn"]},
+      {"name": "AA", "type": ["AscCard"], "disable":[ "BTCallingVoiceAwareOn"]},
+      {"name": "TT", "type": ["AscCard"],  "disable":[ "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+
+      {"name": "CheckListeningReportSetUpCard", "type": ["General"]},
+      {"name": "JuniorSetUpCard", "type": ["General"]},
+      {"name": "UpdateAvailable", "type": ["General"], "disable":["BTMono", "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"],"visible": false},
+      {"name": "AncCard", "type": ["General"],"disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+      {"name": "SafeListeningCard","type": ["General"]},
+      {"name": "EQCard", "type": ["General"],"group":"EntertainmentItems", "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+      {"name": "SmartAudioVideoCard", "type": ["General"],"disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+      {"name": "VoicePromptCard", "type": ["General"],"disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+      {"name": "AutoPowerOffCard", "type": ["General"]},
+      {"name": "SupportCard", "type": ["General"]},
+      {"name": "JBLBotteomCard", "type": ["General"]},
+
+      {"name": "SoftwareCard", "type": ["Support"], "disable":["BTMono", "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","AuracastPlaying"]},
+      {"name": "ResetToFactoryRest", "type": ["Help"],"disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+      {"name": "OTA", "type": ["OTAPage"],  "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]}
+    ],
+  "dashboardBackgroundColors": [
+    [0, "#FFF5F5F5", "#FFF5F5F5"],
+    [1, "#FFF5F5F5", "#FFF5F5F5"],
+    [2, "#FFF5F5F5", "#FFF5F5F5"],
+    [10, "#FFF5F5F5", "#FFF5F5F5"]
+  ]
+}

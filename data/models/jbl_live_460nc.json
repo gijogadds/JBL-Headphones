@@ -1,0 +1,37 @@
+{
+  "name": "JBL LIVE460NC",
+  "pid": "2031",
+
+  "uiFeatures": [
+      {"name": "ANC", "type": ["AscCard"],  "disable":["BTMono", "BTCallingVoiceAwareOn"]},
+      {"name": "AA", "type": ["AscCard"], "disable":[ "BTCallingVoiceAwareOn"]},
+      {"name": "TT", "type": ["AscCard"],  "disable":[ "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+
+      {"name": "SetupCard", "type": ["General"]},
+      {"name": "UpdateAvailable", "type": ["General"], "disable":["BTMono", "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"],"visible": false},
+      {"name": "AscCardNoAaLevelOldProduct","type": ["General"],"disable":["BTCallingVoiceAwareOn"]},
+      {"name": "EQCard", "type": ["General"],"group":"EntertainmentItems", "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+      {"name": "VoiceAwareCardForRetDevAck", "type": ["General"], "supportVersion": "2.8.0"},
+      {"name": "SmartAudioVideoCard", "type": ["General"],"disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+      {"name": "AutoPlayPauseCard", "type": ["General"]},
+      {"name": "VoiceAssistantCard", "type": ["General"]},
+      {"name": "PowerSavingCard", "type": ["General"]},
+      {"name": "SupportCard", "type": ["General"]},
+      {"name": "PaddingView","type": ["General"]},
+
+      {"name": "SoftwareCard", "type": ["Support"], "disable":["BTMono", "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","AuracastPlaying"]},
+      {"name": "ResetToFactoryRest", "type": ["Help"],"disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+      {"name": "OTA", "type": ["OTAPage"],  "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]}
+  ],
+  "dashboardBackgroundColors": [
+    [0, "#A8AEAA", "#303433"],
+    [1, "#FFB6C1CB", "#FF5D6A76"],
+    [2, "#D7EFFA", "#374A68"],
+    [3, "#FFDCC8", "#59414D"],
+    [9, "#E6EBE9", "#C3C9C8", "#3B4D4B"],
+    [10, "#FFDCC8", "#59414D"]
+  ],
+  "isSupportConfig2": [
+    {"name": "EditEqQueue", "isSupport": true}
+  ]
+}

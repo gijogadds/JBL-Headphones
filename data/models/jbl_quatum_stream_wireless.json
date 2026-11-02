@@ -1,0 +1,29 @@
+{
+  "name": "QUANTUM STREAM WIRELESS",
+    "pid": "20ED",
+
+    "uiFeatures": [
+      {"name": "ANC", "type": ["AscCard"],  "disable":["BTMono", "BTCallingVoiceAwareOn"]},
+      {"name": "AA", "type": ["AscCard"], "disable":[ "BTCallingVoiceAwareOn"]},
+      {"name": "TT", "type": ["AscCard"],  "disable":[ "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+
+      {"name": "UpdateAvailable", "type": ["General"], "disable":["BTMono", "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"],"visible": false},
+      {"name": "MicGainCard2","type": ["General"]},
+      {"name": "NoiseSuppressionCard","type": ["General"],"disable":["BTCallingVoiceAwareOn"]},
+      {"name": "SoundEffectMicCard","type": ["General"]},
+      {"name": "LedBrightnessCard","type": ["General"]},
+      {"name": "AutoPowerOffCard","type": ["General"]},
+      {"name": "ManualPairingCard","type": ["General"]},
+      {"name": "SupportCard", "type": ["General"]},
+      {"name": "PaddingView","type": ["General"]},
+
+      {"name": "SoftwareCard", "type": ["Support"], "disable":["BTMono", "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","AuracastPlaying"]},
+      {"name": "ResetToFactoryRest", "type": ["Help"],"disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+      {"name": "OTA", "type": ["OTAPage"],  "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]}
+    ],
+  "dashboardBackgroundColors": [
+    [0, "#FFA8AEAA", "#FF303433"],
+    [1, "#FFB6C1CB", "#FF5D6A76"],
+    [2, "#FFD7EFFA", "#FF374A68"]
+  ]
+}

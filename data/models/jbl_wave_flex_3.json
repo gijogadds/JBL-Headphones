@@ -1,0 +1,218 @@
+{
+  "name": "JBL Wave Flex 3",
+  "pid": "21AD",
+  "uisVersion": "Unifiled_1",
+  "uiFeatures": [
+    {"name": "ANC", "type": ["AscStatusWithAnrAndAaLevelCard"]},
+    {"name": "AA", "type": ["AscStatusWithAnrAndAaLevelCard"]},
+    {"name": "TT", "type": ["AscStatusWithAnrAndAaLevelCard"]},
+
+    {"name": "UpdateAvailable", "type": ["General"], "visible": false},
+    {"name": "AscStatusWithAnrAndAaLevelCard",  "type": ["General"]},
+    {"name": "SmartAudioVideoCard", "type": ["General"]},
+    {"name": "ControlCard", "type": ["General"]},
+    {"name": "SoundNotificationCard", "type": ["General"]},
+    {"name": "BluetoothSourceCard", "type": ["General"]},
+
+    {"name": "EntertainmentSettingsCard", "type": ["Audio"], "group":"Entertainment"},
+    {"name": "ClassifiedEQCard", "type": ["Audio"],"group":"EntertainmentItems"},
+    {"name": "LeftRightBalance2Card", "type": ["Audio"],"group":"EntertainmentItems"},
+    {"name": "SafeSoundCard", "type": ["Audio"],"group":"EntertainmentItems"},
+
+    {"name": "AudioChatSettingsCard", "type": ["Audio"], "group":"CallMode"},
+    {"name": "AudioLimiterCard", "type": ["Audio"],"group":"CallModeItems"},
+    {"name": "SoundEffectCard", "type": ["Audio"],"group":"CallModeItems"},
+    {"name": "VoiceAwareCard", "type": ["Audio"],"group":"CallModeItems"},
+
+    {"name": "RelaxSoundCard", "type": ["Others"]},
+    {"name": "FindMyBudCard", "type": ["Others"]},
+    {"name": "PowerSavingCard", "type": ["Others"]},
+    {"name": "SupportCard", "type": ["Others"]},
+
+    {"name": "SoftwareCard", "type": ["Support"]},
+    {"name": "ResetToFactoryRest", "type": ["Help"]},
+    {"name": "OTA", "type": ["OTAPage"]}
+  ],
+  "isSupportUnifiedDisable": true,
+  "tipsPageConfig":[
+    {
+      "image": "tips_anr_7_circle_level",
+      "textHead" : "sound_modes",
+      "textDes1" : "adjust_noise_reduction_aa_or_tt",
+      "background": ["#FFD7CA", "#FFD7CA"]
+    },
+    {
+      "image": "ic_tips_va",
+      "textHead" : "va_title",
+      "textDes1" : "tips_va_1",
+      "background": ["#FFD7CA", "#FFD7CA"]
+    },
+    {
+      "image": "ic_tips_control_1",
+      "textHead" : "control",
+      "textDes1" : "tips_gesture_1",
+      "background": ["#F5E5D5", "#E6B88B"]
+    }
+  ],
+  "resourceConfig": {
+    "Black": {
+      "welcome": "welcome_wave_flex_3_black",
+      "device": "wave_flex_2_black",
+      "deviceLeft": "wave_flex_3_black_left",
+      "deviceRight": "wave_flex_3_black_right",
+      "gestureLeft":"wave_flex_3_gesture_black_left",
+      "gestureRight":"wave_flex_3_gesture_black_right",
+      "dashboardBackground": ["#A8AEAA", "#303433"],
+
+      "findMyBudLeft":"wave_flex_3_black_left",
+      "findMyBudRight":"wave_flex_3_black_right",
+
+      "enterPairingImage":"outline_wave_flex_3",
+      "enterPairingTitle":"how_to_pair_tips_zero",
+      "enterPairingContent":"how_to_pair_for_wave_series",
+      "stillCantPairImgResId": "ic_enter_pairing_wave_flex_3_ear",
+      "stillCantPairTextTipsResId": "how_to_pair_next_club_pro_tips",
+
+      "blePairing": "wave_flex_2_black",
+      "personifyHearingTestLeft":"wave_flex_3_black_left",
+      "personifyHearingTestRight":"wave_flex_3_black_right",
+      "findMyCaseTipsResId":"tap_start_beeping"
+    },
+    "White":{
+      "welcome": "welcome_wave_flex_3_white",
+      "device": "wave_flex_2_white",
+      "deviceLeft": "wave_flex_3_white_left",
+      "deviceRight": "wave_flex_3_white_right",
+      "gestureLeft":"wave_flex_3_gesture_white_left",
+      "gestureRight":"wave_flex_3_gesture_white_right",
+      "dashboardBackground": ["#E6EBE9", "#C3C9C8", "#3B4D4B"],
+
+      "findMyBudLeft":"wave_flex_3_white_left",
+      "findMyBudRight":"wave_flex_3_white_right",
+
+      "enterPairingImage":"outline_wave_flex_3",
+      "enterPairingTitle":"how_to_pair_tips_zero",
+      "enterPairingContent":"how_to_pair_for_wave_series",
+      "stillCantPairImgResId": "ic_enter_pairing_wave_flex_3_ear",
+      "stillCantPairTextTipsResId": "how_to_pair_next_club_pro_tips",
+
+      "blePairing": "wave_flex_2_black",
+      "personifyHearingTestLeft":"wave_flex_3_white_left",
+      "personifyHearingTestRight":"wave_flex_3_white_right",
+      "findMyCaseTipsResId":"tap_start_beeping"
+    },
+    "Green":{
+      "welcome": "welcome_wave_flex_3_green",
+      "device": "wave_flex_2_black",
+      "deviceLeft": "wave_flex_3_green_left",
+      "deviceRight": "wave_flex_3_green_right",
+      "gestureLeft":"wave_flex_3_gesture_green_left",
+      "gestureRight":"wave_flex_3_gesture_green_right",
+      "dashboardBackground": ["#B1D47C", "#2F5106"],
+
+      "findMyBudLeft":"wave_flex_3_green_left",
+      "findMyBudRight":"wave_flex_3_green_right",
+
+      "enterPairingImage":"outline_wave_flex_3",
+      "enterPairingTitle":"how_to_pair_tips_zero",
+      "enterPairingContent":"how_to_pair_for_wave_series",
+      "stillCantPairImgResId": "ic_enter_pairing_wave_flex_3_ear",
+      "stillCantPairTextTipsResId": "how_to_pair_next_club_pro_tips",
+
+      "blePairing": "wave_flex_2_black",
+      "personifyHearingTestLeft":"wave_flex_3_green_left",
+      "personifyHearingTestRight":"wave_flex_3_green_right",
+      "findMyCaseTipsResId":"tap_start_beeping"
+    },
+    "Purple":{
+      "welcome": "welcome_wave_flex_3_purple",
+      "device": "wave_flex_2_black",
+      "deviceLeft": "wave_flex_3_purple_left",
+      "deviceRight": "wave_flex_3_purple_right",
+      "gestureLeft":"wave_flex_3_gesture_purple_left",
+      "gestureRight":"wave_flex_3_gesture_purple_right",
+      "dashboardBackground": ["#C6B7D9", "#5A3A8C"],
+
+      "findMyBudLeft":"wave_flex_3_purple_left",
+      "findMyBudRight":"wave_flex_3_purple_right",
+
+      "enterPairingImage":"outline_wave_flex_3",
+      "enterPairingTitle":"how_to_pair_tips_zero",
+      "enterPairingContent":"how_to_pair_for_wave_series",
+      "stillCantPairImgResId": "ic_enter_pairing_wave_flex_3_ear",
+      "stillCantPairTextTipsResId": "how_to_pair_next_club_pro_tips",
+
+      "blePairing": "wave_flex_2_black",
+      "personifyHearingTestLeft":"wave_flex_3_purple_left",
+      "personifyHearingTestRight":"wave_flex_3_purple_right",
+      "findMyCaseTipsResId":"tap_start_beeping"
+    },
+    "Orange":{
+      "welcome": "welcome_wave_flex_3_orange",
+      "device": "wave_flex_2_black",
+      "deviceLeft": "wave_flex_3_orange_left",
+      "deviceRight": "wave_flex_3_orange_right",
+      "gestureLeft":"wave_flex_3_gesture_orange_left",
+      "gestureRight":"wave_flex_3_gesture_orange_right",
+      "dashboardBackground": ["#F3BE73", "#944D0F"],
+
+      "findMyBudLeft":"wave_flex_3_orange_left",
+      "findMyBudRight":"wave_flex_3_orange_right",
+
+      "enterPairingImage":"outline_wave_flex_3",
+      "enterPairingTitle":"how_to_pair_tips_zero",
+      "enterPairingContent":"how_to_pair_for_wave_series",
+      "stillCantPairImgResId": "ic_enter_pairing_wave_flex_3_ear",
+      "stillCantPairTextTipsResId": "how_to_pair_next_club_pro_tips",
+
+      "blePairing": "wave_flex_2_black",
+      "personifyHearingTestLeft":"wave_flex_3_orange_left",
+      "personifyHearingTestRight":"wave_flex_3_orange_right",
+      "findMyCaseTipsResId":"tap_start_beeping"
+    },
+    "Teal":{
+      "welcome": "welcome_wave_flex_3_teal",
+      "device": "wave_flex_2_black",
+      "deviceLeft": "wave_flex_3_teal_left",
+      "deviceRight": "wave_flex_3_teal_right",
+      "gestureLeft":"wave_flex_3_gesture_teal_left",
+      "gestureRight":"wave_flex_3_gesture_teal_right",
+      "dashboardBackground": ["#A1E7F1", "#1E4148"],
+
+      "findMyBudLeft":"wave_flex_3_teal_left",
+      "findMyBudRight":"wave_flex_3_teal_right",
+
+      "enterPairingImage":"outline_wave_flex_3",
+      "enterPairingTitle":"how_to_pair_tips_zero",
+      "enterPairingContent":"how_to_pair_for_wave_series",
+      "stillCantPairImgResId": "ic_enter_pairing_wave_flex_3_ear",
+      "stillCantPairTextTipsResId": "how_to_pair_next_club_pro_tips",
+
+      "blePairing": "wave_flex_2_black",
+      "personifyHearingTestLeft":"wave_flex_3_teal_left",
+      "personifyHearingTestRight":"wave_flex_3_teal_right",
+      "findMyCaseTipsResId":"tap_start_beeping"
+    }
+  },
+  "isSupportConfig2": [
+    {"name": "ProductTips", "isSupport": true},
+    {"name": "EditEqQueue", "isSupport": true},
+    {"name": "SupportEqPush", "isSupport": true},
+    {"name": "SnNumber", "isSupport": true},
+    {"name": "ANC", "isSupport": true},
+    {"name": "DashBoardPowerOff", "isSupport": true},
+    {"name": "DeviceUsageSumCard", "isSupport": true},
+    {"name": "BluetoothSource", "isSupport": false},
+    {"name": "SupportTouchSensitivity", "isSupport": true}
+  ],
+  "typeConfig": {
+    "anr_popup_wordings": true,
+    "OTABatteryThreshold": "20",
+    "general_auracast_audio_source": "type_1_with_bt_source_and_auracast_receiver",
+    "SafeSoundCardInfoPopupWording":true,
+    "gesture_anc_icon": "ic_ambient_sound_anr",
+    "chargingCaseBatteryWithoutHallInfo":true,
+    "VoiceAwarePopupWordings":["voice_aware_tips_for_anr"]
+  },
+  "gestureConfigId": "21AB"
+}

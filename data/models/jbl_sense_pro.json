@@ -1,0 +1,203 @@
+{
+  "name": "JBL Sense Pro",
+  "pid": "2153",
+
+  "uiFeatures": [
+
+    {"name": "UpdateAvailable", "type": ["General"], "visible": false},
+    {"name": "SmartAudioVideoCard", "type": ["General"]},
+    {"name": "GestureUi4Card", "type": ["General"]},
+    {"name": "AuracastCard", "type": ["General"]},
+    {"name": "LeAudioCard", "type": ["General"]},
+    {"name": "VoicePromptCard", "type": ["General"]},
+
+    {"name": "EntertainmentSettingsCard", "type": ["Audio"], "group":"Entertainment"},
+    {"name": "HiResAudioCard", "type": ["Audio"],"group":"EntertainmentItems"},
+    {"name": "EQCard", "type": ["Audio"],"group":"EntertainmentItems"},
+    {"name": "Spatial3DCard", "type": ["Audio"], "group":"EntertainmentItems"},
+    {"name": "PersoniFiCard", "type": ["Audio"], "group":"EntertainmentItems"},
+    {"name": "LeftRightBalanceCard", "type": ["Audio"],"group":"EntertainmentItems"},
+    {"name": "SafeSoundCard", "type": ["Audio"],"group":"EntertainmentItems"},
+
+    {"name": "AudioChatSettingsCard", "type": ["Audio"], "group":"CallMode"},
+    {"name": "HighQualityCallModeCard", "type": ["Audio"], "group":"CallModeItems"},
+    {"name": "AudioLimiterCard", "type": ["Audio"],"group":"CallModeItems"},
+    {"name": "SoundEffectCard", "type": ["Audio"],"group":"CallModeItems"},
+    {"name": "VoiceSettingCard", "type": ["Audio"], "group":"CallModeItems"},
+
+    {"name": "RelaxSoundCard", "type": ["Others"]},
+    {"name": "FindMyBudCard", "type": ["Others"]},
+    {"name": "AutoPowerOffCard", "type": ["Others"] },
+    {"name": "SupportCard", "type": ["Others"]},
+
+    {"name": "SoftwareCard", "type": ["Support"]},
+    {"name": "ResetToFactoryRest", "type": ["Help"]},
+    {"name": "OTA", "type": ["OTAPage"]}
+  ],
+  "isSupportUnifiedDisable": true,
+  "resourceConfig": {
+    "Black": {
+      "welcome": "jbl_sense_pro_2153_black",
+      "device": "jbl_sense_pro_2153_black",
+      "deviceLeft": "jbl_sense_pro_2153_black_left",
+      "deviceRight": "jbl_sense_pro_2153_black_right",
+      "gestureLeft": "jbl_sense_pro_2153_black_left_gesture",
+      "gestureRight": "jbl_sense_pro_2153_black_right_gesture",
+      "dashboardBackground": [ "#FFA8AEAA", "#FF303433"],
+      "findMyBudLeft": "jbl_sense_pro_2153_black",
+      "findMyBudRight": "jbl_sense_pro_2153_black",
+      "enterPairingImage": "jbl_sense_pro_2153_black_enter_pairing",
+      "enterPairingTitle": "how_to_pair_tips_zero",
+      "enterPairingContent": "how_to_pair_lives_300tws",
+      "stillCantPairImgResId": "jbl_sense_pro_2153_black_still_cant_pair",
+      "stillCantPairTextTipsResId": "how_to_pair_next_club_pro_tips",
+      "blePairing": "tour_one3_ble_pairing_black",
+      "case": "smart_transmitter_case_black",
+      "caseError": "tour_one_m3_transmitter_black_error",
+      "personifyHearingTestLeft": "jbl_sense_pro_2153_black_left_gesture",
+      "personifyHearingTestRight": "jbl_sense_pro_2153_black_right_gesture"
+    },
+    "White": {
+      "welcome": "jbl_sense_pro_2153_white",
+      "device": "jbl_sense_pro_2153_white",
+      "deviceLeft": "jbl_sense_pro_2153_white_left",
+      "deviceRight": "jbl_sense_pro_2153_white_right",
+      "gestureLeft": "jbl_sense_pro_2153_white_left_gesture",
+      "gestureRight": "jbl_sense_pro_2153_white_right_gesture",
+      "dashboardBackground": [ "#B6C1CB", "#5D6A76"],
+      "findMyBudLeft": "jbl_sense_pro_2153_white",
+      "findMyBudRight": "jbl_sense_pro_2153_white",
+      "enterPairingImage": "jbl_sense_pro_2153_black_enter_pairing",
+      "enterPairingTitle": "how_to_pair_tips_zero",
+      "enterPairingContent": "how_to_pair_lives_300tws",
+      "stillCantPairImgResId": "jbl_sense_pro_2153_black_still_cant_pair",
+      "stillCantPairTextTipsResId": "how_to_pair_next_club_pro_tips",
+      "blePairing": "tour_one3_ble_pairing_black",
+      "case": "smart_transmitter_case_black",
+      "caseError": "tour_one_m3_transmitter_black_error",
+      "personifyHearingTestLeft": "jbl_sense_pro_2153_white_left_gesture",
+      "personifyHearingTestRight": "jbl_sense_pro_2153_white_right_gesture"
+    },
+    "Blue": {
+      "welcome": "jbl_sense_pro_2153_blue",
+      "device": "jbl_sense_pro_2153_blue",
+      "deviceLeft": "jbl_sense_pro_2153_blue_left",
+      "deviceRight": "jbl_sense_pro_2153_blue_right",
+      "gestureLeft": "jbl_sense_pro_2153_blue_left_gesture",
+      "gestureRight": "jbl_sense_pro_2153_blue_right_gesture",
+      "dashboardBackground": [ "#B2C1F1", "#052260"],
+      "findMyBudLeft": "jbl_sense_pro_2153_blue",
+      "findMyBudRight": "jbl_sense_pro_2153_blue",
+      "enterPairingImage": "jbl_sense_pro_2153_black_enter_pairing",
+      "enterPairingTitle": "how_to_pair_tips_zero",
+      "enterPairingContent": "how_to_pair_lives_300tws",
+      "stillCantPairImgResId": "jbl_sense_pro_2153_black_still_cant_pair",
+      "stillCantPairTextTipsResId": "how_to_pair_next_club_pro_tips",
+      "blePairing": "tour_one3_ble_pairing_black",
+      "case": "smart_transmitter_case_black",
+      "caseError": "tour_one_m3_transmitter_black_error",
+      "personifyHearingTestLeft": "jbl_sense_pro_2153_blue_left_gesture",
+      "personifyHearingTestRight": "jbl_sense_pro_2153_blue_right_gesture"
+    },
+    "Purple": {
+      "welcome": "jbl_sense_pro_2153_purple",
+      "device": "jbl_sense_pro_2153_purple",
+      "deviceLeft": "jbl_sense_pro_2153_purple_left",
+      "deviceRight": "jbl_sense_pro_2153_purple_right",
+      "gestureLeft": "jbl_sense_pro_2153_purple_left_gesture",
+      "gestureRight": "jbl_sense_pro_2153_purple_right_gesture",
+      "dashboardBackground": [ "#BFC1FF", "#140560"],
+      "findMyBudLeft": "jbl_sense_pro_2153_purple",
+      "findMyBudRight": "jbl_sense_pro_2153_purple",
+      "enterPairingImage": "jbl_sense_pro_2153_black_enter_pairing",
+      "enterPairingTitle": "how_to_pair_tips_zero",
+      "enterPairingContent": "how_to_pair_lives_300tws",
+      "stillCantPairImgResId": "jbl_sense_pro_2153_black_still_cant_pair",
+      "stillCantPairTextTipsResId": "how_to_pair_next_club_pro_tips",
+      "blePairing": "tour_one3_ble_pairing_black",
+      "case": "smart_transmitter_case_black",
+      "caseError": "tour_one_m3_transmitter_black_error",
+      "personifyHearingTestLeft": "jbl_sense_pro_2153_purple_left_gesture",
+      "personifyHearingTestRight": "jbl_sense_pro_2153_purple_right_gesture"
+    },
+    "Grey": {
+      "welcome": "jbl_sense_pro_2153_grey",
+      "device": "jbl_sense_pro_2153_grey",
+      "deviceLeft": "jbl_sense_pro_2153_grey_left",
+      "deviceRight": "jbl_sense_pro_2153_grey_right",
+      "gestureLeft": "jbl_sense_pro_2153_grey_left_gesture",
+      "gestureRight": "jbl_sense_pro_2153_grey_right_gesture",
+      "dashboardBackground": [ "#FFFFDCC8", "#FF59414D"],
+      "findMyBudLeft": "jbl_sense_pro_2153_grey",
+      "findMyBudRight": "jbl_sense_pro_2153_grey",
+      "enterPairingImage": "jbl_sense_pro_2153_black_enter_pairing",
+      "enterPairingTitle": "how_to_pair_tips_zero",
+      "enterPairingContent": "how_to_pair_lives_300tws",
+      "stillCantPairImgResId": "jbl_sense_pro_2153_black_still_cant_pair",
+      "stillCantPairTextTipsResId": "how_to_pair_next_club_pro_tips",
+      "blePairing": "tour_one3_ble_pairing_black",
+      "case": "smart_transmitter_case_black",
+      "caseError": "tour_one_m3_transmitter_black_error",
+      "personifyHearingTestLeft": "jbl_sense_pro_2153_grey_left_gesture",
+      "personifyHearingTestRight": "jbl_sense_pro_2153_grey_right_gesture"
+    }
+  },
+  "gestureConfig": {
+    "left": {
+      "name": "left",
+      "custom": {
+        "volumeControl": {
+          "singleTap": "volume_up",
+          "doubleTap": "volume_down",
+          "tripleTap": "action_none",
+          "tapHold": "talk_to_default_assistant"
+        },
+        "playPauseControl": {
+          "singleTap": "play_pause",
+          "doubleTap": "next_track",
+          "tripleTap": "previous_track",
+          "tapHold": "talk_to_default_assistant"
+        },
+        "none": {
+          "singleTap": "action_none",
+          "doubleTap": "action_none",
+          "tripleTap": "action_none",
+          "tapHold": "action_none"
+        }
+      },
+      "hasBluetoothPairing": true,
+      "hasCallControl": true
+    },
+    "right": {
+      "name": "right",
+      "custom": {
+        "volumeControl": {
+          "singleTap": "volume_up",
+          "doubleTap": "volume_down",
+          "tripleTap": "action_none",
+          "tapHold": "talk_to_default_assistant"
+        },
+        "playPauseControl": {
+          "singleTap": "play_pause",
+          "doubleTap": "next_track",
+          "tripleTap": "previous_track",
+          "tapHold": "talk_to_default_assistant"
+        },
+        "none": {
+          "singleTap": "action_none",
+          "doubleTap": "action_none",
+          "tripleTap": "action_none",
+          "tapHold": "action_none"
+        }
+      },
+      "hasBluetoothPairing": true,
+      "hasCallControl": true
+    }
+  },
+  "typeConfig": {
+    "LeAudioOnDialogContentWordings": ["lea_on_desc1","the_spatial_sound_feature_will_be_disabled"],
+    "LeAudioOnDialogItermWordings":[],
+    "LeAudioOnDialogBottomContentWordings":["lea_on_desc2"],
+    "auracast_back_press_no_query": true
+  }
+}

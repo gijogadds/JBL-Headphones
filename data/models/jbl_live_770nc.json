@@ -1,0 +1,42 @@
+{
+  "name": "JBL Live 770NC",
+  "pid": "20CE",
+
+  "uiFeatures": [
+      {"name": "ANC", "type": ["AscCard"],  "disable":["BTMono", "BTCallingVoiceAwareOn"]},
+      {"name": "AA", "type": ["AscCard"], "disable":[ "BTCallingVoiceAwareOn"]},
+      {"name": "TT", "type": ["AscCard"],  "disable":[ "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+
+      {"name": "SetupCard", "type": ["General"]},
+      {"name": "UpdateAvailable", "type": ["General"], "disable":["BTMono", "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"],"visible": false},
+      {"name": "AscCard", "type": ["General"],"disable":["BTCallingVoiceAwareOn"]},
+      {"name": "PersoniFiCard", "type": ["General"],"disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff", "HiRes"]},
+      {"name": "EQCard", "type": ["General"],"group":"EntertainmentItems", "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+      {"name": "LowEQCompensationCard", "type": ["General"],"disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","HiRes", "Aux","AuracastPlaying"]},
+      {"name": "Spatial3DCard", "type": ["General"],"disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","LeAudioOn", "HiRes"]},
+      {"name": "HeadLive670GestureCard", "type": ["General"]},
+      {"name": "VoiceAwareCard", "type": ["General"]},
+      {"name": "SmartAudioVideoCard", "type": ["General"],"disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+      {"name": "AutoPlayPauseCard", "type": ["General"]},
+      {"name": "PSAP2Card", "type": ["General"],"disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","DynamicEqOn"]},
+      {"name": "LeftRightBalanceCard", "type": ["General"],"disable":["BTMono"]},
+      {"name": "VoiceAssistantCard", "type": ["General"]},
+      {"name": "VoicePromptCard", "type": ["General"],"disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+      {"name": "SafeSoundCard", "type": ["General"]},
+      {"name": "AutoPowerOffCard", "type": ["General"]},
+      {"name": "SupportCard", "type": ["General"]},
+      {"name": "PaddingView","type": ["General"]},
+
+      {"name": "SoftwareCard", "type": ["Support"], "disable":["BTMono", "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","AuracastPlaying"]},
+      {"name": "ResetToFactoryRest", "type": ["Help"],"disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+      {"name": "OTA", "type": ["OTAPage"],  "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]}
+  ],
+  "dashboardBackgroundColors": [
+    [0, "#FFA8AEAA", "#FF303433"],
+    [1, "#FFB6C1CB", "#FF5D6A76"],
+    [2, "#FFD7EFFA", "#FF374A68"]
+  ],
+  "typeConfig": {
+    "PsapFragmentTextSelect":"EnablingPSAPDisableSpatialSoundAndLowVolumeEQ"
+  }
+}

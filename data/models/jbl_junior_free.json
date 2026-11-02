@@ -1,0 +1,130 @@
+{
+  "name": "JBL Junior Free",
+  "pid": "2154",
+
+  "uiFeatures": [
+    {"name": "CheckListeningReportSetUpCard", "type": ["General"]},
+    {"name": "JuniorSetUpCard", "type": ["General"]},
+    {"name": "UpdateAvailable", "type": ["General"], "disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"], "visible": false},
+    {"name": "SafeListeningCard", "type": ["General"],"disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "EQCard", "type": ["General"],"group":"EntertainmentItems", "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "SmartAudioVideoCard", "type": ["General"],"disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "RelaxSoundCard", "type": ["General"],"disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "LeftRightBalanceCard", "type": ["General"],"group":"EntertainmentItems","disable":["BTMono", "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "VoicePromptCard", "type": ["General"], "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "AutoPowerOffCard", "type": ["General"] },
+    {"name": "SupportCard", "type": ["General"]},
+    {"name": "JBLBotteomCard", "type": ["General"]},
+
+    {"name": "SoftwareCard", "type": ["Support"], "disable":["BTMono", "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","AuracastPlaying"]},
+    {"name": "ResetToFactoryRest", "type": ["Help"],"disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "OTA", "type": ["OTAPage"],  "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]}
+  ],
+  "isSupportConfig2": [
+    {"name": "MultiWelcomeImages", "isSupport": true},
+    {"name": "DeviceUsageSumCard", "isSupport": true},
+    {"name": "DashBoardPowerOff", "isSupport": true},
+    {"name": "SnNumber", "isSupport": true},
+    {"name": "ProductTips", "isSupport": false},
+    {"name": "CaseVersion", "isSupport": false},
+    {"name": "EditEqQueue", "isSupport": true}
+  ],
+  "resourceConfig": {
+    "Black": {
+      "welcome": "jbl_junior_free_2154_purple",
+      "device": "jbl_junior_free_2154_purple",
+      "deviceLeft": "jbl_junior_free_2154_purple",
+      "deviceRight": "jbl_junior_free_2154_purple",
+      "gestureLeft":"jbl_junior_free_2154_purple",
+      "gestureRight":"jbl_junior_free_2154_purple",
+      "dashboardBackground": ["#FFF5F5F5", "#FFF5F5F5"],
+
+      "findMyBudLeft":"jbl_junior_free_2154_purple",
+      "findMyBudRight":"jbl_junior_free_2154_purple",
+
+      "enterPairingImage":"jbl_junior_free_2154_still_cant_pair",
+      "enterPairingTitle":"how_to_pair_tips_zero",
+      "enterPairingContent":"press_hold_power_v_up_5s",
+      "stillCantPairImgResId": "jbl_junior_free_2154_still_cant_pair",
+      "stillCantPairTextTipsResId": "how_to_pair_next_club_pro_tips",
+
+      "blePairing": "tour_one3_ble_pairing_black",
+      "case":"smart_transmitter_case_black",
+      "caseError":"tour_one_m3_transmitter_black_error",
+      "personifyHearingTestLeft":"jbl_junior_free_2154_purple",
+      "personifyHearingTestRight":"jbl_junior_free_2154_purple"
+    },
+    "Purple": {
+      "welcome": "jbl_junior_free_2154_purple",
+      "device": "jbl_junior_free_2154_purple",
+      "deviceLeft": "jbl_junior_free_2154_purple",
+      "deviceRight": "jbl_junior_free_2154_purple",
+      "gestureLeft":"jbl_junior_free_2154_purple",
+      "gestureRight":"jbl_junior_free_2154_purple",
+      "dashboardBackground": ["#FFF5F5F5", "#FFF5F5F5"],
+
+      "findMyBudLeft":"jbl_junior_free_2154_purple",
+      "findMyBudRight":"jbl_junior_free_2154_purple",
+
+      "enterPairingImage":"jbl_junior_free_2154_still_cant_pair",
+      "enterPairingTitle":"how_to_pair_tips_zero",
+      "enterPairingContent":"press_hold_power_v_up_5s",
+      "stillCantPairImgResId": "jbl_junior_free_2154_still_cant_pair",
+      "stillCantPairTextTipsResId": "how_to_pair_next_club_pro_tips",
+
+      "blePairing": "tour_one3_ble_pairing_black",
+      "case":"smart_transmitter_case_black",
+      "caseError":"tour_one_m3_transmitter_black_error",
+      "personifyHearingTestLeft":"jbl_junior_free_2154_purple",
+      "personifyHearingTestRight":"jbl_junior_free_2154_purple"
+    },
+    "Mint": {
+      "welcome": "jbl_junior_free_2154_mint",
+      "device": "jbl_junior_free_2154_mint",
+      "deviceLeft": "jbl_junior_free_2154_mint",
+      "deviceRight": "jbl_junior_free_2154_mint",
+      "gestureLeft":"jbl_junior_free_2154_mint",
+      "gestureRight":"jbl_junior_free_2154_mint",
+      "dashboardBackground": ["#FFF5F5F5", "#FFF5F5F5"],
+
+      "findMyBudLeft":"jbl_junior_free_2154_mint",
+      "findMyBudRight":"jbl_junior_free_2154_mint",
+
+      "enterPairingImage":"jbl_junior_free_2154_still_cant_pair",
+      "enterPairingTitle":"how_to_pair_tips_zero",
+      "enterPairingContent":"press_hold_power_v_up_5s",
+      "stillCantPairImgResId": "jbl_junior_free_2154_still_cant_pair",
+      "stillCantPairTextTipsResId": "how_to_pair_next_club_pro_tips",
+
+      "blePairing": "tour_one3_ble_pairing_black",
+      "case":"smart_transmitter_case_black",
+      "caseError":"tour_one_m3_transmitter_black_error",
+      "personifyHearingTestLeft":"jbl_junior_free_2154_mint",
+      "personifyHearingTestRight":"jbl_junior_free_2154_mint"
+    },
+    "PeachOrange": {
+      "welcome": "jbl_junior_free_2154_peach_orange",
+      "device": "jbl_junior_free_2154_peach_orange",
+      "deviceLeft": "jbl_junior_free_2154_peach_orange",
+      "deviceRight": "jbl_junior_free_2154_peach_orange",
+      "gestureLeft":"jbl_junior_free_2154_peach_orange",
+      "gestureRight":"jbl_junior_free_2154_peach_orange",
+      "dashboardBackground": ["#FFF5F5F5", "#FFF5F5F5"],
+
+      "findMyBudLeft":"jbl_junior_free_2154_peach_orange",
+      "findMyBudRight":"jbl_junior_free_2154_peach_orange",
+
+      "enterPairingImage":"jbl_junior_free_2154_still_cant_pair",
+      "enterPairingTitle":"how_to_pair_tips_zero",
+      "enterPairingContent":"press_hold_power_v_up_5s",
+      "stillCantPairImgResId": "jbl_junior_free_2154_still_cant_pair",
+      "stillCantPairTextTipsResId": "how_to_pair_next_club_pro_tips",
+
+      "blePairing": "tour_one3_ble_pairing_black",
+      "case":"smart_transmitter_case_black",
+      "caseError":"tour_one_m3_transmitter_black_error",
+      "personifyHearingTestLeft":"jbl_junior_free_2154_peach_orange",
+      "personifyHearingTestRight":"jbl_junior_free_2154_peach_orange"
+    }
+  }
+}

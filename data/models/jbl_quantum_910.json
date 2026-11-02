@@ -1,0 +1,31 @@
+{
+  "name": "JBL Quantum910",
+    "pid": "2089",
+
+    "uiFeatures": [
+      {"name": "ANC", "type": ["AscCard"],  "disable":["BTMono", "BTCallingVoiceAwareOn"]},
+      {"name": "AA", "type": ["AscCard"], "disable":[ "BTCallingVoiceAwareOn"]},
+      {"name": "TT", "type": ["AscCard"],  "disable":[ "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+
+      {"name": "AscCardNoAA","type": ["General"],"disable":["BTCallingVoiceAwareOn"]},
+      {"name": "EQCard", "type": ["General"],"group":"EntertainmentItems", "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+      {"name": "LightControlCard","type": ["General"]},
+      {"name": "MicrophoneCard","type": ["General"]},
+      {"name": "GameChatBalanceCard", "type": ["General"]},
+      {"name": "SpatialSoundCard", "type": ["General"]},
+      {"name": "HeadTrackerCard", "type": ["General"]},
+      {"name": "HeadQuantumGestureCard", "type": ["General"]},
+      {"name": "SideToneCard", "type": ["General"]},
+      {"name": "AutoPowerOffCard", "type": ["General"]},
+      {"name": "SupportCard", "type": ["General"]},
+      {"name": "PaddingView","type": ["General"]},
+
+      {"name": "SoftwareCard", "type": ["Support"], "disable":["BTMono", "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","AuracastPlaying"]},
+      {"name": "ResetToFactoryRest", "type": ["Help"],"disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+      {"name": "OTA", "type": ["OTAPage"],  "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]}
+    ],
+  "dashboardBackgroundColors": [
+    [0, "#13121E", "#13121E", "#13121E"],
+    [1, "#13121E", "#13121E", "#13121E"]
+  ]
+}

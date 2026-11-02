@@ -1,0 +1,177 @@
+{
+  "name": "JBL Tune 530BT",
+  "pid": "2189",
+  "detail": "Jing Wang Chris Mao chacha SOP: 2025/07/29, RTS: 09/10",
+  "uiFeatures": [
+    {"name": "UpdateAvailable", "type": ["General"], "disable":["BTMono", "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"],"visible": false},
+    {"name": "SmartAudioVideoCard", "type": ["General"], "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff", "LeAudioOn"]},
+    {"name": "ControlCard", "type": ["General"]},
+    {"name": "VoicePromptCard", "type": ["General"], "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "LeAudioCard", "type": ["General"],"disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","USB","Aux"]},
+
+    {"name": "EntertainmentSettingsCard", "type": ["Audio"], "group":"Entertainment"},
+    {"name": "EQCard", "type": ["Audio"],"group":"EntertainmentItems", "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "LeftRightBalanceCard", "type": ["Audio"],"group":"EntertainmentItems", "disable":["BTMono"]},
+    {"name": "SafeSoundCard", "type": ["Audio"],"group":"EntertainmentItems","disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","Aux", "AuracastPlaying"]},
+
+    {"name": "AudioChatSettingsCard", "type": ["Audio"], "group":"CallMode"},
+    {"name": "VoiceAwareCard", "type": ["Audio"],"group":"CallModeItems"},
+
+    {"name": "RelaxSoundCard", "type": ["Others"],"disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "AutoPowerOffCard", "type": ["Others"]},
+    {"name": "SupportCard", "type": ["Others"]},
+
+    {"name": "SoftwareCard", "type": ["Support"], "disable":["BTMono", "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","AuracastPlaying"]},
+    {"name": "ResetToFactoryRest", "type": ["Help"],"disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "OTA", "type": ["OTAPage"],  "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]}
+  ],
+  "tipsPageConfig":[
+    {
+      "image": "ic_tips_va",
+      "textHead" : "va_title",
+      "textDes1" : "tips_va_1",
+      "background": ["#FFD7CA", "#FFD7CA"]
+    },
+    {
+      "image": "ic_tips_gesture",
+      "textHead" : "gestures",
+      "textDes1" : "tips_gesture_1",
+      "background": ["#FFD7CA", "#FFD7CA"]
+    }
+  ],
+  "isSupportConfig2": [
+    {"name": "SnNumber", "isSupport": true},
+    {"name": "DashBoardPowerOff", "isSupport": true},
+    {"name": "CaseVersion", "isSupport": false},
+    {"name": "EditEqQueue", "isSupport": true},
+    {"name": "SupportEqPush", "isSupport": true},
+    {"name": "ProductTips", "isSupport": true}
+  ],
+  "resourceConfig": {
+    "Black": {
+      "welcome": "jbl_tune_530bt_2162_black",
+      "device": "jbl_tune_530bt_2162_black",
+      "deviceLeft": "jbl_tune_530bt_2162_black_left",
+      "deviceRight": "jbl_tune_530bt_2162_black_right",
+      "gestureLeft":"jbl_tune_530bt_2162_black_right_gesture",
+      "gestureRight":"jbl_tune_530bt_2162_black_right_gesture",
+      "dashboardBackground": ["#A8AEAA", "#303433"],
+
+      "findMyBudLeft":"jbl_tune_530bt_2162_black",
+      "findMyBudRight":"jbl_tune_530bt_2162_black",
+
+      "enterPairingImage":"outline_tune_520bt",
+      "enterPairingTitle":"how_to_pair_tips_zero",
+      "enterPairingContent":"power_off_5s_paring",
+      "stillCantPairImgResId": "jbl_soundgear_clips_2152_still_cant_pair",
+      "stillCantPairTextTipsResId": "how_to_pair_next_club_pro_tips",
+
+      "blePairing": "tour_one3_ble_pairing_black",
+      "case":"smart_transmitter_case_black",
+      "caseError":"tour_one_m3_transmitter_black_error",
+      "personifyHearingTestLeft":"tour_one3_left_personifi_black",
+      "personifyHearingTestRight":"tour_one3_left_personifi_black"
+    },
+    "White": {
+      "welcome": "jbl_tune_530bt_2162_white",
+      "device": "jbl_tune_530bt_2162_white",
+      "deviceLeft": "jbl_tune_530bt_2162_white",
+      "deviceRight": "jbl_tune_530bt_2162_white",
+      "gestureLeft":"jbl_tune_530bt_2162_white_right_gesture",
+      "gestureRight":"jbl_tune_530bt_2162_white_right_gesture",
+      "dashboardBackground": ["#B6C1CB", "#5D6A76"],
+
+      "findMyBudLeft":"jbl_tune_530bt_2162_white",
+      "findMyBudRight":"jbl_tune_530bt_2162_white",
+
+      "enterPairingImage":"outline_tune_520bt",
+      "enterPairingTitle":"how_to_pair_tips_zero",
+      "enterPairingContent":"power_off_5s_paring",
+      "stillCantPairImgResId": "jbl_soundgear_clips_2152_still_cant_pair",
+      "stillCantPairTextTipsResId": "how_to_pair_next_club_pro_tips",
+
+      "blePairing": "tour_one3_ble_pairing_black",
+      "case":"smart_transmitter_case_black",
+      "caseError":"tour_one_m3_transmitter_black_error",
+      "personifyHearingTestLeft":"tour_one3_left_personifi_black",
+      "personifyHearingTestRight":"tour_one3_left_personifi_black"
+    },
+    "Blue": {
+      "welcome": "jbl_tune_530bt_2162_blue",
+      "device": "jbl_tune_530bt_2162_blue",
+      "deviceLeft": "jbl_tune_530bt_2162_blue",
+      "deviceRight": "jbl_tune_530bt_2162_blue",
+      "gestureLeft":"jbl_tune_530bt_2162_blue_right_gesture",
+      "gestureRight":"jbl_tune_530bt_2162_blue_right_gesture",
+      "dashboardBackground": ["#D7EFFA", "#374A68"],
+
+      "findMyBudLeft":"jbl_tune_530bt_2162_blue",
+      "findMyBudRight":"jbl_tune_530bt_2162_blue",
+
+      "enterPairingImage":"outline_tune_520bt",
+      "enterPairingTitle":"how_to_pair_tips_zero",
+      "enterPairingContent":"power_off_5s_paring",
+      "stillCantPairImgResId": "jbl_soundgear_clips_2152_still_cant_pair",
+      "stillCantPairTextTipsResId": "how_to_pair_next_club_pro_tips",
+
+      "case":"smart_transmitter_case_black",
+      "caseError":"tour_one_m3_transmitter_black_error",
+      "personifyHearingTestLeft":"tour_one3_left_personifi_black",
+      "personifyHearingTestRight":"tour_one3_left_personifi_black",
+      "blePairing": "tour_one3_ble_pairing_black"
+    },
+    "Purple": {
+      "welcome": "jbl_tune_530bt_2162_purple",
+      "device": "jbl_tune_530bt_2162_purple",
+      "deviceLeft": "jbl_tune_530bt_2162_purple",
+      "deviceRight": "jbl_tune_530bt_2162_purple",
+      "gestureLeft":"jbl_tune_530bt_2162_purple_right_gesture",
+      "gestureRight":"jbl_tune_530bt_2162_purple_right_gesture",
+      "dashboardBackground": ["#C6B7D9", "#5A3A8C"],
+
+      "findMyBudLeft":"jbl_tune_530bt_2162_purple",
+      "findMyBudRight":"jbl_tune_530bt_2162_purple",
+
+      "enterPairingImage":"outline_tune_520bt",
+      "enterPairingTitle":"how_to_pair_tips_zero",
+      "enterPairingContent":"power_off_5s_paring",
+      "stillCantPairImgResId": "jbl_soundgear_clips_2152_still_cant_pair",
+      "stillCantPairTextTipsResId": "how_to_pair_next_club_pro_tips",
+
+      "case":"smart_transmitter_case_black",
+      "caseError":"tour_one_m3_transmitter_black_error",
+      "personifyHearingTestLeft":"tour_one3_left_personifi_black",
+      "personifyHearingTestRight":"tour_one3_left_personifi_black",
+      "blePairing": "tour_one3_ble_pairing_black"
+    },
+    "Pink": {
+      "welcome": "jbl_tune_530bt_2162_pink",
+      "device": "jbl_tune_530bt_2162_pink",
+      "deviceLeft": "jbl_tune_530bt_2162_pink",
+      "deviceRight": "jbl_tune_530bt_2162_pink",
+      "gestureLeft":"jbl_tune_530bt_2162_pink_right_gesture",
+      "gestureRight":"jbl_tune_530bt_2162_pink_right_gesture",
+      "dashboardBackground": ["#FFDCC8", "#59414D"],
+
+      "findMyBudLeft":"jbl_tune_530bt_2162_pink",
+      "findMyBudRight":"jbl_tune_530bt_2162_pink",
+
+      "enterPairingImage":"outline_tune_520bt",
+      "enterPairingTitle":"how_to_pair_tips_zero",
+      "enterPairingContent":"power_off_5s_paring",
+      "stillCantPairImgResId": "jbl_soundgear_clips_2152_still_cant_pair",
+      "stillCantPairTextTipsResId": "how_to_pair_next_club_pro_tips",
+
+      "case":"smart_transmitter_case_black",
+      "caseError":"tour_one_m3_transmitter_black_error",
+      "personifyHearingTestLeft":"tour_one3_left_personifi_black",
+      "personifyHearingTestRight":"tour_one3_left_personifi_black",
+      "blePairing": "tour_one3_ble_pairing_black"
+    }
+  },
+  "gestureConfigId": "2162",
+
+  "typeConfig": {
+    "VoiceAwarePopupWordings":["voice_aware_tips_no_anc"]
+  }
+}

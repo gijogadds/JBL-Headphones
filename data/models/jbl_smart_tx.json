@@ -1,0 +1,61 @@
+{
+  "name": "JBL Smart Tx",
+  "pid": "214B",
+  "smartAudioVideo": {
+    "normal": [197, 46, 130, 230],
+    "audio": [256, 53, 130, 230],
+    "video": [197, 46, 100, 200]
+  },
+  "caseConfig": {
+    "defaultScreenSaver": {
+      "0.0.0":  [ "screen_saver6", "screen_saver7", "screen_saver8", "screen_saver9", "screen_saver2"]
+    },
+    "imageWidth": 320,
+    "imageHeight": 200,
+    "supportQuickAccess": false
+  },
+  "uiFeatures": [
+    {"name": "UpdateAvailable", "type": ["General"], "disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"], "visible": false},
+    {"name": "BrightnessCard",  "type": ["General"],"disable":["BTCallingVoiceAwareOn"]},
+    {"name": "ScreenSaverCard", "type": ["General"], "disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","DynamicEqOn", "USB","Aux"]},
+    {"name": "TapToWakeCard", "type": ["General"],"disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff", "USB","Aux", "AuracastPlaying","LeAudioOn"]},
+    {"name": "FeatureSettingsCard", "type": ["General"],"disable":["USB","Aux", "AuracastPlaying"]},
+    {"name": "SyncTimeCard", "type": ["General"],"disable":["USB","Aux", "AuracastPlaying"]},
+    {"name": "AuraCastSettingsCard", "type": ["General"], "disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff", "CaseAndEarbudsDisconnected"]},
+    {"name": "CaseLanguageCard", "type": ["General"], "disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","Aux"]},
+    {"name": "FindMyCaseCard", "type": ["General"], "disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "SupportCard", "type": ["General"]},
+
+    {"name": "SoftwareCard", "type": ["Support"], "disable":["BTMono", "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","AuracastPlaying"]},
+    {"name": "ResetToFactoryRest", "type": ["Help"],"disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "OTA", "type": ["OTAPage"],  "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]}
+  ],
+  "tipsPageConfig":[
+      {
+        "image": "smart_tx_headphones_pairing",
+        "textHead" : "headphones_pairing",
+        "textDes1" : "headphones_pairing_info1",
+        "background": ["#D4D4D4", "#D4D4D4"]
+      },
+      {
+        "image": "smart_tx_headphones_volume_meter",
+        "textHead" : "vu_meter",
+        "textDes1" : "vu_meter_info1",
+        "background": ["#D4D4D4", "#D4D4D4"]
+      },
+      {
+        "image": "smart_tx_headphones_auracast",
+        "textHead" : "auracast",
+        "textDes1" : "smart_tx_tips_auracast_info1",
+        "background": ["#D4D4D4", "#D4D4D4"]
+      }
+  ],
+  "dashboardBackgroundColors": [
+    [0, "#E6EBE9", "#3B4D4B"],
+    [2, "#D7EFFA", "#374A68"],
+    [20,"#FFDCC8",   "#59414D"]
+  ],
+  "typeConfig": {
+    "find_my_case_card_title_res_name": "smart_tx_find_my"
+  }
+}

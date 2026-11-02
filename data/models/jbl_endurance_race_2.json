@@ -1,0 +1,104 @@
+{
+  "name": "JBL Endurance Race 2",
+  "pid": "2110",
+
+  "uiFeatures": [
+    {"name": "ANC", "type": ["AscCard"],  "disable":["BTMono", "BTCallingVoiceAwareOn"]},
+    {"name": "AA", "type": ["AscCard"], "disable":[ "BTCallingVoiceAwareOn"]},
+    {"name": "TT", "type": ["AscCard"],  "disable":[ "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+
+    {"name": "UpdateAvailable", "type": ["General"], "disable":["BTMono", "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"],"visible": false},
+    {"name": "SportsModelCard", "type": ["General"],"disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "AscCardSportsMode",  "type": ["General"],"disable":["BTCallingVoiceAwareOn","SportsModeOn"]},
+    {"name": "SmartAudioVideoCard", "type": ["General"],"disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "GestureUi4Card", "type": ["General"], "disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "VoicePromptCard", "type": ["General"], "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+
+    {"name": "EQSportsModelCard", "type": ["Audio"],"group":"EntertainmentItems", "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","SportsModeOn"]},
+    {"name": "LeftRightBalanceCard", "type": ["Audio"],"group":"EntertainmentItems","disable":["BTMono"]},
+    {"name": "SafeSoundCard", "type": ["Audio"],"group":"EntertainmentItems"},
+
+    {"name": "VoiceAwareCard", "type": ["Audio"],"group":"CallModeItems"},
+
+    {"name": "RelaxSoundCard", "type": ["Others"],"disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "FindMyBudCard", "type": ["Others"], "disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "PowerSavingCard", "type": ["Others"]},
+    {"name": "SupportCard", "type": ["Others"]},
+
+    {"name": "SoftwareCard", "type": ["Support"], "disable":["BTMono", "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","AuracastPlaying"]},
+    {"name": "ResetToFactoryRest", "type": ["Help"],"disable":["BTMono", "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+
+    {"name": "OTA", "type": ["OTAPage"],  "disable":["BTMono", "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]}
+  ],
+  "dashboardBackgroundColors": [
+    [0, "#A8AEAA", "#303433"],
+    [1, "#FFB6C1CB", "#FF5D6A76"],
+    [2, "#D7EFFA", "#374A68"],
+    [3, "#FFDCC8", "#59414D"],
+    [13, "#FFDCC8", "#59414D"]
+  ],
+  "gestureConfig": {
+    "left": {
+      "name": "left",
+      "custom": {
+        "ambientSoundControl": {
+          "singleTap": "anc_ambient",
+          "doubleTap": "talk_through",
+          "tripleTap": "action_none",
+          "tapHold": "talk_to_default_assistant",
+          "singleTapNumber": "3"
+        },
+        "volumeControl": {
+          "singleTap": "volume_up",
+          "doubleTap": "volume_down",
+          "tripleTap": "action_none",
+          "tapHold": "talk_to_default_assistant"
+        },
+        "playPauseControl": {
+          "singleTap": "play_pause",
+          "doubleTap": "next_track",
+          "tripleTap": "previous_track",
+          "tapHold": "talk_to_default_assistant"
+        },
+        "none": {
+          "singleTap": "action_none",
+          "doubleTap": "action_none",
+          "tripleTap": "action_none",
+          "tapHold": "action_none"
+        }
+      },
+      "hasCallControl": true
+    },
+    "right": {
+      "name": "right",
+      "custom": {
+        "ambientSoundControl": {
+          "singleTap": "anc_ambient",
+          "doubleTap": "talk_through",
+          "tripleTap": "action_none",
+          "tapHold": "talk_to_default_assistant",
+          "singleTapNumber": "3"
+        },
+        "volumeControl": {
+          "singleTap": "volume_up",
+          "doubleTap": "volume_down",
+          "tripleTap": "action_none",
+          "tapHold": "talk_to_default_assistant"
+        },
+        "playPauseControl": {
+          "singleTap": "play_pause",
+          "doubleTap": "next_track",
+          "tripleTap": "previous_track",
+          "tapHold": "talk_to_default_assistant"
+        },
+        "none": {
+          "singleTap": "action_none",
+          "doubleTap": "action_none",
+          "tripleTap": "action_none",
+          "tapHold": "action_none"
+        }
+      },
+      "hasCallControl": true
+    }
+  }
+}

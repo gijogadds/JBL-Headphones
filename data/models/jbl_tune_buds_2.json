@@ -1,0 +1,52 @@
+{
+  "name": "JBL Tune Buds 2",
+  "pid": "210c",
+
+  "uiFeatures": [
+    {"name": "ANC", "type": ["AscCard"]},
+    {"name": "AA", "type": ["AscCard"]},
+    {"name": "TT", "type": ["AscCard"]},
+
+    {"name": "AdaptiveAncCard",  "type": ["CustomizeAnc"]},
+    {"name": "AutoCompensationCard",  "type": ["CustomizeAnc"]},
+
+    {"name": "UpdateAvailable", "type": ["General"], "visible": false},
+    {"name": "AscHaveAncLevelCard",  "type": ["General"]},
+    {"name": "SmartAudioVideoCard", "type": ["General"]},
+    {"name": "GestureCard", "type": ["General"]},
+    {"name": "AuracastCard", "type": ["General"]},
+    {"name": "VoicePromptCard", "type": ["General"]},
+
+    {"name": "EntertainmentSettingsCard", "type": ["Audio"], "group":"Entertainment"},
+    {"name": "EQCard", "type": ["Audio"],"group":"EntertainmentItems"},
+    {"name": "Spatial3DCard", "type": ["Audio"], "group":"EntertainmentItems"},
+    {"name": "PersoniFiCard", "type": ["Audio"], "group":"EntertainmentItems"},
+    {"name": "LeftRightBalanceCard", "type": ["Audio"],"group":"EntertainmentItems"},
+    {"name": "SafeSoundCard", "type": ["Audio"],"group":"EntertainmentItems"},
+    {"name": "AudioChatSettingsCard", "type": ["Audio"], "group":"CallMode"},
+    {"name": "AudioLimiterCard", "type": ["Audio"],"group":"CallModeItems"},
+    {"name": "SoundEffectCard", "type": ["Audio"],"group":"CallModeItems"},
+    {"name": "VoiceSettingCard", "type": ["Audio"], "group":"CallModeItems"},
+    {"name": "VoiceAwareCard", "type": ["Audio"],"group":"CallModeItems"},
+
+    {"name": "RelaxSoundCard", "type": ["Others"]},
+    {"name": "FindMyBudCard", "type": ["Others"]},
+    {"name": "PowerSavingCard", "type": ["Others"]},
+    {"name": "SupportCard", "type": ["Others"]},
+
+    {"name": "SoftwareCard", "type": ["Support"]},
+    {"name": "ResetToFactoryRest", "type": ["Help"]},
+
+    {"name": "OTA", "type": ["OTAPage"]}
+  ],
+  "isSupportUnifiedDisable": true,
+  "dashboardBackgroundColors": [
+    [0, "#A8AEAA", "#303433"],
+    [1, "#B6C1CB", "#5D6A76"],
+    [2, "#A1E7F1", "#1E4148"],
+    [5, "#E3C8FF", "#534159"],
+    [14, "#A8AEAA", "#303433"],
+    [15, "#FFE3C8FF", "#FF534159"],
+    [16, "#B6C1CB", "#5D6A76"]
+  ]
+}

@@ -1,0 +1,252 @@
+{
+  "20CC": {
+    "sku":"global",
+    "product_name": "JBL Live 670NC",
+    "eq_preset": [7,3,6,9,2,1]
+  },
+  "20CD": {
+    "sku":"cn",
+    "product_name": "JBL Live 670NC",
+    "eq_preset": [7,3,6,9,2,1]
+  },
+  "20CE": {
+    "sku":"global",
+    "product_name": "JBL Live 770NC",
+    "eq_preset": [7,3,6,9,2,1]
+  },
+  "20CF": {
+    "sku":"cn",
+    "product_name": "JBL Live 770NC",
+    "eq_preset": [7,3,6,9,2,1]
+  },
+  "20E6": {
+    "sku":"global",
+    "product_name": "JBL Soundgear Frames",
+    "eq_preset": [7,3,6,9,2,1]
+  },
+  "20C4": {
+    "sku":"global",
+    "product_name": "JBL Soundgear Sense",
+    "eq_preset": [7,3,6,9,2,1]
+  },
+  "20F1": {
+    "sku":"global",
+    "product_name": "JBL Live Buds 3",
+    "eq_preset": [7,3,6,9,2,1]
+  },
+  "20EF": {
+    "sku":"global",
+    "product_name": "JBL Live Beam 3",
+    "eq_preset": [7,3,6,9,2,1]
+  },
+  "20F0": {
+    "sku":"global",
+    "product_name": "JBL Live Flex 3",
+    "eq_preset": [7,3,6,9,2,1]
+  },
+  "20F2": {
+    "sku":"global",
+    "product_name": "JBL Tour Pro 3",
+    "eq_preset": [7,3,6,9,2,1]
+  },
+  "2100": {
+    "sku":"global",
+    "product_name": "JBL Wave Buds 2",
+    "eq_preset": [7,3,6,9,2,1]
+  },
+  "210C": {
+    "sku":"global",
+    "product_name": "JBL Tune Buds 2",
+    "eq_preset": [7,3,6,9,2,1]
+  },
+  "2105": {
+    "sku":"global",
+    "product_name": "JBL Junior 470NC",
+    "eq_preset": [7,3,6,9,2,1]
+  },
+  "2106": {
+    "sku":"global",
+    "product_name": "JBL Junior 320BT",
+    "eq_preset": [7,3,6,9,2,1]
+  },
+  "210D": {
+    "sku":"global",
+    "product_name": "JBL Tune Beam 2",
+    "eq_preset": [7,3,6,9,2,1]
+  },
+  "210E": {
+    "sku":"global",
+    "product_name": "JBL Tune Flex 2",
+    "eq_preset": [7,3,6,9,2,1]
+  },
+  "20FE": {
+    "sku":"global",
+    "product_name": "JBL Wave Beam 2",
+    "eq_preset": [7,3,6,9,2,1]
+  },
+  "20FF": {
+    "sku":"global",
+    "product_name": "JBL Wave Flex 2",
+    "eq_preset": [7,3,6,9,2,1]
+  },
+  "2104": {
+    "sku":"global",
+    "product_name": "JBL Vibe Buds 2",
+    "eq_preset": [7,3,6,9,2,1]
+  },
+  "2102": {
+    "sku":"global",
+    "product_name": "JBL Vibe Beam 2",
+    "eq_preset": [7,3,6,9,2,1]
+  },
+  "2103": {
+    "sku":"global",
+    "product_name": "JBL Vibe Flex 2",
+    "eq_preset": [7,3,6,9,2,1]
+  },
+  "2124": {
+    "sku":"global",
+    "product_name": "JBL Live 775NC",
+    "eq_preset": [7,3,6,9,2,1]
+  },
+  "2101": {
+      "sku":"global",
+      "product_name": "JBL Tour One M3",
+      "eq_preset": [7,3,6,9,2,1]
+  },
+  "2133": {
+    "sku":"global",
+    "product_name": "JBL Sense Lite",
+    "eq_preset": [7,3,6,9,2,1]
+  },
+  "2134": {
+    "sku":"global",
+    "product_name": "JBL Endurance Zone",
+    "eq_preset": [3,9,11,12,2,1]
+  },
+  "2135": {
+    "sku":"global",
+    "product_name": "JBL Tune 135BT",
+    "eq_preset": [7,3,6,9,2,1]
+  },
+  "2136": {
+    "sku":"global",
+    "product_name": "JBL Tune 235BT",
+    "eq_preset": [7,3,6,9,2,1]
+  },
+  "2152": {
+    "sku":"global",
+    "product_name": "JBL Soundgear Clips",
+    "eq_preset": [7,3,6,9,2,1]
+  },
+  "2154": {
+    "sku":"global",
+    "product_name": "JBL Junior Free",
+    "eq_preset": [7,3,6,9,2,1]
+  },
+  "214F": {
+    "sku":"global",
+    "product_name": "JBL Endurance Run 3 Wireless",
+    "eq_preset": [3,9,11,12,2,1]
+  },
+  "2150": {
+    "sku":"global",
+    "product_name": "JBL Endurance Pace",
+    "eq_preset": [3,9,11,12,2,1]
+  },
+  "2151": {
+    "sku":"global",
+    "product_name": "JBL Endurance Peak 4",
+    "eq_preset": [3,9,11,12,2,1]
+  },
+  "2164": {
+    "sku":"global",
+    "product_name": "JBL Tune 255NC",
+    "eq_preset": [7,3,6,9,2,1]
+  },
+  "2153": {
+    "sku":"global",
+    "product_name": "JBL Sense Pro",
+    "eq_preset": [7,3,6,9,2,1]
+  },
+  "2162": {
+    "sku":"global",
+    "product_name": "JBL Tune 530BT",
+    "eq_preset": [7,3,6,9,2,1]
+  },
+  "2189": {
+    "sku":"global",
+    "product_name": "JBL Tune 530BT",
+    "eq_preset": [7,3,6,9,2,1]
+  },
+  "2194": {
+    "sku":"global",
+    "product_name": "JBL Tune 535BT",
+    "eq_preset": [7,3,6,9,2,1]
+  },
+  "2163": {
+    "sku":"global",
+    "product_name": "JBL Tune 730BT",
+    "eq_preset": [7,3,6,9,2,1]
+  },
+  "2195": {
+    "sku":"global",
+    "product_name": "JBL Tune 735BT",
+    "eq_preset": [7,3,6,9,2,1]
+  },
+  "21AE": {
+    "sku":"global",
+    "product_name": "JBL Tour Pro 4",
+    "eq_preset": [1, 13, 11, 14, 15, 16, 130, 132, 134, 129, 6, 3, 80, 7, 17, 145]
+  },
+  "21B6": {
+    "sku":"global",
+    "product_name": "JBL Tune Flex 3",
+    "eq_preset": [1, 13, 11, 14, 15, 16, 130, 132, 134, 129, 6, 3, 80, 7, 17, 145]
+  },
+  "21B7": {
+    "sku":"global",
+    "product_name": "JBL Tune Buds 3",
+    "eq_preset": [1, 13, 11, 14, 15, 16, 130, 132, 134, 129, 6, 3, 80, 7, 17, 145]
+  },
+  "21B8": {
+    "sku":"global",
+    "product_name": "JBL Tune Beam 3",
+    "eq_preset": [1, 13, 11, 14, 15, 16, 130, 132, 134, 129, 6, 3, 80, 7, 17, 145]
+  },
+  "21AD": {
+    "sku":"global",
+    "product_name": "JBL Wave Flex 3",
+    "eq_preset": [1, 13, 11, 14, 15, 16, 130, 132, 134, 129, 6, 3, 80, 7, 17, 145]
+  },
+  "21AB": {
+    "sku":"global",
+    "product_name": "JBL Wave Buds 3",
+    "eq_preset": [1, 13, 11, 14, 15, 16, 130, 132, 134, 129, 6, 3, 80, 7, 17, 145]
+  },
+  "21AC": {
+    "sku":"global",
+    "product_name": "JBL Wave Beam 3",
+    "eq_preset": [1, 13, 11, 14, 15, 16, 130, 132, 134, 129, 6, 3, 80, 7, 17, 145]
+  },
+  "21B2": {
+    "sku":"global",
+    "product_name": "JBL Vibe Flex 3",
+    "eq_preset": [1, 13, 11, 14, 15, 16, 130, 132, 134, 129, 6, 3, 80, 7, 17, 145]
+  },
+  "21B3": {
+    "sku":"global",
+    "product_name": "JBL Vibe Buds 3",
+    "eq_preset": [1, 13, 11, 14, 15, 16, 130, 132, 134, 129, 6, 3, 80, 7, 17, 145]
+  },
+  "21B4": {
+    "sku":"global",
+    "product_name": "JBL Vibe Beam 3",
+    "eq_preset": [1, 13, 11, 14, 15, 16, 130, 132, 134, 129, 6, 3, 80, 7, 17, 145]
+  },
+  "2193": {
+    "sku":"global",
+    "product_name": "JBL Tour One M4",
+    "eq_preset": [1, 13, 11, 14, 15, 16, 130, 132, 134, 129, 6, 3, 80, 7, 17, 145]
+  }
+}

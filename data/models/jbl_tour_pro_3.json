@@ -1,0 +1,232 @@
+{
+  "name": "JBL Tour Pro 3",
+  "pid": "20f2",
+  "caseConfig": {
+    "settingsBoard": [
+      {"name": "CaseInfoCard"},
+      {"name": "BrightnessCard"},
+      {"name": "ScreenSaverCard"},
+      {"name": "MsgNotificationCard"},
+      {"name": "TapToWakeCard"},
+      {"name": "FeatureSettingsCard"},
+      {"name": "SyncTimeCard"},
+      {"name": "AuraCastSettingsCard"},
+      {"name": "CaseLanguageCard"},
+      {"name": "FindMyCaseCard"}
+    ],
+    "defaultScreenSaver": {
+      "0.0.0":  [ "screen_saver6", "screen_saver7", "screen_saver8", "screen_saver9", "screen_saver2"]
+    },
+    "imageWidth": 320,
+    "imageHeight": 200,
+    "supportQuickAccess": false
+  },
+  "uiFeatures": [
+    {"name": "ANC", "type": ["AscCard"],  "disable":["BTMono", "BTCallingVoiceAwareOn"]},
+    {"name": "AA", "type": ["AscCard"], "disable":[ "BTCallingVoiceAwareOn"]},
+    {"name": "TT", "type": ["AscCard"],  "disable":[ "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+
+    {"name": "AdaptiveAncCard",  "type": ["CustomizeAnc"],"disable":["BTMono", "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "AutoCompensationCard",  "type": ["CustomizeAnc"],"disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+
+    {"name": "SetupCard", "type": ["General"]},
+    {"name": "UpdateAvailable", "type": ["General"], "disable":["BTMono", "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","AuracastPlaying"],"visible": false},
+    {"name": "SoundFitTouPro3Card",  "type": ["General"],"disable":["BTCallingVoiceAwareOn"]},
+    {"name": "AscCard",  "type": ["General"],"disable":["BTCallingVoiceAwareOn"]},
+    {"name": "SmartCaseSettingCard", "type": ["General"], "disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff", "CaseAndEarbudsDisconnected"]},
+    {"name": "CheckMyBestFitCard", "type": ["General"], "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","DynamicEqOn"]},
+    {"name": "SpeakToChatCard", "type": ["General"], "disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","DynamicEqOn"]},
+    {"name": "PSAP2Card", "type": ["General"],"disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","DynamicEqOn"]},
+    {"name": "SmartAudioVideoCard", "type": ["General"],"disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff", "AuracastPlaying","LeAudioOn"]},
+    {"name": "SmartAutomationCard", "type": ["General"]},
+    {"name": "GestureUi4Card", "type": ["General"], "disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "VoicePromptCard", "type": ["General"], "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "SilentNowCard", "type": ["General"],"disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","USB","Aux"]},
+    {"name": "LeAudioCard", "type": ["General"],"disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","BTMono"]},
+
+    {"name": "EntertainmentSettingsCard", "type": ["Audio"], "group":"Entertainment"},
+    {"name": "HiResAudioCard", "type": ["Audio"],"group":"EntertainmentItems","disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","DynamicEqOn", "AuracastPlaying"]},
+    {"name": "EQCard", "type": ["Audio"],"group":"EntertainmentItems", "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+
+    {"name": "LowVolumeEq", "type": ["AdaptiveEQCard"],"disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff", "AuracastPlaying"]},
+    {"name": "LeakageCompensation", "type": ["AdaptiveEQCard"]},
+    {"name": "AdaptiveEQCard", "type": ["Audio"],"group":"EntertainmentItems","disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff", "HiRes"]},
+
+    {"name": "SpatialSoundWithHeadTrackCard", "type": ["Audio"], "group":"EntertainmentItems", "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff", "HiRes","LeAudioOn"]},
+    {"name": "PersoniFiCard", "type": ["Audio"],"group":"EntertainmentItems", "disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff", "HiRes"]},
+    {"name": "LeftRightBalanceCard", "type": ["Audio"],"group":"EntertainmentItems","disable":["BTMono", "AuracastPlaying"]},
+    {"name": "SafeSoundCard", "type": ["Audio"],"group":"EntertainmentItems", "disable":["AuracastPlaying","LeAudioOn"]},
+
+    {"name": "AudioChatSettingsCard", "type": ["Audio"], "group":"CallMode"},
+    {"name": "AudioLimiterCard", "type": ["Audio"],"group":"CallModeItems","disable":["AuracastPlaying"]},
+    {"name": "SoundEffectCard", "type": ["Audio"],"group":"CallModeItems","disable":["AuracastPlaying"]},
+    {"name": "VoiceSettingCard", "type": ["Audio"], "group":"CallModeItems",  "disable":["AuracastPlaying"]},
+    {"name": "VoiceAwareCard", "type": ["Audio"],"group":"CallModeItems",  "disable":["AuracastPlaying"]},
+    {"name": "PrivateCallModeCard", "type": ["Audio"], "group":"CallModeItems","disable":["BTMono"]},
+
+    {"name": "RelaxSoundCard", "type": ["Others"],"disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","AuracastPlaying"]},
+    {"name": "FindMyBudCard", "type": ["Others"], "disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "PowerSavingCard", "type": ["Others"], "disable":["AuracastPlaying"]},
+    {"name": "SupportCard", "type": ["Others"]},
+
+    {"name": "SoftwareCard", "type": ["Support"], "disable":["BTMono", "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","AuracastPlaying"]},
+    {"name": "CaseCard", "type": ["Support"], "disable":["BTMono", "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","AuracastPlaying"]},
+    {"name": "ResetToFactoryRest", "type": ["Help"],"disable":["BTMono", "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","AuracastPlaying"]},
+
+    {"name": "OTA", "type": ["OTAPage"],  "disable":["BTMono", "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]}
+  ],
+
+  "resourceConfig": {
+    "Black": {
+      "welcome": "jbl_tour_pro3_20f2_black_welcome",
+      "device": "jbl_tour_pro3_20f2_black",
+      "deviceLeft": "jbl_tour_pro3_20f2_black_left",
+      "deviceRight": "jbl_tour_pro3_20f2_black_right",
+      "gestureLeft": "jbl_tour_pro3_20f2_black_left_gesture",
+      "gestureRight": "jbl_tour_pro3_20f2_black_right_gesture",
+      "dashboardBackground": [ "#A8AEAA", "#303433" ],
+      "findMyBudLeft": "jbl_tour_pro3_20f2_black",
+      "findMyBudRight": "jbl_tour_pro3_20f2_black",
+      "enterPairingImage": "tour_pro_2_case",
+      "enterPairingTitle": "how_to_pair_tips_zero",
+      "enterPairingContent": "how_to_pair_lives_300tws",
+      "stillCantPairImgResId": "tour_pro_2_ear",
+      "stillCantPairTextTipsResId": "how_to_pair_next_club_pro_tips",
+      "blePairing": "jbl_tour_pro3_20f2_black",
+      "case": "jbl_tour_pro3_20f2_black_case",
+      "caseError": "jbl_tour_pro3_20f2_black_case",
+      "personifyHearingTestLeft": "jbl_tour_pro3_20f2_black",
+      "personifyHearingTestRight": "jbl_tour_pro3_20f2_black"
+    },
+    "Blue":{
+      "welcome": "jbl_tour_pro3_20f2_blue_welcome",
+      "device": "jbl_tour_pro3_20f2_blue",
+      "deviceLeft": "jbl_tour_pro3_20f2_blue_left",
+      "deviceRight": "jbl_tour_pro3_20f2_blue_right",
+      "gestureLeft": "jbl_tour_pro3_20f2_blue_left_gesture",
+      "gestureRight": "jbl_tour_pro3_20f2_blue_right_gesture",
+      "dashboardBackground": ["#D7EFFA", "#374A68" ],
+      "findMyBudLeft": "jbl_tour_pro3_20f2_blue",
+      "findMyBudRight": "jbl_tour_pro3_20f2_blue",
+      "enterPairingImage": "tour_pro_2_case",
+      "enterPairingTitle": "how_to_pair_tips_zero",
+      "enterPairingContent": "how_to_pair_lives_300tws",
+      "stillCantPairImgResId": "tour_pro_2_ear",
+      "stillCantPairTextTipsResId": "how_to_pair_next_club_pro_tips",
+      "blePairing": "jbl_tour_pro3_20f2_blue",
+      "case": "jbl_tour_pro3_20f2_blue_case",
+      "caseError": "jbl_tour_pro3_20f2_blue_case",
+      "personifyHearingTestLeft": "jbl_tour_pro3_20f2_blue",
+      "personifyHearingTestRight": "jbl_tour_pro3_20f2_blue"
+    },
+    "Green":{
+      "welcome": "jbl_tour_pro3_20f2_green_welcome",
+      "device": "jbl_tour_pro3_20f2_green",
+      "deviceLeft": "jbl_tour_pro3_20f2_green_left",
+      "deviceRight": "jbl_tour_pro3_20f2_green_right",
+      "gestureLeft": "jbl_tour_pro3_20f2_green_left_gesture",
+      "gestureRight": "jbl_tour_pro3_20f2_green_right_gesture",
+      "dashboardBackground": ["#e3ffc7", "#535941"],
+      "findMyBudLeft": "jbl_tour_pro3_20f2_green",
+      "findMyBudRight": "jbl_tour_pro3_20f2_green",
+      "enterPairingImage": "tour_pro_2_case",
+      "enterPairingTitle": "how_to_pair_tips_zero",
+      "enterPairingContent": "how_to_pair_lives_300tws",
+      "stillCantPairImgResId": "tour_pro_2_ear",
+      "stillCantPairTextTipsResId": "how_to_pair_next_club_pro_tips",
+      "blePairing": "jbl_tour_pro3_20f2_green",
+      "case": "jbl_tour_pro3_20f2_green_case",
+      "caseError": "jbl_tour_pro3_20f2_green_case",
+      "personifyHearingTestLeft": "jbl_tour_pro3_20f2_green",
+      "personifyHearingTestRight": "jbl_tour_pro3_20f2_green"
+    },
+    "Champagne":{
+      "welcome": "jbl_tour_pro_3_20f2_champaign_welcome",
+      "device": "jbl_tour_pro3_20f2_champion",
+      "deviceLeft": "jbl_tour_pro3_20f2_champion_left",
+      "deviceRight": "jbl_tour_pro3_20f2_champion_right",
+      "gestureLeft": "jbl_tour_pro3_20f2_champion_left_gesture",
+      "gestureRight": "jbl_tour_pro3_20f2_champion_right_gesture",
+      "dashboardBackground": ["#FFDCC8", "#59414D" ],
+      "findMyBudLeft": "jbl_tour_pro3_20f2_champion",
+      "findMyBudRight": "jbl_tour_pro3_20f2_champion",
+      "enterPairingImage": "tour_pro_2_case",
+      "enterPairingTitle": "how_to_pair_tips_zero",
+      "enterPairingContent": "how_to_pair_lives_300tws",
+      "stillCantPairImgResId": "tour_pro_2_ear",
+      "stillCantPairTextTipsResId": "how_to_pair_next_club_pro_tips",
+      "blePairing": "jbl_tour_pro3_20f2_champion",
+      "case": "jbl_tour_pro3_20f2_champion_case",
+      "caseError": "jbl_tour_pro3_20f2_champion_case",
+      "personifyHearingTestLeft": "jbl_tour_pro3_20f2_champion",
+      "personifyHearingTestRight": "jbl_tour_pro3_20f2_champion"
+    }
+  },
+  "gestureConfig": {
+    "left": {
+      "name": "left",
+      "custom": {
+        "ambientSoundControl": {
+          "singleTap": "anc_ambient",
+          "doubleTap": "talk_through",
+          "tripleTap": "action_none",
+          "tapHold": "talk_to_default_assistant",
+          "singleTapNumber": "3"
+        },
+        "volumeControl": {
+          "singleTap": "volume_up",
+          "doubleTap": "volume_down",
+          "tripleTap": "action_none",
+          "tapHold": "talk_to_default_assistant"
+        },
+        "playPauseControl": {
+          "singleTap": "play_pause",
+          "doubleTap": "next_track",
+          "tripleTap": "previous_track",
+          "tapHold": "talk_to_default_assistant"
+        },
+        "none": {
+          "singleTap": "action_none",
+          "doubleTap": "action_none",
+          "tripleTap": "action_none",
+          "tapHold": "action_none"
+        }
+      },
+      "hasCallControl": true
+    },
+    "right": {
+      "name": "right",
+      "custom": {
+        "ambientSoundControl": {
+          "singleTap": "anc_ambient",
+          "doubleTap": "talk_through",
+          "tripleTap": "action_none",
+          "tapHold": "talk_to_default_assistant",
+          "singleTapNumber": "3"
+        },
+        "volumeControl": {
+          "singleTap": "volume_up",
+          "doubleTap": "volume_down",
+          "tripleTap": "action_none",
+          "tapHold": "talk_to_default_assistant"
+        },
+        "playPauseControl": {
+          "singleTap": "play_pause",
+          "doubleTap": "next_track",
+          "tripleTap": "previous_track",
+          "tapHold": "talk_to_default_assistant"
+        },
+        "none": {
+          "singleTap": "action_none",
+          "doubleTap": "action_none",
+          "tripleTap": "action_none",
+          "tapHold": "action_none"
+        }
+      },
+      "hasCallControl": true
+    }
+  },
+  "typeConfig": {
+    "auto_compensation_adaptive_anc_mutex": true
+  }
+}

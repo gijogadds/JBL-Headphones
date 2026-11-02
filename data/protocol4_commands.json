@@ -1,0 +1,3555 @@
+{
+  "0000": {
+    "featureName": "UnsupportedFeatureIDList",
+    "operation": "-",
+    "cycleStart": 0,
+    "cycleCount": 2,
+    "cycleList": [
+      {
+        "name": "UnsupportedFeatureID",
+        "startIndex": 0,
+        "endIndex": 2,
+        "type": "byte"
+      }
+    ]
+  },
+  "0001": {
+    "featureName": "MTU",
+    "operation": "-",
+    "list": [
+      {
+        "name": "MTU",
+        "startIndex": 0,
+        "endIndex": 2,
+        "type": "byte"
+      }
+    ]
+  },
+  "0002": {
+    "featureName": "Heartbeat",
+    "operation": "w"
+  },
+  "0003": {
+    "featureName": "ContinuousPacketsMinimalTransmissionInterval",
+    "operation": "-",
+    "list": [
+      {
+        "name": "ContinuousPacketsMinimalTransmissionInterval",
+        "startIndex": 0,
+        "endIndex": 2,
+        "type": "byte"
+      }
+    ]
+  },
+  "0004": {
+    "featureName": "ProductID",
+    "operation": "-",
+    "list": [
+      {
+        "name": "ProductID",
+        "startIndex": 0,
+        "endIndex": 2,
+        "type": "byte"
+      }
+    ]
+  },
+  "0005": {
+    "featureName": "ColorID",
+    "operation": "r",
+    "list": [
+      {
+        "name": "ColorID",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "byte"
+      }
+    ]
+  },
+  "0006": {
+    "featureName": "DeviceName",
+    "operation": "r",
+    "list": [
+      {
+        "name": "DeviceName",
+        "startIndex": 0,
+        "maxIndex": 16,
+        "type": "string",
+        "separator": 3
+      }
+    ]
+  },
+  "0007": {
+    "featureName": "HostNameCRC16",
+    "operation": "-",
+    "list": [
+      {
+        "name": "HostNameCRC16",
+        "startIndex": 0,
+        "endIndex": 2,
+        "type": "byte"
+      }
+    ]
+  },
+  "0008": {
+    "featureName": "LeftDeviceSerialNumber",
+    "operation": "-",
+    "list": [
+      {
+        "name": "LeftDeviceSerialNumber",
+        "startIndex": 0,
+        "maxIndex": 64,
+        "type": "string"
+      }
+    ]
+  },
+  "0009": {
+    "featureName": "RightDeviceSerialNumber",
+    "operation": "-",
+    "list": [
+      {
+        "name": "RightDeviceSerialNumber",
+        "startIndex": 0,
+        "endIndex": 64,
+        "type": "string"
+      }
+    ]
+  },
+  "000A": {
+    "featureName": "MACAddress",
+    "operation": "r",
+    "list": [
+      {
+        "name": "MACAddress",
+        "startIndex": 0,
+        "endIndex": 6,
+        "type": "string",
+        "separator": 1
+      }
+    ]
+  },
+  "000B": {
+    "featureName": "SecondaryDeviceMACAddress",
+    "operation": "-",
+    "list": [
+      {
+        "name": "SecondaryDeviceMACAddress",
+        "startIndex": 0,
+        "endIndex": 6,
+        "type": "string",
+        "separator": 1
+      }
+    ]
+  },
+  "000C": {
+    "featureName": "FirmwareVersion",
+    "operation": "r",
+    "list": [
+      {
+        "name": "FirmwareVersion",
+        "startIndex": 0,
+        "endIndex": 3,
+        "type": "string",
+        "separator": 2
+      }
+    ]
+  },
+  "000D": {
+    "featureName": "LeftDeviceBatteryStatus",
+    "operation": "rw",
+    "list": [
+      {
+        "name": "LeftDeviceBatteryStatus",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "ChargingStatus",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "BatteryPercentage",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "000E": {
+    "featureName": "RightDeviceBatteryStatus",
+    "operation": "rw",
+    "list": [
+      {
+        "name": "RightDeviceBatteryStatus",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "ChargingStatus",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "BatteryPercentage",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "000F": {
+    "featureName": "FactoryReset",
+    "operation": "-"
+  },
+  "0010": {
+    "featureName": "BTConnectionStatus",
+    "operation": "-",
+    "list": [
+      {
+        "name": "BTConnectionStatus",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Reserved",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "0011": {
+    "featureName": "ManualPowerOff",
+    "operation": "-",
+    "list": [
+      {
+        "name": "ManualPowerOff",
+        "startIndex": 0,
+        "endIndex": 2,
+        "type": "byte"
+      }
+    ]
+  },
+  "0012": {
+    "featureName": "AutoPowerOff",
+    "operation": "r",
+    "list": [
+      {
+        "name": "AutoPowerOff",
+        "startIndex": 0,
+        "endIndex": 2,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 15,
+            "bitEndIndex": 16
+          },
+          {
+            "name": "AutoPowerOffTime",
+            "bitStartIndex": 0,
+            "bitEndIndex": 15
+          }
+        ]
+      }
+    ]
+  },
+  "0013": {
+    "featureName": "AutoStandby",
+    "operation": "r",
+    "list": [
+      {
+        "name": "AutoStandby",
+        "startIndex": 0,
+        "endIndex": 2,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 15,
+            "bitEndIndex": 16
+          },
+          {
+            "name": "AutoStandbyTime",
+            "bitStartIndex": 0,
+            "bitEndIndex": 15
+          }
+        ]
+      }
+    ]
+  },
+  "0014": {
+    "featureName": "GameChatBalance",
+    "operation": "-",
+    "list": [
+      {
+        "name": "GameChatBalance",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Level",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "0015": {
+    "featureName": "LRBalance",
+    "operation": "-",
+    "list": [
+      {
+        "name": "LRBalance",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Level",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "0016": {
+    "featureName": "LEDBrightness",
+    "operation": "-",
+    "list": [
+      {
+        "name": "LEDBrightness",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Level",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "0017": {
+    "featureName": "BatteryPresence",
+    "operation": "-",
+    "list": [
+      {
+        "name": "BatteryPresence",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "byte"
+      }
+    ]
+  },
+  "0018": {
+    "featureName": "ANC",
+    "operation": "rw",
+    "list": [
+      {
+        "name": "ANC",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Level",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "0019": {
+    "featureName": "AA",
+    "operation": "rw",
+    "list": [
+      {
+        "name": "AA",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Level",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "001A": {
+    "featureName": "TT",
+    "operation": "rw",
+    "list": [
+      {
+        "name": "TT",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Level",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "001B": {
+    "featureName": "AdaptiveANC",
+    "operation": "-",
+    "list": [
+      {
+        "name": "AdaptiveANC",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Level",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "001C": {
+    "featureName": "TrueAdaptiveANC",
+    "operation": "-",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Level",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "001D": {
+    "featureName": "LeakageCompensation",
+    "operation": "-",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Level",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "001E": {
+    "featureName": "EarCanalCompensation",
+    "operation": "-",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Level",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "001F": {
+    "featureName": "ANCAlwaysOn",
+    "operation": "-",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Level",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "0020": {
+    "featureName": "AutoCompensation",
+    "operation": "-",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Level",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "0021": {
+    "featureName": "SpatialSoundMode",
+    "operation": "rw",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Level",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "0022": {
+    "featureName": "SpatialSoundScene",
+    "operation": "rw",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Scene",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "0023": {
+    "featureName": "Sidetone",
+    "operation": "rw",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Level",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "0024": {
+    "featureName": "LowEQCompensation",
+    "operation": "-",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "name": "LowEQCompensation",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Level",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "0025": {
+    "featureName": "MaxVolumeLimit",
+    "operation": "-",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "name": "MaxVolumeLimit",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Level",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "0026": {
+    "featureName": "NoiseSuppression",
+    "operation": "-",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "name": "NoiseSuppression",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Level",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "0027": {
+    "featureName": "AudioLimiter",
+    "operation": "rw",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Level",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "0028": {
+    "featureName": "HiRes",
+    "operation": "rw",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Level",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "0029": {
+    "featureName": "SoundEffect",
+    "operation": "-",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Level",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "002A": {
+    "featureName": "AutoPlayPauseEnable",
+    "operation": "rw",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Level",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "002B": {
+    "featureName": "SmartTalk",
+    "operation": "rw",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Level",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "002C": {
+    "featureName": "ChargingPinPortDetect",
+    "operation": "-",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": " IsWaterDetected.",
+            "bitStartIndex": 6,
+            "bitEndIndex": 7
+          },
+          {
+            "name": " IsOverheatingDetected.",
+            "bitStartIndex": 5,
+            "bitEndIndex": 6
+          },
+          {
+            "name": "Reserved",
+            "bitStartIndex": 0,
+            "bitEndIndex": 5
+          }
+        ]
+      }
+    ]
+  },
+  "002D": {
+    "featureName": "SpatialSoundRecenter",
+    "operation": "-",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Operation",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Status",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "002E": {
+    "featureName": "PairingStatus",
+    "operation": "r",
+    "list": [
+      {
+        "name": "PairingStatus",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "byte"
+      }
+    ]
+  },
+  "002F": {
+    "featureName": "HostType",
+    "operation": "r",
+    "list": [
+      {
+        "name": "HostType",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "byte"
+      }
+    ]
+  },
+  "0030": {
+    "featureName": "TextMessageNotificationSetting",
+    "operation": "w"
+  },
+  "0031": {
+    "featureName": "SyncTime",
+    "operation": "w",
+    "list": [
+      {
+        "name": "Second",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "byte"
+      },
+      {
+        "name": "Minute",
+        "startIndex": 1,
+        "endIndex": 2,
+        "type": "byte"
+      },
+      {
+        "name": "Hour",
+        "startIndex": 2,
+        "endIndex": 3,
+        "type": "byte"
+      },
+      {
+        "name": "DayOfWeek",
+        "startIndex": 3,
+        "endIndex": 4,
+        "type": "byte"
+      },
+      {
+        "name": "Day",
+        "startIndex": 4,
+        "endIndex": 5,
+        "type": "byte"
+      },
+      {
+        "name": "Month",
+        "startIndex": 5,
+        "endIndex": 6,
+        "type": "byte"
+      },
+      {
+        "name": "Year",
+        "startIndex": 6,
+        "endIndex": 8,
+        "type": "byte"
+      },
+      {
+        "name": "TimeDisplayFormat",
+        "startIndex": 9,
+        "endIndex": 9,
+        "type": "byte"
+      }
+    ]
+  },
+  "0032": {
+    "featureName": "TextMessageNotificationRemoveAll",
+    "operation": "-"
+  },
+  "0033": {
+    "featureName": "HostBleMacAddress",
+    "operation": "r",
+    "list": [
+      {
+        "name": "MacAddress",
+        "startIndex": 0,
+        "endIndex": 6,
+        "type": "byte"
+      },
+      {
+        "name": "BleMacAddressType",
+        "startIndex": 6,
+        "endIndex": 7,
+        "type": "byte"
+      }
+    ]
+  },
+  "0B80": {
+    "featureName": "LEAudioAuracastQuery",
+    "operation": "r",
+    "type": "byte",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "name": "LEAudioAuracastStatus",
+        "type": "byte"
+      },
+      {
+        "startIndex": 1,
+        "endIndex": 2,
+        "name": "PlayingSubgroupIndex",
+        "type": "byte"
+      },
+      {
+        "startIndex": 2,
+        "endIndex": 8,
+        "name": "GroupAddress",
+        "type": "string",
+        "separator": 1
+      },
+      {
+        "startIndex": 8,
+        "endIndex": 9,
+        "name": "GroupAddressType",
+        "type": "byte"
+      },
+      {
+        "startIndex": 9,
+        "endIndex": 10,
+        "name": "GroupSetting",
+        "type": "list",
+        "subList": [
+          {
+            "bitStartIndex": 7,
+            "bitEndIndex": 8,
+            "name": "Encryption"
+          },
+          {
+            "bitStartIndex": 6,
+            "bitEndIndex": 7,
+            "name": "StandardQuality"
+          },
+          {
+            "bitStartIndex": 5,
+            "bitEndIndex": 6,
+            "name": "HighQuality"
+          }
+        ]
+      },
+      {
+        "startIndex": 10,
+        "endIndex": 42,
+        "name": "GroupName",
+        "type": "string"
+      }
+    ],
+    "cycleStart": 42,
+    "cycleCount": 4,
+    "cycleList": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "byte",
+        "name": "SubgroupIndex"
+      },
+      {
+        "startIndex": 1,
+        "endIndex": 2,
+        "type": "byte",
+        "name": "SubgroupCodec"
+      },
+      {
+        "startIndex": 2,
+        "endIndex": 4,
+        "type": "byte",
+        "name": "SampleRate"
+      }
+    ]
+  },
+  "0B81": {
+    "featureName": "LEAudioAuracastScan",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "name": "Operation",
+        "type": "byte"
+      },
+      {
+        "startIndex": 1,
+        "endIndex": 2,
+        "name": "Timeout",
+        "type": "byte"
+      }
+    ]
+  },
+  "0B82": {
+    "featureName": "LEAudioAuracastGroupInfo",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 6,
+        "type": "string",
+        "name": "GroupAddress",
+        "separator": 1
+      },
+      {
+        "startIndex": 6,
+        "endIndex": 7,
+        "name": "GroupAddressType",
+        "type": "byte"
+      },
+      {
+        "startIndex": 7,
+        "endIndex": 8,
+        "name": "GroupSetting",
+        "type": "list",
+        "subList": [
+          {
+            "bitStartIndex": 7,
+            "bitEndIndex": 8,
+            "name": "Encryption"
+          },
+          {
+            "bitStartIndex": 6,
+            "bitEndIndex": 7,
+            "name": "StandardQuality"
+          },
+          {
+            "bitStartIndex": 5,
+            "bitEndIndex": 6,
+            "name": "HighQuality"
+          }
+        ]
+      },
+      {
+        "startIndex": 8,
+        "endIndex": 40,
+        "name": "GroupName",
+        "type": "string",
+        "separator": 3
+      }
+    ]
+  },
+  "0B83": {
+    "featureName": "LEAudioAuracastGroupSelect",
+    "operation": "w",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "byte",
+        "name": "Operation"
+      },
+      {
+        "startIndex": 1,
+        "endIndex": 2,
+        "type": "byte",
+        "name": "GroupAddressType"
+      },
+      {
+        "startIndex": 2,
+        "endIndex": 8,
+        "type": "byte",
+        "name": "MACAddress",
+        "separator": 1
+      },
+      {
+        "startIndex": 8,
+        "endIndex": 9,
+        "type": "byte",
+        "name": "Status"
+      }
+    ]
+  },
+  "0B84": {
+    "featureName": "LEAudioAuracastSubgroupInfo",
+    "operation": "-",
+    "cycleStart": 0,
+    "cycleCount": 4,
+    "cycleList": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "byte",
+        "name": "SubgroupIndex"
+      },
+      {
+        "startIndex": 1,
+        "endIndex": 2,
+        "type": "byte",
+        "name": "SubgroupCodec"
+      },
+      {
+        "startIndex": 2,
+        "endIndex": 4,
+        "type": "byte",
+        "name": "SampleRate"
+      }
+    ]
+  },
+  "0B85": {
+    "featureName": "LEAudioAuracastSubgroupPlay",
+    "operation": "rw",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "name": "Operation",
+        "type": "byte"
+      },
+      {
+        "startIndex": 1,
+        "endIndex": 2,
+        "name": "SubgroupIndex",
+        "type": "byte"
+      },
+      {
+        "startIndex": 2,
+        "endIndex": 3,
+        "name": "Quality",
+        "type": "byte"
+      }
+    ]
+  },
+  "0B86": {
+    "featureName": "LEAudioAuracastStatus",
+    "operation": "r",
+    "type": "byte",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Reserved",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "0B87": {
+    "featureName": "LEAudioHighQualityAuracastBroadcast",
+    "operation": "r",
+    "type": "byte",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Reserved",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "0B88": {
+    "featureName": "LEAudioAuracasBroadcastPassword",
+    "operation": "r",
+    "type": "string",
+    "list": [
+      {
+        "name": "Password",
+        "startIndex": 0,
+        "endIndex": 4,
+        "type": "string"
+      }
+    ]
+  },
+  "0BA0": {
+    "featureName": "LEAudioUnicastStatus",
+    "operation": "r",
+    "type": "byte",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Reserved",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "0BA1": {
+    "featureName": "ActiveAudioSource",
+    "operation": "r",
+    "list": [
+      {
+        "name": "ActiveAudioSource",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "byte"
+      }
+    ]
+  },
+  "0BA2": {
+    "featureName": "AudioSourceInfo",
+    "operation": "r",
+    "type": "byte",
+    "cycleStart": 0,
+    "cycleCount": 2,
+    "cycleList": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "byte",
+        "name": "AudioSource"
+      },
+      {
+        "startIndex": 1,
+        "endIndex": 2,
+        "name": "AudioSourceInfo",
+        "type": "list",
+        "subList": [
+          {
+            "bitStartIndex": 7,
+            "bitEndIndex": 8,
+            "name": "ConnectionStatus"
+          },
+          {
+            "bitStartIndex": 6,
+            "bitEndIndex": 7,
+            "name": "ActiveStatus"
+          }
+        ]
+      }
+    ]
+  },
+  "0BA3": {
+    "featureName": "GetPairedBTDevice",
+    "operation": "r",
+    "type": "byte",
+    "cycleStart": 0,
+    "cycleCount": 39,
+    "cycleList": [
+      {
+        "startIndex": 0,
+        "endIndex": 6,
+        "name": "MacAddress",
+        "type": "string",
+        "separator": 1
+      },
+      {
+        "startIndex": 6,
+        "endIndex": 38,
+        "name": "Name",
+        "type": "string",
+        "separator": 3
+      },
+      {
+        "startIndex": 38,
+        "endIndex": 39,
+        "name": "Info",
+        "type": "list",
+        "cycleCount": 4,
+        "subList": [
+          {
+            "bitStartIndex": 7,
+            "bitEndIndex": 8,
+            "name": "ConnectionStatus"
+          },
+          {
+            "bitStartIndex": 6,
+            "bitEndIndex": 7,
+            "name": "ActiveStatus"
+          },
+          {
+            "bitStartIndex": 5,
+            "bitEndIndex": 6,
+            "name": "IsPeripheralDevice"
+          }
+        ]
+      }
+    ]
+  },
+  "0BA4": {
+    "featureName": "OperatePairedBTDevice",
+    "operation": "r",
+    "type": "byte",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 6,
+        "type": "string",
+        "name": "MacAddress",
+        "separator": 1
+      },
+      {
+        "startIndex": 6,
+        "endIndex": 7,
+        "name": "Operation",
+        "type": "byte"
+      }
+    ]
+  },
+  "0BA5": {
+    "featureName": "BTPairingMode",
+    "operation": "r",
+    "type": "byte",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "name": "Operation",
+        "type": "byte"
+      },
+      {
+        "startIndex": 1,
+        "endIndex": 2,
+        "name": "TimeoutValueInSecond",
+        "type": "byte"
+      }
+    ]
+  },
+  "0C00": {
+    "featureName": "MicAvailability",
+    "operation": "rw",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "MicStatus",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Reserved",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "0C01": {
+    "featureName": "MicSignalStrength",
+    "operation": "r",
+    "list": [
+      {
+        "name": "MicSignalStrength",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "byte"
+      }
+    ]
+  },
+  "0C02": {
+    "featureName": "MicRealTimeVoiceLevel",
+    "operation": "r",
+    "list": [
+      {
+        "name": "MicRealTimeVoiceLevel",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "byte"
+      }
+    ]
+  },
+  "0C03": {
+    "featureName": "MicMute",
+    "operation": "rw",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Level",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "0C04": {
+    "featureName": "MicGain",
+    "operation": "r",
+    "list": [
+      {
+        "name": "MicGain",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "byte"
+      }
+    ]
+  },
+  "0C05": {
+    "featureName": "MicEffect",
+    "operation": "r",
+    "list": [
+      {
+        "name": "MicEffect",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "byte"
+      }
+    ]
+  },
+  "0C40": {
+    "featureName": "VoicePromptStatus",
+    "operation": "rw",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Reserved",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "0C41": {
+    "featureName": "VoicePromptLanguage",
+    "operation": "r",
+    "list": [
+      {
+        "name": "VoicePromptLanguage",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "byte"
+      }
+    ]
+  },
+  "0C42": {
+    "featureName": "VoicePromptFileVersion",
+    "operation": "r",
+    "type": "string",
+    "separator": 2,
+    "list": [
+      {
+        "name": "VoicePromptFileVersion",
+        "startIndex": 0,
+        "endIndex": 3,
+        "separator": 2,
+        "type": "string"
+      }
+    ]
+  },
+  "0C80": {
+    "featureName": "PSAPStatus",
+    "operation": "rw",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Reserved",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "0C81": {
+    "featureName": "PSAPBalance",
+    "operation": "r",
+    "list": [
+      {
+        "name": "PSAPBalance",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "byte"
+      }
+    ]
+  },
+  "0C82": {
+    "featureName": "PSAPTotalGainLevel",
+    "operation": "r",
+    "list": [
+      {
+        "name": "PSAPTotalGainLevel",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "byte"
+      }
+    ]
+  },
+  "0CB0": {
+    "featureName": "SleepActiveStatus",
+    "operation": "rw",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "ActiveStatus",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Reserved",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "0CB1": {
+    "featureName": "SleepSetting",
+    "operation": "rw",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 4,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 31,
+            "bitEndIndex": 32
+          },
+          {
+            "name": "Duration",
+            "bitStartIndex": 0,
+            "bitEndIndex": 31
+          }
+        ]
+      }
+    ]
+  },
+  "0CB2": {
+    "featureName": "WakeUpSetting",
+    "operation": "rw",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 4,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 31,
+            "bitEndIndex": 32
+          },
+          {
+            "name": "Duration",
+            "bitStartIndex": 0,
+            "bitEndIndex": 31
+          }
+        ]
+      }
+    ]
+  },
+  "0CB3": {
+    "featureName": "SleepCountDownSetting",
+    "operation": "rw",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 4,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 31,
+            "bitEndIndex": 32
+          },
+          {
+            "name": "CountDownTime",
+            "bitStartIndex": 0,
+            "bitEndIndex": 31
+          }
+        ]
+      }
+    ]
+  },
+  "0CB4": {
+    "featureName": "AlarmRingTone",
+    "operation": "rw",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Reserved",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "0E01": {
+    "featureName": "EQInfoQuery",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "byte"
+      }
+    ]
+  },
+  "0E02": {
+    "featureName": "EQInfo",
+    "operation": "r",
+    "type": "byte",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "byte",
+        "name": "CategoryID"
+      },
+      {
+        "startIndex": 1,
+        "endIndex": 2,
+        "type": "byte",
+        "name": "CategoryState"
+      },
+      {
+        "startIndex": 2,
+        "endIndex": 3,
+        "type": "byte",
+        "name": "BandCount"
+      },
+      {
+        "startIndex": 3,
+        "endIndex": 7,
+        "type": "float",
+        "name": "Calibration"
+      },
+      {
+        "startIndex": 7,
+        "endIndex": 11,
+        "type": "byte",
+        "name": "SampleRate"
+      },
+      {
+        "startIndex": 11,
+        "endIndex": 15,
+        "type": "float",
+        "name": "LeftGain"
+      },
+      {
+        "startIndex": 15,
+        "endIndex": 19,
+        "type": "float",
+        "name": "RightGain"
+      }
+    ],
+    "cycleStart": 19,
+    "cycleCount": 13,
+    "cycleList": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "byte",
+        "name": "BandType"
+      },
+      {
+        "startIndex": 1,
+        "endIndex": 5,
+        "type": "float",
+        "name": "BandFrequency"
+      },
+      {
+        "startIndex": 5,
+        "endIndex": 9,
+        "type": "float",
+        "name": "BandGain"
+      },
+      {
+        "startIndex": 9,
+        "endIndex": 13,
+        "type": "float",
+        "name": "BandQ"
+      }
+    ]
+  },
+  "0E7E": {
+    "featureName": "GetDesignEQRawData",
+    "operation": "r",
+    "list": [
+      {
+        "type": "byteArray",
+        "name": "DesignEQ"
+      }
+    ]
+  },
+  "0E7F": {
+    "featureName": "EQCurve",
+    "operation": "w",
+    "list": [
+      {
+        "type": "byteArray",
+        "name": "EQCurve"
+      }
+    ]
+  },
+  "0E80": {
+    "featureName": "DynamicEQ",
+    "operation": "rw",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Reserved",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "0E81": {
+    "featureName": "CustomEQCount",
+    "operation": "r",
+    "list": [
+      {
+        "type": "byte",
+        "name": "CustomEQCount",
+        "startIndex": 0,
+        "endIndex": 2
+      }
+    ]
+  },
+  "0F00": {
+    "featureName": "LeftSwipeForward",
+    "operation": "r",
+    "list": [
+      {
+        "name": "LeftSwipeForward",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "byte"
+      }
+    ]
+  },
+  "0F01": {
+    "featureName": "LeftSwipeBackward",
+    "operation": "r",
+    "list": [
+      {
+        "name": "LeftSwipeBackward",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "byte"
+      }
+    ]
+  },
+  "0F02": {
+    "featureName": "RightSwipeForward",
+    "operation": "r",
+    "list": [
+      {
+        "name": "RightSwipeForward",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "byte"
+      }
+    ]
+  },
+  "0F03": {
+    "featureName": "RightSwipeBackward",
+    "operation": "r",
+    "list": [
+      {
+        "name": "RightSwipeBackward",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "byte"
+      }
+    ]
+  },
+  "0F04": {
+    "featureName": "LeftTap",
+    "operation": "r",
+    "list": [
+      {
+        "name": "LeftTap",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "byte"
+      }
+    ]
+  },
+  "0F05": {
+    "featureName": "LeftDoubleTap",
+    "operation": "r",
+    "list": [
+      {
+        "name": "LeftDoubleTap",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "byte"
+      }
+    ]
+  },
+  "0F06": {
+    "featureName": "LeftTripleTap",
+    "operation": "r",
+    "list": [
+      {
+        "name": "LeftTripleTap",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "byte"
+      }
+    ]
+  },
+  "0F07": {
+    "featureName": "RightTap",
+    "operation": "r",
+    "list": [
+      {
+        "name": "RightTap",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "byte"
+      }
+    ]
+  },
+  "0F08": {
+    "featureName": "RightDoubleTap",
+    "operation": "r",
+    "list": [
+      {
+        "name": "RightDoubleTap",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "byte"
+      }
+    ]
+  },
+  "0F09": {
+    "featureName": "RightTripleTap",
+    "operation": "r",
+    "list": [
+      {
+        "name": "RightTripleTap",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "byte"
+      }
+    ]
+  },
+  "0F0A": {
+    "featureName": "LeftTapHold",
+    "operation": "r",
+    "list": [
+      {
+        "name": "LeftTapHold",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "byte"
+      }
+    ]
+  },
+  "0F0B": {
+    "featureName": "LeftDoubleTapHold",
+    "operation": "r",
+    "list": [
+      {
+        "name": "LeftDoubleTapHold",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "byte"
+      }
+    ]
+  },
+  "0F0C": {
+    "featureName": "RightTapHold",
+    "operation": "r",
+    "list": [
+      {
+        "name": "RightTapHold",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "byte"
+      }
+    ]
+  },
+  "0F0D": {
+    "featureName": "RightDoubleTapHold",
+    "operation": "r",
+    "list": [
+      {
+        "name": "RightDoubleTapHold",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "byte"
+      }
+    ]
+  },
+  "0F80": {
+    "featureName": "GameChatBalanceDial",
+    "operation": "r",
+    "list": [
+      {
+        "name": "GameChatBalanceDial",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "byte"
+      }
+    ]
+  },
+  "0F81": {
+    "featureName": "VolumeDial",
+    "operation": "r",
+    "list": [
+      {
+        "name": "VolumeDial",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "byte"
+      }
+    ]
+  },
+  "0F82": {
+    "featureName": "MicButtonShortPress",
+    "operation": "r",
+    "list": [
+      {
+        "name": "MicButtonShortPress",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "byte"
+      }
+    ]
+  },
+  "0F83": {
+    "featureName": "MicButtonLongPress",
+    "operation": "r",
+    "list": [
+      {
+        "name": "MicButtonLongPress",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "byte"
+      }
+    ]
+  },
+  "1000": {
+    "featureName": "TWSInfo",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "TWSStatus",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "PrimaryChannel",
+            "bitStartIndex": 6,
+            "bitEndIndex": 7
+          },
+          {
+            "name": "CaseEarbudsConnectionStatus",
+            "bitStartIndex": 5,
+            "bitEndIndex": 6
+          }
+        ]
+      }
+    ]
+  },
+  "1002": {
+    "featureName": "InEarStatus",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "LeftInEarStatus",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "RightInEarStatus",
+            "bitStartIndex": 6,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "1003": {
+    "featureName": "SealingTest",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "IsLeftReady",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "IsRightReady",
+            "bitStartIndex": 6,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "1004": {
+    "featureName": "EnvironmentNoiseCheck",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "IsLeftEnvNoiseCheckPass",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "IsRightEnvNoiseCheckPass",
+            "bitStartIndex": 6,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "1005": {
+    "featureName": "EarTips",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Reserved",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "1006": {
+    "featureName": "EnhanceVolume",
+    "operation": "r",
+    "list": [
+      {
+        "name": "MACAddress",
+        "startIndex": 0,
+        "endIndex": 6,
+        "type": "byte"
+      },
+      {
+        "name": "IncreasedVolumePercentage",
+        "startIndex": 6,
+        "endIndex": 7,
+        "type": "byte"
+      }
+    ]
+  },
+  "1007": {
+    "featureName": "SportsMode",
+    "operation": "r",
+    "list": [
+      {
+        "name": "SportsMode",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "byte"
+      }
+    ]
+  },
+  "1008": {
+    "featureName": "TotalPlaybackTime",
+    "operation": "r",
+    "list": [
+      {
+        "name": "TotalPlaybackTime",
+        "startIndex": 0,
+        "endIndex": 4,
+        "type": "byte"
+      }
+    ]
+  },
+  "1009": {
+    "featureName": "TotalPowerOnTime",
+    "operation": "r",
+    "list": [
+      {
+        "name": "TotalPowerOnTime",
+        "startIndex": 0,
+        "endIndex": 4,
+        "type": "byte"
+      }
+    ]
+  },
+  "100A": {
+    "featureName": "FindMyBudsStatus",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "CaseStatus",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "RightEarStatus",
+            "bitStartIndex": 6,
+            "bitEndIndex": 7
+          },
+          {
+            "name": "LightEarStatus",
+            "bitStartIndex": 5,
+            "bitEndIndex": 6
+          }
+        ]
+      }
+    ]
+  },
+  "100B": {
+    "featureName": "CallStatus",
+    "operation": "rw",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Reserved",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "100C": {
+    "featureName": "AutoPickupCall",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Reserved",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "100D": {
+    "featureName": "PrivateCallMode",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 2,
+        "type": "list",
+        "subList": [
+          {
+            "name": "StandaloneMICStatus",
+            "bitStartIndex": 15,
+            "bitEndIndex": 16
+          },
+          {
+            "name": "MicVolume",
+            "bitStartIndex": 7,
+            "bitEndIndex": 15
+          },
+          {
+            "name": "TestModeStatus",
+            "bitStartIndex": 6,
+            "bitEndIndex": 7
+          },
+          {
+            "name": "Reserved",
+            "bitStartIndex": 0,
+            "bitEndIndex": 6
+          }
+        ]
+      }
+    ]
+  },
+  "100E": {
+    "featureName": "DongleFirmwareVersion",
+    "operation": "r",
+    "type": "string",
+    "separator": 2,
+    "list": [
+      {
+        "name": "DongleFirmwareVersion",
+        "startIndex": 0,
+        "endIndex": 3,
+        "type": "string",
+        "separator": 2
+      }
+    ]
+  },
+  "100F": {
+    "featureName": "SmartSwitch",
+    "operation": "r",
+    "list": [
+      {
+        "name": "AACValue",
+        "startIndex": 0,
+        "endIndex": 2,
+        "type": "byte"
+      },
+      {
+        "name": "SBCValue",
+        "startIndex": 2,
+        "endIndex": 4,
+        "type": "byte"
+      },
+      {
+        "name": "LatencyInMilliseconds",
+        "startIndex": 4,
+        "endIndex": 6,
+        "type": "byte"
+      },
+      {
+        "name": "SecondLatencyInMilliseconds",
+        "startIndex": 6,
+        "endIndex": 8,
+        "type": "byte"
+      }
+    ]
+  },
+  "1D00": {
+    "featureName": "HeadTrackingCalibrationStart",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Operation",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Status",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "1D01": {
+    "featureName": "HeadTrackingCalibrationLookStraightAhead",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Operation",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Status",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "1D02": {
+    "featureName": "HeadTrackingCalibrationLookDown",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Operation",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Status",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "1E00": {
+    "featureName": "PersoniFiMode",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Reserved",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "1E01": {
+    "featureName": "HearingTestMode",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Reserved",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "1E02": {
+    "featureName": "PersoniFiSetupFlow",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Reserved",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "1E03": {
+    "featureName": "HearingTestFileSide",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Reserved",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "1E04": {
+    "featureName": "HearingTestFileFrequency",
+    "operation": "r",
+    "list": [
+      {
+        "name": "HearingTestFileFrequency",
+        "startIndex": 0,
+        "endIndex": 4,
+        "type": "byte"
+      }
+    ]
+  },
+  "1F00": {
+    "featureName": "LaunchOTAMode",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "ChargingCaseInOTA",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "DongleInOTA",
+            "bitStartIndex": 6,
+            "bitEndIndex": 7
+          },
+          {
+            "name": "Reserved",
+            "bitStartIndex": 0,
+            "bitEndIndex": 6
+          }
+        ]
+      }
+    ]
+  },
+  "1F01": {
+    "featureName": "CaseFirmwareVersion",
+    "operation": "r",
+    "type": "string",
+    "separator": 2,
+    "list": [
+      {
+        "name": "CaseFirmwareVersion",
+        "startIndex": 0,
+        "endIndex": 3,
+        "separator": 2,
+        "type": "string"
+      }
+    ]
+  },
+  "1F02": {
+    "featureName": "CaseMACAddress",
+    "operation": "r",
+    "type": "string",
+    "separator": 1,
+    "list": [
+      {
+        "name": "MacAddress",
+        "startIndex": 0,
+        "endIndex": 6,
+        "separator": 1,
+        "type": "string"
+      }
+    ]
+  },
+  "1F03": {
+    "featureName": "CaseBatteryStatus",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "ChangingStatus",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "BatteryPercentage",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "1F04": {
+    "featureName": "CaseScreenBrightness",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Level",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "1F05": {
+    "featureName": "CaseMessageNotification",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Reserved",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "1F06": {
+    "featureName": "CaseActiveScreenSaverIndex",
+    "operation": "r",
+    "list": [
+      {
+        "name": "CaseActiveScreenSaverIndex",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "byte"
+      }
+    ]
+  },
+  "1F07": {
+    "featureName": "CaseScreenSaverTime",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 2,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 15,
+            "bitEndIndex": 16
+          },
+          {
+            "name": "Time",
+            "bitStartIndex": 0,
+            "bitEndIndex": 15
+          }
+        ]
+      }
+    ]
+  },
+  "1F08": {
+    "featureName": "CaseMessagePreview",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Reserved",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "1F09": {
+    "featureName": "CaseCustomizeScreenSaverCRC32",
+    "operation": "r",
+    "list": [
+      {
+        "name": "CaseCustomizeScreenSaverCRC32",
+        "startIndex": 0,
+        "endIndex": 4,
+        "type": "byte"
+      }
+    ]
+  },
+  "1F0A": {
+    "featureName": "CaseLanguage",
+    "operation": "r",
+    "list": [
+      {
+        "name": "CaseLanguage",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "byte"
+      }
+    ]
+  },
+  "1F0B": {
+    "featureName": "CaseUnlockIndicator",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Reserved",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "1F0C": {
+    "featureName": "CaseTapToWake",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Action",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "1F0D": {
+    "featureName": "EarbudsLatestOnlineVersion",
+    "operation": "r",
+    "list": [
+      {
+        "name": "EarbudsLatestOnlineVersion",
+        "startIndex": 0,
+        "endIndex": 3,
+        "type": "string",
+        "separator": 2
+      }
+    ]
+  },
+  "1F0E": {
+    "featureName": "CaseLatestOnlineVersion",
+    "operation": "r",
+    "list": [
+      {
+        "name": "CaseLatestOnlineVersion",
+        "startIndex": 0,
+        "endIndex": 3,
+        "type": "string",
+        "separator": 2
+      }
+    ]
+  },
+  "1F0F": {
+    "featureName": "CaseFindMyCase",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Action",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "1F10": {
+    "featureName": "CaseScreenSize",
+    "operation": "r",
+    "list": [
+      {
+        "name": "Width",
+        "startIndex": 0,
+        "endIndex": 2,
+        "type": "byte"
+      },
+      {
+        "name": "Height",
+        "startIndex": 2,
+        "endIndex": 4,
+        "type": "byte"
+      }
+    ]
+  },
+  "1F11": {
+    "featureName": "Case24HourTime",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "Status",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "Reserved",
+            "bitStartIndex": 0,
+            "bitEndIndex": 7
+          }
+        ]
+      }
+    ]
+  },
+  "1F12": {
+    "featureName": "CaseCustomizeScreenSaverStatus",
+    "operation": "r",
+    "list": [
+      {
+        "name": "CaseCustomizeScreenSaverStatus",
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "byte"
+      }
+    ]
+  },
+  "1F80": {
+    "featureName": "CaseAmbientSoundControlPageConfig",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "PageDisplay",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "AllowToConfigDisplay",
+            "bitStartIndex": 6,
+            "bitEndIndex": 7
+          },
+          {
+            "name": "Index",
+            "bitStartIndex": 0,
+            "bitEndIndex": 5
+          }
+        ]
+      }
+    ]
+  },
+  "1F81": {
+    "featureName": "CaseEqualizerPageConfig",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "PageDisplay",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "AllowToConfigDisplay",
+            "bitStartIndex": 6,
+            "bitEndIndex": 7
+          },
+          {
+            "name": "Index",
+            "bitStartIndex": 0,
+            "bitEndIndex": 5
+          }
+        ]
+      }
+    ]
+  },
+  "1F82": {
+    "featureName": "CaseSmartTalkPageConfig",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "PageDisplay",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "AllowToConfigDisplay",
+            "bitStartIndex": 6,
+            "bitEndIndex": 7
+          },
+          {
+            "name": "Index",
+            "bitStartIndex": 0,
+            "bitEndIndex": 5
+          }
+        ]
+      }
+    ]
+  },
+  "1F83": {
+    "featureName": "Case3DSpatialPageConfig",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "PageDisplay",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "AllowToConfigDisplay",
+            "bitStartIndex": 6,
+            "bitEndIndex": 7
+          },
+          {
+            "name": "Index",
+            "bitStartIndex": 0,
+            "bitEndIndex": 5
+          }
+        ]
+      }
+    ]
+  },
+  "1F84": {
+    "featureName": "CaseLowEQCompensationPageConfig",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "PageDisplay",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "AllowToConfigDisplay",
+            "bitStartIndex": 6,
+            "bitEndIndex": 7
+          },
+          {
+            "name": "Index",
+            "bitStartIndex": 0,
+            "bitEndIndex": 5
+          }
+        ]
+      }
+    ]
+  },
+  "1F85": {
+    "featureName": "CaseVoiceAwarePageConfig",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "PageDisplay",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "AllowToConfigDisplay",
+            "bitStartIndex": 6,
+            "bitEndIndex": 7
+          },
+          {
+            "name": "Index",
+            "bitStartIndex": 0,
+            "bitEndIndex": 5
+          }
+        ]
+      }
+    ]
+  },
+  "1F86": {
+    "featureName": "CaseAutoPlayPausePageConfig",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "PageDisplay",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "AllowToConfigDisplay",
+            "bitStartIndex": 6,
+            "bitEndIndex": 7
+          },
+          {
+            "name": "Index",
+            "bitStartIndex": 0,
+            "bitEndIndex": 5
+          }
+        ]
+      }
+    ]
+  },
+  "1F87": {
+    "featureName": "CaseSilentNowPageConfig",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "PageDisplay",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "AllowToConfigDisplay",
+            "bitStartIndex": 6,
+            "bitEndIndex": 7
+          },
+          {
+            "name": "Index",
+            "bitStartIndex": 0,
+            "bitEndIndex": 5
+          }
+        ]
+      }
+    ]
+  },
+  "1F88": {
+    "featureName": "DeviceInCasePageConfig",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "PageDisplay",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "AllowToConfigDisplay",
+            "bitStartIndex": 6,
+            "bitEndIndex": 7
+          },
+          {
+            "name": "Index",
+            "bitStartIndex": 0,
+            "bitEndIndex": 5
+          }
+        ]
+      }
+    ]
+  },
+  "1F89": {
+    "featureName": "CaseTimerPageConfig",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "PageDisplay",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "AllowToConfigDisplay",
+            "bitStartIndex": 6,
+            "bitEndIndex": 7
+          },
+          {
+            "name": "Index",
+            "bitStartIndex": 0,
+            "bitEndIndex": 5
+          }
+        ]
+      }
+    ]
+  },
+  "1F8A": {
+    "featureName": "CaseLockScreenWallpaperPageConfig",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "PageDisplay",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "AllowToConfigDisplay",
+            "bitStartIndex": 6,
+            "bitEndIndex": 7
+          },
+          {
+            "name": "Index",
+            "bitStartIndex": 0,
+            "bitEndIndex": 5
+          }
+        ]
+      }
+    ]
+  },
+  "1F8B": {
+    "featureName": "CaseNotificationPageConfig",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "PageDisplay",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "AllowToConfigDisplay",
+            "bitStartIndex": 6,
+            "bitEndIndex": 7
+          },
+          {
+            "name": "Index",
+            "bitStartIndex": 0,
+            "bitEndIndex": 5
+          }
+        ]
+      }
+    ]
+  },
+  "1F8C": {
+    "featureName": "CaseFindMyBudsPageConfig",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "PageDisplay",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "AllowToConfigDisplay",
+            "bitStartIndex": 6,
+            "bitEndIndex": 7
+          },
+          {
+            "name": "Index",
+            "bitStartIndex": 0,
+            "bitEndIndex": 5
+          }
+        ]
+      }
+    ]
+  },
+  "1F8D": {
+    "featureName": "CaseFlashlightPageConfig",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "PageDisplay",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "AllowToConfigDisplay",
+            "bitStartIndex": 6,
+            "bitEndIndex": 7
+          },
+          {
+            "name": "Index",
+            "bitStartIndex": 0,
+            "bitEndIndex": 5
+          }
+        ]
+      }
+    ]
+  },
+  "1F8E": {
+    "featureName": "CaseMusicPlaybackPageConfig",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "PageDisplay",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "AllowToConfigDisplay",
+            "bitStartIndex": 6,
+            "bitEndIndex": 7
+          },
+          {
+            "name": "Index",
+            "bitStartIndex": 0,
+            "bitEndIndex": 5
+          }
+        ]
+      }
+    ]
+  },
+  "1F8F": {
+    "featureName": "CaseScreenBrightnessPageConfig",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "PageDisplay",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "AllowToConfigDisplay",
+            "bitStartIndex": 6,
+            "bitEndIndex": 7
+          },
+          {
+            "name": "Index",
+            "bitStartIndex": 0,
+            "bitEndIndex": 5
+          }
+        ]
+      }
+    ]
+  },
+  "1F90": {
+    "featureName": "CaseLanguagePageConfig",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "PageDisplay",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "AllowToConfigDisplay",
+            "bitStartIndex": 6,
+            "bitEndIndex": 7
+          },
+          {
+            "name": "Index",
+            "bitStartIndex": 0,
+            "bitEndIndex": 5
+          }
+        ]
+      }
+    ]
+  },
+  "1F91": {
+    "featureName": "Case24HourTimePageConfig",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "PageDisplay",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "AllowToConfigDisplay",
+            "bitStartIndex": 6,
+            "bitEndIndex": 7
+          },
+          {
+            "name": "Index",
+            "bitStartIndex": 0,
+            "bitEndIndex": 5
+          }
+        ]
+      }
+    ]
+  },
+  "1F92": {
+    "featureName": "CaseClockPageConfig",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "PageDisplay",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "AllowToConfigDisplay",
+            "bitStartIndex": 6,
+            "bitEndIndex": 7
+          },
+          {
+            "name": "Index",
+            "bitStartIndex": 0,
+            "bitEndIndex": 5
+          }
+        ]
+      }
+    ]
+  },
+  "1F93": {
+    "featureName": "CaseVolumeControlPageConfig",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "PageDisplay",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "AllowToConfigDisplay",
+            "bitStartIndex": 6,
+            "bitEndIndex": 7
+          },
+          {
+            "name": "Index",
+            "bitStartIndex": 0,
+            "bitEndIndex": 5
+          }
+        ]
+      }
+    ]
+  },
+  "1F94": {
+    "featureName": "CaseAudioSourcePageConfig",
+    "operation": "r",
+    "list": [
+      {
+        "startIndex": 0,
+        "endIndex": 1,
+        "type": "list",
+        "subList": [
+          {
+            "name": "PageDisplay",
+            "bitStartIndex": 7,
+            "bitEndIndex": 8
+          },
+          {
+            "name": "AllowToConfigDisplay",
+            "bitStartIndex": 6,
+            "bitEndIndex": 7
+          },
+          {
+            "name": "Index",
+            "bitStartIndex": 0,
+            "bitEndIndex": 5
+          }
+        ]
+      }
+    ]
+  }
+}

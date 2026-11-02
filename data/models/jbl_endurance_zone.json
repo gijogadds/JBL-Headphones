@@ -1,0 +1,89 @@
+{
+  "name": "JBL Endurance Zone",
+  "pid": "2134",
+
+  "uiFeatures": [
+
+    {"name": "UpdateAvailable", "type": ["General"], "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"], "visible": false},
+    {"name": "SmartAudioVideoCard", "type": ["General"],"disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "GestureUi4Card", "type": ["General"], "disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "VoicePromptCard", "type": ["General"], "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "WaterEjectionCard", "type": ["General"], "disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+
+    {"name": "EQCard", "type": ["Audio"],"group":"EntertainmentItems", "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "LeftRightBalanceCard", "type": ["Audio"],"group":"EntertainmentItems","disable":["BTMono"]},
+    {"name": "SafeSoundCard", "type": ["Audio"],"group":"EntertainmentItems","disable":["Aux", "AuracastPlaying"]},
+    {"name": "AudioLimiterCard", "type": ["Audio"],"group":"CallModeItems","disable":["BTMono"]},
+    {"name": "SoundEffectCard", "type": ["Audio"],"group":"CallModeItems","disable":["BTMono"]},
+    {"name": "VoiceSettingCard", "type": ["Audio"], "group":"CallModeItems",  "disable":["BTMono"]},
+
+    {"name": "RelaxSoundCard", "type": ["Others"],"disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "FindMyBudCard", "type": ["Others"], "disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "AutoPowerOffCard", "type": ["Others"]},
+    {"name": "SupportCard", "type": ["Others"]},
+
+    {"name": "SoftwareCard", "type": ["Support"], "disable":["BTMono", "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","AuracastPlaying"]},
+    {"name": "ResetToFactoryRest", "type": ["Help"],"disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "OTA", "type": ["OTAPage"],  "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]}
+  ],
+  "dashboardBackgroundColors": [
+    [0, "#FFA8AEAA", "#FF303433"],
+    [1, "#FFB6C1CB", "#FF5D6A76"],
+    [2, "#FFD7EFFA", "#FF374A68"],
+    [15,"#FFE3C8FF", "#FF534159"],
+    [8, "#FFFFDCC8", "#FF59414D"]
+  ],
+  "gestureConfig": {
+    "left": {
+      "name": "left",
+      "custom": {
+        "volumeControl": {
+          "singleTap": "volume_up",
+          "doubleTap": "volume_down",
+          "tripleTap": "action_none",
+          "tapHold": "talk_to_default_assistant"
+        },
+        "playPauseControl": {
+          "singleTap": "play_pause",
+          "doubleTap": "next_track",
+          "tripleTap": "previous_track",
+          "tapHold": "talk_to_default_assistant"
+        },
+        "none": {
+          "singleTap": "action_none",
+          "doubleTap": "action_none",
+          "tripleTap": "action_none",
+          "tapHold": "action_none"
+        }
+      },
+      "hasCallControl": true
+    },
+    "right": {
+      "name": "right",
+      "custom": {
+        "volumeControl": {
+          "singleTap": "volume_up",
+          "doubleTap": "volume_down",
+          "tripleTap": "action_none",
+          "tapHold": "talk_to_default_assistant"
+        },
+        "playPauseControl": {
+          "singleTap": "play_pause",
+          "doubleTap": "next_track",
+          "tripleTap": "previous_track",
+          "tapHold": "talk_to_default_assistant"
+        },
+        "none": {
+          "singleTap": "action_none",
+          "doubleTap": "action_none",
+          "tripleTap": "action_none",
+          "tapHold": "action_none"
+        }
+      },
+      "hasCallControl": true
+    }
+  },
+  "isSupportConfig2": [
+    {"name": "EditEqQueue", "isSupport": true}
+  ]
+}

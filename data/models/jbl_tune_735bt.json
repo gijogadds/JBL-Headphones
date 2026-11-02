@@ -1,0 +1,173 @@
+{
+  "name": "JBL Tune 735BT",
+  "pid": "2195",
+  "uiFeatures": [
+    {"name": "UpdateAvailable", "type": ["General"], "disable":["BTMono", "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"],"visible": false},
+    {"name": "SmartAudioVideoCard", "type": ["General"], "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff", "LeAudioOn"]},
+    {"name": "ControlCard", "type": ["General"]},
+    {"name": "VoicePromptCard", "type": ["General"], "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "LeAudioCard", "type": ["General"],"disable":["BTMono","USB","Aux"]},
+
+    {"name": "EntertainmentSettingsCard", "type": ["Audio"], "group":"Entertainment"},
+    {"name": "EQCard", "type": ["Audio"],"group":"EntertainmentItems", "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "LeftRightBalanceCard", "type": ["Audio"],"group":"EntertainmentItems", "disable":["BTMono"]},
+    {"name": "SafeSoundCard", "type": ["Audio"],"group":"EntertainmentItems","disable":["Aux", "AuracastPlaying","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+
+    {"name": "AudioChatSettingsCard", "type": ["Audio"], "group":"CallMode"},
+    {"name": "VoiceAwareCard", "type": ["Audio"],"group":"CallModeItems"},
+
+    {"name": "RelaxSoundCard", "type": ["Others"],"disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "AutoPowerOffCard", "type": ["Others"]},
+    {"name": "SupportCard", "type": ["Others"]},
+
+    {"name": "SoftwareCard", "type": ["Support"], "disable":["BTMono", "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","AuracastPlaying"]},
+    {"name": "ResetToFactoryRest", "type": ["Help"],"disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "OTA", "type": ["OTAPage"],  "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]}
+  ],
+  "tipsPageConfig":[
+    {
+      "image": "ic_tips_va",
+      "textHead" : "va_title",
+      "textDes1" : "tips_va_1",
+      "background": ["#FFD7CA", "#FFD7CA"]
+    },
+    {
+      "image": "ic_tips_gesture",
+      "textHead" : "gestures",
+      "textDes1" : "tips_gesture_1",
+      "background": ["#FFD7CA", "#FFD7CA"]
+    }
+  ],
+  "isSupportConfig2": [
+    {"name": "DashBoardPowerOff", "isSupport": true},
+    {"name": "SnNumber", "isSupport": true},
+    {"name": "DeviceUsageSumCard", "isSupport": true},
+    {"name": "CaseVersion", "isSupport": false},
+    {"name": "EditEqQueue", "isSupport": true},
+    {"name": "SupportEqPush", "isSupport": true},
+    {"name": "ProductTips", "isSupport": true}
+  ],
+  "resourceConfig": {
+    "Black": {
+      "welcome": "jbl_tune_730bt_2163_black",
+      "device": "jbl_tune_730bt_2163_black",
+      "deviceLeft": "jbl_tune_730bt_2163_black_left",
+      "deviceRight": "jbl_tune_730bt_2163_black_right",
+      "gestureLeft":"jbl_tune_730bt_2163_black_gesture",
+      "gestureRight":"jbl_tune_730bt_2163_black_gesture",
+      "dashboardBackground": ["#A8AEAA", "#303433"],
+
+      "findMyBudLeft":"jbl_tune_730bt_2163_black",
+      "findMyBudRight":"jbl_tune_730bt_2163_black",
+
+      "enterPairingImage":"outline_tune_735bt",
+      "enterPairingTitle":"how_to_pair_tips_zero",
+      "enterPairingContent":"power_off_5s_paring",
+      "stillCantPairImgResId": "jbl_soundgear_clips_2152_still_cant_pair",
+      "stillCantPairTextTipsResId": "how_to_pair_next_club_pro_tips",
+
+      "blePairing": "tour_one3_ble_pairing_black",
+      "case":"smart_transmitter_case_black",
+      "caseError":"tour_one_m3_transmitter_black_error",
+      "personifyHearingTestLeft":"tour_one3_left_personifi_black",
+      "personifyHearingTestRight":"tour_one3_left_personifi_black"
+    },
+    "White": {
+      "welcome": "jbl_tune_730bt_2163_white2",
+      "device": "jbl_tune_730bt_2163_white2",
+      "deviceLeft": "jbl_tune_730bt_2163_white2",
+      "deviceRight": "jbl_tune_730bt_2163_white2",
+      "gestureLeft":"jbl_tune_730bt_2163_white_gesture",
+      "gestureRight":"jbl_tune_730bt_2163_white_gesture",
+      "dashboardBackground": ["#B6C1CB", "#5D6A76"],
+
+      "findMyBudLeft":"jbl_tune_730bt_2163_white2",
+      "findMyBudRight":"jbl_tune_730bt_2163_white2",
+
+      "enterPairingImage":"outline_tune_735bt",
+      "enterPairingTitle":"how_to_pair_tips_zero",
+      "enterPairingContent":"power_off_5s_paring",
+      "stillCantPairImgResId": "jbl_soundgear_clips_2152_still_cant_pair",
+      "stillCantPairTextTipsResId": "how_to_pair_next_club_pro_tips",
+
+      "blePairing": "tour_one3_ble_pairing_black",
+      "case":"smart_transmitter_case_black",
+      "caseError":"tour_one_m3_transmitter_black_error",
+      "personifyHearingTestLeft":"tour_one3_left_personifi_black",
+      "personifyHearingTestRight":"tour_one3_left_personifi_black"
+    },
+    "Blue": {
+      "welcome": "jbl_tune_730bt_2163_blue2",
+      "device": "jbl_tune_730bt_2163_blue2",
+      "deviceLeft": "jbl_tune_730bt_2163_blue2",
+      "deviceRight": "jbl_tune_730bt_2163_blue2",
+      "gestureLeft":"jbl_tune_730bt_2163_blue_gesture",
+      "gestureRight":"jbl_tune_730bt_2163_blue_gesture",
+      "dashboardBackground": ["#D7EFFA", "#374A68"],
+
+      "findMyBudLeft":"jbl_tune_730bt_2163_blue2",
+      "findMyBudRight":"jbl_tune_730bt_2163_blue2",
+
+      "enterPairingImage":"outline_tune_735bt",
+      "enterPairingTitle":"how_to_pair_tips_zero",
+      "enterPairingContent":"power_off_5s_paring",
+      "stillCantPairImgResId": "jbl_soundgear_clips_2152_still_cant_pair",
+      "stillCantPairTextTipsResId": "how_to_pair_next_club_pro_tips",
+
+      "case":"smart_transmitter_case_black",
+      "caseError":"tour_one_m3_transmitter_black_error",
+      "personifyHearingTestLeft":"tour_one3_left_personifi_black",
+      "personifyHearingTestRight":"tour_one3_left_personifi_black",
+      "blePairing": "tour_one3_ble_pairing_black"
+    },
+    "Pink": {
+      "welcome": "jbl_tune_730bt_2163_pink2",
+      "device": "jbl_tune_730bt_2163_pink2",
+      "deviceLeft": "jbl_tune_730bt_2163_pink2",
+      "deviceRight": "jbl_tune_730bt_2163_pink2",
+      "gestureLeft":"jbl_tune_730bt_2163_pink_gesture",
+      "gestureRight":"jbl_tune_730bt_2163_pink_gesture",
+      "dashboardBackground": ["#FFDCC8", "#59414D"],
+
+      "findMyBudLeft":"jbl_tune_730bt_2163_pink2",
+      "findMyBudRight":"jbl_tune_730bt_2163_pink2",
+
+      "enterPairingImage":"outline_tune_735bt",
+      "enterPairingTitle":"how_to_pair_tips_zero",
+      "enterPairingContent":"power_off_5s_paring",
+      "stillCantPairImgResId": "jbl_soundgear_clips_2152_still_cant_pair",
+      "stillCantPairTextTipsResId": "how_to_pair_next_club_pro_tips",
+
+      "case":"smart_transmitter_case_black",
+      "caseError":"tour_one_m3_transmitter_black_error",
+      "personifyHearingTestLeft":"tour_one3_left_personifi_black",
+      "personifyHearingTestRight":"tour_one3_left_personifi_black",
+      "blePairing": "tour_one3_ble_pairing_black"
+    },
+    "Purple": {
+      "welcome": "jbl_tune_730bt_2163_purple",
+      "device": "jbl_tune_730bt_2163_purple",
+      "deviceLeft": "jbl_tune_730bt_2163_purple",
+      "deviceRight": "jbl_tune_730bt_2163_purple",
+      "gestureLeft":"jbl_tune_730bt_2163_purple_gesture",
+      "gestureRight":"jbl_tune_730bt_2163_purple_gesture",
+      "dashboardBackground": ["#C6B7D9", "#5A3A8C"],
+
+      "findMyBudLeft":"jbl_tune_730bt_2163_purple",
+      "findMyBudRight":"jbl_tune_730bt_2163_purple",
+
+      "enterPairingImage":"outline_tune_735bt",
+      "enterPairingTitle":"how_to_pair_tips_zero",
+      "enterPairingContent":"power_off_5s_paring",
+      "stillCantPairImgResId": "jbl_soundgear_clips_2152_still_cant_pair",
+      "stillCantPairTextTipsResId": "how_to_pair_next_club_pro_tips",
+
+      "case":"smart_transmitter_case_black",
+      "caseError":"tour_one_m3_transmitter_black_error",
+      "personifyHearingTestLeft":"tour_one3_left_personifi_black",
+      "personifyHearingTestRight":"tour_one3_left_personifi_black",
+      "blePairing": "tour_one3_ble_pairing_black"
+    }
+  },
+  "gestureConfigId": "2163"
+}

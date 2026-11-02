@@ -1,0 +1,69 @@
+{
+    "name": "JBL TOUR PRO 2",
+    "pid": "2093",
+
+    "caseConfig": {
+      "settingsBoard": [
+        {"name": "CaseInfoCard"},
+        {"name": "BrightnessCard"},
+        {"name": "ScreenSaverCard"},
+        {"name": "MsgNotificationCard"},
+        {"name": "FeatureSettingsCard"},
+        {"name": "SyncTimeCard"},
+        {"name": "AuraCastSettingsCard"},
+        {"name": "FindMyCaseCard"}
+      ],
+      "defaultScreenSaver": {
+        "0.0.0":  [ "screen_saver1", "screen_saver2", "screen_saver3", "screen_saver4", "screen_saver5"]
+      },
+      "imageWidth": 320,
+      "imageHeight": 172,
+      "displayMode": "horizontal",
+      "supportQuickAccess": false
+    },
+    "uiFeatures": [
+      {"name": "ANC", "type": ["AscCard"],  "disable":["BTMono", "BTCallingVoiceAwareOn"]},
+      {"name": "AA", "type": ["AscCard"], "disable":[ "BTCallingVoiceAwareOn"]},
+      {"name": "TT", "type": ["AscCard"],  "disable":[ "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+
+      {"name": "SetupCard", "type": ["General"]},
+      {"name": "UpdateAvailable", "type": ["General"], "disable":["BTMono", "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"],"visible": false},
+      {"name": "AscCard","type": ["General"],"disable":["BTCallingVoiceAwareOn"]},
+      {"name": "PersoniFiCard", "type": ["General"],"disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff", "HiRes","AuracastPlaying"]},
+      {"name": "EQCard", "type": ["General"],"group":"EntertainmentItems", "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+      {"name": "Spatial3DCardWithPreserveSettings", "type": ["General"],"disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","LeAudioOn", "HiRes","AuracastPlaying"]},
+      {"name": "GestureLeAudioCard", "type": ["General"],"disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+      {"name": "VoiceAwareCard", "type": ["General"]},
+      {"name": "SmartAudioVideoCard", "type": ["General"],"disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","AuracastPlaying","LeAudioOn"]},
+      {"name": "SilentNowCard", "type": ["General"],"disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff", "USB","Aux"]},
+      {"name": "AuracastCard", "type": ["General"],"disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","LeAudioOn"]},
+      {"name": "LeAudioCard", "type": ["General"]},
+      {"name": "AutoPlayPauseCard", "type": ["General"], "disable":["AuracastPlaying"]},
+      {"name": "PSAP2Card", "type": ["General"],"disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","DynamicEqOn","AuracastPlaying"]},
+      {"name": "LeftRightBalanceCard", "type": ["General"],"disable":["BTMono"]},
+      {"name": "VoiceAssistantLeAudioCard", "type": ["General"],"disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","AuracastPlaying"]},
+      {"name": "VoicePromptCard", "type": ["General"],"disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+      {"name": "CheckMyBestFitCard", "type": ["General"], "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","DynamicEqOn","AuracastPlaying"]},
+      {"name": "SafeSoundCard", "type": ["General"],"disable":["AuracastPlaying"]},
+      {"name": "FindMyBudCard", "type": ["General"],"disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+      {"name": "SmartCaseSettingCard", "type": ["General"],"disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff", "CaseAndEarbudsDisconnected"]},
+      {"name": "PowerSavingCard", "type": ["General"]},
+      {"name": "SupportCard", "type": ["General"]},
+      {"name": "PaddingView","type": ["General"]},
+
+      {"name": "SoftwareCard", "type": ["Support"], "disable":["BTMono", "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+      {"name": "CaseCard", "type": ["Support"], "disable":["BTMono", "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+      {"name": "ResetToFactoryRest", "type": ["Help"],"disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+      {"name": "OTA", "type": ["OTAPage"],  "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]}
+    ],
+    "dashboardBackgroundColors": [
+        [0, "#FFA8AEAA", "#FF303433"],
+        [10, "#F3EFF0", "#4F373D"],
+        [19, "#FFDCC8", "#59414D"]
+    ],
+  "typeConfig": {
+    "LeAudioOnDialogContentWordings": ["lea_on_desc1","lea_on_desc1_2"],
+    "LeAudioOnDialogItermWordings":[],
+    "LeAudioOnDialogBottomContentWordings":["lea_on_desc2"]
+  }
+}

@@ -1,0 +1,247 @@
+{
+  "name": "JBL Endurance Peak 4",
+  "pid": "2151",
+
+  "uiFeatures": [
+
+    {"name": "UpdateAvailable", "type": ["General"], "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","AuracastPlaying"], "visible": false},
+    {"name": "SportsModelCard", "type": ["General"],"disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "AscHaveAncLevelCard",  "type": ["General"],"disable":["BTCallingVoiceAwareOn","SportsModeOn"]},
+    {"name": "SmartAudioVideoCard", "type": ["General"],"disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff", "LeAudioOn"]},
+    {"name": "GestureUi4Card", "type": ["General"], "disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "AuracastCard", "type": ["General"],"disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "LeAudioCard", "type": ["General"],"disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","BTMono"]},
+    {"name": "VoicePromptCard", "type": ["General"], "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+
+    {"name": "EntertainmentSettingsCard", "type": ["Audio"], "group":"Entertainment"},
+    {"name": "EQSportsModelCard", "type": ["Audio"],"group":"EntertainmentItems", "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","SportsModeOn"]},
+    {"name": "Spatial3DCard", "type": ["Audio"], "group":"EntertainmentItems", "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","LeAudioOn"]},
+    {"name": "PersoniFiCard", "type": ["Audio"], "group":"EntertainmentItems","disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff", "AuracastPlaying"]},
+    {"name": "LeftRightBalanceCard", "type": ["Audio"],"group":"EntertainmentItems","disable":["BTMono"]},
+    {"name": "SafeSoundCard", "type": ["Audio"],"group":"EntertainmentItems","disable":["Aux", "AuracastPlaying"]},
+
+    {"name": "AudioChatSettingsCard", "type": ["Audio"], "group":"CallMode"},
+    {"name": "AudioLimiterCard", "type": ["Audio"],"group":"CallModeItems","disable":["BTMono"]},
+    {"name": "SoundEffectCard", "type": ["Audio"],"group":"CallModeItems","disable":["BTMono"]},
+    {"name": "VoiceSettingCard", "type": ["Audio"], "group":"CallModeItems",  "disable":["BTMono"]},
+    {"name": "VoiceAwareCard", "type": ["Audio"], "group":"CallModeItems"},
+
+    {"name": "RelaxSoundCard", "type": ["Others"],"disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "FindMyBudCard", "type": ["Others"], "disable":["BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "PowerSavingCard", "type": ["Others"]},
+    {"name": "SupportCard", "type": ["Others"]},
+
+    {"name": "SoftwareCard", "type": ["Support"], "disable":["BTMono", "BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff","AuracastPlaying"]},
+    {"name": "ResetToFactoryRest", "type": ["Help"],"disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]},
+    {"name": "OTA", "type": ["OTAPage"],  "disable":["BTMono","BTCallingVoiceAwareOn", "BTCallingVoiceAwareOff"]}
+  ],
+  "isSupportConfig2": [
+    {"name": "MultiWelcomeImages", "isSupport": true},
+    {"name": "DeviceUsageSumCard", "isSupport": true},
+    {"name": "DashBoardPowerOff", "isSupport": true},
+    {"name": "SnNumber", "isSupport": true},
+    {"name": "auraCastSetting", "isSupport": true},
+    {"name": "ProductTips", "isSupport": true},
+    {"name": "EditEqQueue", "isSupport": true}
+  ],
+
+  "resourceConfig": {
+    "Black": {
+      "welcome": "jbl_endurance_peak_4_2151_black",
+      "device": "jbl_endurance_peak_4_2151_black",
+      "deviceLeft": "jbl_endurance_peak_4_2151_black_left",
+      "deviceRight": "jbl_endurance_peak_4_2151_black_right",
+      "gestureLeft": "jbl_endurance_peak_4_2151_black_left_gesture",
+      "gestureRight": "jbl_endurance_peak_4_2151_black_right_gesture",
+      "dashboardBackground": [ "#FFA8AEAA", "#FF303433"],
+      "findMyBudLeft": "jbl_endurance_peak_4_2151_black",
+      "findMyBudRight": "jbl_endurance_peak_4_2151_black",
+      "enterPairingImage": "jbl_endurance_peak_4_2151_enter_pairing",
+      "enterPairingTitle": "how_to_pair_tips_zero",
+      "enterPairingContent": "how_to_pair_club_pro_tws",
+      "stillCantPairImgResId": "jbl_endurance_peak_4_2151_still_cant_pair",
+      "stillCantPairTextTipsResId": "how_to_pair_next_club_pro_tips",
+      "blePairing": "tour_one3_ble_pairing_black",
+      "case": "smart_transmitter_case_black",
+      "caseError": "tour_one_m3_transmitter_black_error",
+      "personifyHearingTestLeft": "tour_one3_left_personifi_black",
+      "personifyHearingTestRight": "tour_one3_left_personifi_black"
+    },
+    "White": {
+      "welcome": "jbl_endurance_peak_4_2151_white",
+      "device": "jbl_endurance_peak_4_2151_white",
+      "deviceLeft": "jbl_endurance_peak_4_2151_white_left",
+      "deviceRight": "jbl_endurance_peak_4_2151_white_right",
+      "gestureLeft": "jbl_endurance_peak_4_2151_white_left_gesture",
+      "gestureRight": "jbl_endurance_peak_4_2151_white_right_gesture",
+      "dashboardBackground": [ "#B6C1CB", "#5D6A76"],
+      "findMyBudLeft": "jbl_endurance_peak_4_2151_white",
+      "findMyBudRight": "jbl_endurance_peak_4_2151_white",
+      "enterPairingImage": "jbl_endurance_peak_4_2151_enter_pairing",
+      "enterPairingTitle": "how_to_pair_tips_zero",
+      "enterPairingContent": "how_to_pair_club_pro_tws",
+      "stillCantPairImgResId": "jbl_endurance_peak_4_2151_still_cant_pair",
+      "stillCantPairTextTipsResId": "how_to_pair_next_club_pro_tips",
+      "blePairing": "tour_one3_ble_pairing_black",
+      "case": "smart_transmitter_case_black",
+      "caseError": "tour_one_m3_transmitter_black_error",
+      "personifyHearingTestLeft": "tour_one3_left_personifi_black",
+      "personifyHearingTestRight": "tour_one3_left_personifi_black"
+    },
+    "Blue": {
+      "welcome": "jbl_endurance_peak_4_2151_blue",
+      "device": "jbl_endurance_peak_4_2151_blue",
+      "deviceLeft": "jbl_endurance_peak_4_2151_blue_left",
+      "deviceRight": "jbl_endurance_peak_4_2151_blue_right",
+      "gestureLeft": "jbl_endurance_peak_4_2151_blue_left_gesture",
+      "gestureRight": "jbl_endurance_peak_4_2151_blue_right_gesture",
+      "dashboardBackground": [ "#B2C1F1", "#052260"],
+      "findMyBudLeft": "jbl_endurance_peak_4_2151_blue",
+      "findMyBudRight": "jbl_endurance_peak_4_2151_blue",
+      "enterPairingImage": "jbl_endurance_peak_4_2151_enter_pairing",
+      "enterPairingTitle": "how_to_pair_tips_zero",
+      "enterPairingContent": "how_to_pair_club_pro_tws",
+      "stillCantPairImgResId": "jbl_endurance_peak_4_2151_still_cant_pair",
+      "stillCantPairTextTipsResId": "how_to_pair_next_club_pro_tips",
+      "blePairing": "tour_one3_ble_pairing_black",
+      "case": "smart_transmitter_case_black",
+      "caseError": "tour_one_m3_transmitter_black_error",
+      "personifyHearingTestLeft": "tour_one3_left_personifi_black",
+      "personifyHearingTestRight": "tour_one3_left_personifi_black"
+    },
+    "Purple": {
+      "welcome": "jbl_endurance_peak_4_2151_purple",
+      "device": "jbl_endurance_peak_4_2151_purple",
+      "deviceLeft": "jbl_endurance_peak_4_2151_purple_left",
+      "deviceRight": "jbl_endurance_peak_4_2151_purple_right",
+      "gestureLeft": "jbl_endurance_peak_4_2151_purple_left_gesture",
+      "gestureRight": "jbl_endurance_peak_4_2151_purple_right_gesture",
+      "dashboardBackground": [ "#BFC1FF", "#140560"],
+      "findMyBudLeft": "jbl_endurance_peak_4_2151_purple",
+      "findMyBudRight": "jbl_endurance_peak_4_2151_purple",
+      "enterPairingImage": "jbl_endurance_peak_4_2151_enter_pairing",
+      "enterPairingTitle": "how_to_pair_tips_zero",
+      "enterPairingContent": "how_to_pair_club_pro_tws",
+      "stillCantPairImgResId": "jbl_endurance_peak_4_2151_still_cant_pair",
+      "stillCantPairTextTipsResId": "how_to_pair_next_club_pro_tips",
+      "blePairing": "tour_one3_ble_pairing_black",
+      "case": "smart_transmitter_case_black",
+      "caseError": "tour_one_m3_transmitter_black_error",
+      "personifyHearingTestLeft": "tour_one3_left_personifi_black",
+      "personifyHearingTestRight": "tour_one3_left_personifi_black"
+    },
+    "BlackGray": {
+      "welcome": "jbl_endurance_peak_4_2151_blackgray",
+      "device": "jbl_endurance_peak_4_2151_blackgray",
+      "deviceLeft": "jbl_endurance_peak_4_2151_blackgray_left",
+      "deviceRight": "jbl_endurance_peak_4_2151_blackgray_right",
+      "gestureLeft": "jbl_endurance_peak_4_2151_blackgray_left_gesture",
+      "gestureRight": "jbl_endurance_peak_4_2151_blackgray_right_gesture",
+      "dashboardBackground": [ "#FFA8AEAA", "#FF303433"],
+      "findMyBudLeft": "jbl_endurance_peak_4_2151_blackgray",
+      "findMyBudRight": "jbl_endurance_peak_4_2151_blackgray",
+      "enterPairingImage": "jbl_endurance_peak_4_2151_enter_pairing",
+      "enterPairingTitle": "how_to_pair_tips_zero",
+      "enterPairingContent": "how_to_pair_club_pro_tws",
+      "stillCantPairImgResId": "jbl_endurance_peak_4_2151_still_cant_pair",
+      "stillCantPairTextTipsResId": "how_to_pair_next_club_pro_tips",
+      "blePairing": "tour_one3_ble_pairing_black",
+      "case": "smart_transmitter_case_black",
+      "caseError": "tour_one_m3_transmitter_black_error",
+      "personifyHearingTestLeft": "tour_one3_left_personifi_black",
+      "personifyHearingTestRight": "tour_one3_left_personifi_black"
+    }
+  },
+  "gestureConfig": {
+    "left": {
+      "name": "left",
+      "custom": {
+        "ambientSoundControl": {
+          "singleTap": "anc_ambient",
+          "doubleTap": "talk_through",
+          "tripleTap": "action_none",
+          "tapHold": "talk_to_default_assistant",
+          "singleTapNumber": "3"
+        },
+        "volumeControl": {
+          "singleTap": "volume_up",
+          "doubleTap": "volume_down",
+          "tripleTap": "action_none",
+          "tapHold": "talk_to_default_assistant"
+        },
+        "playPauseControl": {
+          "singleTap": "play_pause",
+          "doubleTap": "next_track",
+          "tripleTap": "previous_track",
+          "tapHold": "talk_to_default_assistant"
+        },
+        "none": {
+          "singleTap": "action_none",
+          "doubleTap": "action_none",
+          "tripleTap": "action_none",
+          "tapHold": "action_none"
+        }
+      },
+      "hasCallControl": true,
+      "hasPowerOnOffControl": true
+    },
+    "right": {
+      "name": "right",
+      "custom": {
+        "ambientSoundControl": {
+          "singleTap": "anc_ambient",
+          "doubleTap": "talk_through",
+          "tripleTap": "action_none",
+          "tapHold": "talk_to_default_assistant",
+          "singleTapNumber": "3"
+        },
+        "volumeControl": {
+          "singleTap": "volume_up",
+          "doubleTap": "volume_down",
+          "tripleTap": "action_none",
+          "tapHold": "talk_to_default_assistant"
+        },
+        "playPauseControl": {
+          "singleTap": "play_pause",
+          "doubleTap": "next_track",
+          "tripleTap": "previous_track",
+          "tapHold": "talk_to_default_assistant"
+        },
+        "none": {
+          "singleTap": "action_none",
+          "doubleTap": "action_none",
+          "tripleTap": "action_none",
+          "tapHold": "action_none"
+        }
+      },
+      "hasCallControl": true,
+      "hasPowerOnOffControl": true
+    }
+  },
+  "tipsPageConfig":[
+      {
+        "image": "tips_sports_mode",
+        "textHead" : "sport_mode",
+        "textDes1" : "sport_mode_tips_des",
+        "background": ["#FFB69F", "#FFB69F"]
+      },
+      {
+        "image": "ic_tips_asc_have_level",
+        "textHead" : "sound_modes",
+        "textDes1" : "tips_aa_tt",
+        "background": ["#FFB69F", "#FFB69F"]
+      },
+      {
+        "image": "ic_tips_va",
+        "textHead" : "va_title",
+        "textDes1" : "tips_va_1",
+        "background": ["#FFB69F", "#FFB69F"]
+      },
+      {
+        "image": "ic_tips_gesture",
+        "textHead" : "gestures",
+        "textDes1" : "tips_gesture_1",
+        "background": ["#FFB69F", "#FFB69F"]
+      }
+    ]
+}
