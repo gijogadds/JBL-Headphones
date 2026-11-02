@@ -44,6 +44,33 @@ class BluetoothBackend:
         # Controlador BLE dedicado para comandos de áudio e toques
         self.ble_controller = BLEController(on_status_changed=self._on_ble_status_changed)
 
+        # Inscreve para notificações em tempo real do BlueZ
+        self._system_bus = None
+        if dbus is not None:
+            try:
+                self._system_bus = dbus.SystemBus()
+                self._system_bus.add_signal_receiver(
+                    self._on_bluez_properties_changed,
+                    dbus_interface="org.freedesktop.DBus.Properties",
+                    signal_name="PropertiesChanged",
+                    arg0="org.bluez.Device1",
+                    path_keyword="path"
+                )
+            except Exception as e:
+                print(f"[BluetoothBackend] Aviso ao registrar sinal D-Bus: {e}", file=sys.stderr)
+
+    def _on_bluez_properties_changed(self, interface, changed, invalidated, path=None):
+        """Disparado instantaneamente quando o estado de conexão do dispositivo muda no BlueZ."""
+        if interface != 'org.bluez.Device1':
+            return
+        if self.connected_device and path == self.connected_device.path:
+            if 'Connected' in changed:
+                is_conn = bool(changed['Connected'])
+                self.connected_device.connected = is_conn
+                print(f"[BluetoothBackend] Evento D-Bus imediato: {self.connected_device.name} Connected={is_conn}")
+                if self.on_status_changed:
+                    self.on_status_changed({"bluez_connected": is_conn, "device_name": self.connected_device.name})
+
     def _on_ble_status_changed(self, status: Dict[str, Any]):
         """Repassa atualizações do BLE para a UI."""
         if self.on_status_changed:

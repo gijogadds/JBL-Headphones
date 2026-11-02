@@ -53,6 +53,11 @@ Para detalhes aprofundados sobre a engenharia reversa dos protocolos (Protocolo 
    - **RFCOMM SPP (Porta 17)**: Suporte a dispositivos legados e telemetria contínua.
    - **Suporte a Protocolo 3 e Protocolo 4**: Compatível com toda a linha tradicional BES e com a nova linha Harman (Tour Pro 2/3, Live 3).
 
+9. **Detecção, Inicialização e Encerramento Automático:**
+   - **Auto-Start na Barra Superior:** Ao ligar os fones JBL ou quando eles se conectarem ao Bluetooth, o aplicativo é disparado automaticamente na barra superior (em modo `--tray`) sem janelas invasivas, deixando todos os controles prontos para uso imediato.
+   - **Auto-Shutdown ao Desligar os Fones:** Quando você desliga os fones ou os guarda no estojo, o aplicativo detecta a desconexão via BlueZ D-Bus e encerra o processo sozinho automaticamente, liberando a memória e limpando o ícone da barra superior.
+   - **Monitor Leve em Segundo Plano:** O monitor de eventos roda como serviço `systemd --user` (`jbl-headphones-listener.service`), consumindo 0% de CPU e ~8MB de RAM enquanto aguarda.
+
 ---
 
 ## 🚀 Como Executar

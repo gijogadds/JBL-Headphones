@@ -20,19 +20,32 @@ from core.bluetooth_backend import BluetoothBackend
 from ui.main_window import MainWindow
 
 class JBLApp(Adw.Application):
-    def __init__(self):
+    def __init__(self, start_in_tray: bool = False, auto_close_on_disconnect: bool = True):
         super().__init__(
             application_id="io.github.jbl.headphones.linux",
             flags=Gio.ApplicationFlags.DEFAULT_FLAGS
         )
+        self.start_in_tray = start_in_tray
+        self.auto_close_on_disconnect = auto_close_on_disconnect
         self.registry = DeviceRegistry()
         self.backend = BluetoothBackend()
 
     def do_activate(self):
         win = self.props.active_window
         if not win:
-            win = MainWindow(self, self.registry, self.backend)
-        win.present()
+            win = MainWindow(
+                self, 
+                self.registry, 
+                self.backend,
+                start_in_tray=self.start_in_tray,
+                auto_close_on_disconnect=self.auto_close_on_disconnect
+            )
+        if not self.start_in_tray:
+            win.set_visible(True)
+            win.present()
+        else:
+            win.set_visible(False)
+            self.start_in_tray = False
 
     def do_shutdown(self):
         try:
@@ -47,8 +60,17 @@ class JBLApp(Adw.Application):
 def main():
     GLib.set_prgname("io.github.jbl.headphones.linux")
     GLib.set_application_name("JBL Headphones")
-    app = JBLApp()
-    return app.run(sys.argv)
+    
+    start_in_tray = "--tray" in sys.argv or "--minimized" in sys.argv
+    no_autoclose = "--no-autoclose" in sys.argv
+    
+    clean_argv = [sys.argv[0]]
+    for arg in sys.argv[1:]:
+        if arg not in ("--tray", "--minimized", "--no-autoclose"):
+            clean_argv.append(arg)
+            
+    app = JBLApp(start_in_tray=start_in_tray, auto_close_on_disconnect=(not no_autoclose))
+    return app.run(clean_argv)
 
 if __name__ == "__main__":
     sys.exit(main())

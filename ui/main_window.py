@@ -16,11 +16,23 @@ from core.bluetooth_backend import BluetoothBackend, BluetoothDevice
 from ui.tray_indicator import JBLTrayIndicator
 
 class MainWindow(Adw.ApplicationWindow):
-    def __init__(self, app: Adw.Application, registry: DeviceRegistry, backend: BluetoothBackend):
+    def __init__(
+        self, 
+        app: Adw.Application, 
+        registry: DeviceRegistry, 
+        backend: BluetoothBackend,
+        start_in_tray: bool = False,
+        auto_close_on_disconnect: bool = True
+    ):
         super().__init__(application=app, title="JBL Headphones Linux")
         self.set_default_size(720, 800)
         self.set_icon_name("io.github.jbl.headphones.linux")
         
+        self.start_in_tray = start_in_tray
+        self.auto_close_on_disconnect = auto_close_on_disconnect
+        self._device_ever_connected = False
+        self._shutdown_timer_id: Optional[int] = None
+
         self.registry = registry
         self.backend = backend
         self.current_model: Optional[DeviceModel] = None
@@ -64,6 +76,30 @@ class MainWindow(Adw.ApplicationWindow):
         else:
             self.set_visible(True)
             self.present()
+
+    def _schedule_auto_shutdown(self):
+        """Se os fones forem desligados, encerra o programa automaticamente após breve tolerância."""
+        if self._shutdown_timer_id is not None:
+            return
+        print("[MainWindow] Fones desconectados. Aguardando 3.0s para encerramento automático...")
+        self._shutdown_timer_id = GLib.timeout_add(3000, self._do_auto_shutdown)
+
+    def _cancel_auto_shutdown(self):
+        if self._shutdown_timer_id is not None:
+            GLib.source_remove(self._shutdown_timer_id)
+            self._shutdown_timer_id = None
+
+    def _do_auto_shutdown(self):
+        self._shutdown_timer_id = None
+        # Verifica se algum dispositivo JBL continua conectado no sistema
+        devices = self.backend.scan_jbl_devices()
+        connected = [d for d in devices if d.connected]
+        if not connected:
+            print("[MainWindow] Fones desligados. Encerrando o aplicativo automaticamente.")
+            app = self.get_application()
+            if app:
+                app.quit()
+        return False
 
     def _build_ui(self):
         # Caixa principal vertical
@@ -372,6 +408,8 @@ class MainWindow(Adw.ApplicationWindow):
         paired = [d for d in devices if not d.connected]
 
         if connected:
+            self._device_ever_connected = True
+            self._cancel_auto_shutdown()
             dev = connected[0]
             self.backend.connect(dev)
             
@@ -592,6 +630,8 @@ class MainWindow(Adw.ApplicationWindow):
             if self.backend.connected_device:
                 self.title_widget.set_subtitle(f"Conectado: {self.backend.connected_device.name} (GATT BLE Ativo)")
                 self.tray_indicator.update_device(self.backend.connected_device.name, True)
+                self._device_ever_connected = True
+                self._cancel_auto_shutdown()
 
         if "bluez_connected" in status:
             is_conn = status["bluez_connected"]
@@ -600,6 +640,13 @@ class MainWindow(Adw.ApplicationWindow):
                 self.title_widget.set_subtitle(f"Pareado: {dev_name} (Desconectado)")
                 self.battery_badge.set_text("Desconectado")
                 self.tray_indicator.update_device(dev_name, False)
+                if self.auto_close_on_disconnect and self._device_ever_connected:
+                    self._schedule_auto_shutdown()
+            else:
+                self._device_ever_connected = True
+                self._cancel_auto_shutdown()
+                self.title_widget.set_subtitle(f"Conectado: {dev_name}")
+                self.tray_indicator.update_device(dev_name, True)
 
         # Sincronização em tempo real de ANC (toque no fone ou resposta de comando)
         if "anc_mode" in status:

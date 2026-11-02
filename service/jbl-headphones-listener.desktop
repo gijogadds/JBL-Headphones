@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=JBL Headphones Listener
+Comment=Monitor de conexão Bluetooth para fones JBL
+Exec=/usr/bin/python3 "/mnt/giovanni/Projetos/REA/JBL Headphones/jbl-linux-app/service/jbl_listener.py"
+Terminal=false
+Hidden=false
+X-GNOME-Autostart-enabled=true
