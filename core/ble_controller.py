@@ -128,20 +128,23 @@ class BLEController:
                     ):
                         raise RuntimeError("O dispositivo não expõe as características GATT Harman esperadas")
 
-                    self._client = client
-                    self.is_connected = True
-                    self.connected_address = device.address
-                    print(f"[BLEController] Conectado com sucesso ao GATT de {device.name}!")
-                    
-                    if self.on_status_changed:
-                        self.on_status_changed({"ble_connected": True, "ble_address": device.address})
-
-                    # 3. Inscrever em notificações
+                    # A conexão só fica disponível para comandos depois que o canal
+                    # de retorno também estiver ativo.
                     try:
                         await client.start_notify(HARMAN_NOTIFY_CHAR, self._handle_notification)
                         print("[BLEController] Notificações Harman ativadas com sucesso.")
                     except Exception as e:
-                        print(f"[BLEController] Aviso ao ativar notificações: {e}", file=sys.stderr)
+                        raise RuntimeError(
+                            f"Não foi possível ativar notificações GATT Harman: {e}"
+                        ) from e
+
+                    self._client = client
+                    self.is_connected = True
+                    self.connected_address = device.address
+                    print(f"[BLEController] Conectado ao GATT e notificações ativas: {device.name}!")
+
+                    if self.on_status_changed:
+                        self.on_status_changed({"ble_connected": True, "ble_address": device.address})
 
                     # Processa a fila de envio e mantém a conexão viva.
                     while self._running and client.is_connected:
@@ -156,7 +159,11 @@ class BLEController:
                             print(f"[BLEController] Erro ao enviar pacote BLE: {e}", file=sys.stderr)
 
             except Exception as e:
-                print(f"[BLEController] Conexão LE interrompida: {e}. Tentando restabelecer...", file=sys.stderr)
+                print(
+                    f"[BLEController] Conexão LE interrompida "
+                    f"({type(e).__name__}: {e!r}). Tentando restabelecer...",
+                    file=sys.stderr,
+                )
             finally:
                 self.is_connected = False
                 self._client = None
@@ -182,19 +189,39 @@ class BLEController:
                 return None
             
             def filter_func(d: BLEDevice, adv) -> bool:
-                # 1. Correspondência direta por MAC
-                if self._target_mac and d.address.upper() == self._target_mac:
-                    return True
-
-                name = (d.name or adv.local_name or "").upper()
-                name = name.removesuffix("-LE").strip()
-                return name == target_clean
+                return self._matches_target_device(
+                    d, adv, target_clean, self._target_mac
+                )
 
             dev = await BleakScanner.find_device_by_filter(filter_func, timeout=4.0)
             return dev
         except Exception as e:
             print(f"[BLEController] Erro na descoberta BLE: {e}", file=sys.stderr)
             return None
+
+    @staticmethod
+    def _matches_target_device(
+        device: BLEDevice,
+        advertisement: Any,
+        target_name: str,
+        target_mac: str,
+    ) -> bool:
+        if target_mac and device.address.upper() == target_mac:
+            return True
+
+        name = (device.name or advertisement.local_name or "").upper()
+        if name.removesuffix("-LE").strip() != target_name:
+            return False
+
+        service_uuids = {
+            service_uuid.lower()
+            for service_uuid in (advertisement.service_uuids or [])
+        }
+        if HARMAN_SERVICE_UUID.lower() in service_uuids:
+            return True
+
+        manufacturer_ids = set((advertisement.manufacturer_data or {}).keys())
+        return bool(manufacturer_ids.intersection({0x0057, 0x0ECB}))
 
     async def _write_raw(self, client: BleakClient, data: bytes):
         """Escreve na característica GATT Write sem resposta obrigatória (Write Without Response)."""

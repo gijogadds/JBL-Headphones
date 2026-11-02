@@ -426,7 +426,7 @@ class Protocol3Handler:
             except Exception:
                 pass
         elif fid == 4 and len(fval) >= 2:
-            res["pid"] = f"{fval[0]:02X}{fval[1]:02X}"
+            res["pid"] = f"{fval[1]:02X}{fval[0]:02X}"
         elif fid == 12 and len(fval) > 0:
             try:
                 res["firmware_version"] = bytes(fval).decode("utf-8", errors="ignore").strip("\x00")
@@ -536,16 +536,7 @@ class Protocol3Handler:
                             res["device_name"] = raw_name.decode("utf-8", errors="ignore").strip()
                         except Exception:
                             pass
-                        res["pid"] = f"{payload[16]:02X}{payload[17]:02X}"
-                        if len(payload) >= 20 and "battery_left" not in res:
-                            res["battery_left"] = payload[18] & 0x7F
-                            res["charging_left"] = bool(payload[18] & 0x80)
-                        if len(payload) >= 21 and "battery_right" not in res:
-                            res["battery_right"] = payload[19] & 0x7F
-                            res["charging_right"] = bool(payload[19] & 0x80)
-                        if len(payload) >= 22 and "battery_case" not in res:
-                            res["battery_case"] = payload[20] & 0x7F
-                            res["charging_case"] = bool(payload[20] & 0x80)
+                        res["pid"] = f"{payload[17]:02X}{payload[16]:02X}"
 
                 # Resposta de Bateria Específica (0x25)
                 # Formato oficial Harman (BatteryInfoCmd.parseBatteryInfo):

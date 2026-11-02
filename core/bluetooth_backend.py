@@ -384,10 +384,28 @@ class BluetoothBackend:
                             last_rfcomm_attempt = 0.0
                     except (socket.timeout, BlockingIOError):
                         pass
+                    except OSError as exc:
+                        with self._lock:
+                            if self._rfcomm_socket is sock:
+                                try:
+                                    sock.close()
+                                except OSError:
+                                    pass
+                                self._rfcomm_socket = None
+                            self.is_socket_connected = False
+                        if not self._running:
+                            break
+                        print(
+                            f"[BluetoothBackend] Canal RFCOMM interrompido: {exc}",
+                            file=sys.stderr,
+                        )
+                        last_rfcomm_attempt = 0.0
 
                 time.sleep(0.08)
 
             except Exception as e:
+                if not self._running:
+                    break
                 print(f"[BluetoothBackend] Erro no loop de comunicação: {e}", file=sys.stderr)
                 with self._lock:
                     self.is_socket_connected = False

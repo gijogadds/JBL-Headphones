@@ -6,6 +6,7 @@ Controle completo de fones JBL no Linux com interface nativa Adwaita / GTK4.
 
 import sys
 import os
+import signal
 
 # Adiciona o diretório base ao sys.path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -55,12 +56,12 @@ class JBLApp(Adw.Application):
     def do_shutdown(self):
         try:
             self.backend.disconnect()
-        except Exception:
-            pass
+        except Exception as exc:
+            print(f"[JBLApp] Falha ao desconectar durante o encerramento: {exc}", file=sys.stderr)
         try:
             Adw.Application.do_shutdown(self)
-        except Exception:
-            pass
+        except Exception as exc:
+            print(f"[JBLApp] Falha no encerramento GTK: {exc}", file=sys.stderr)
 
 def main():
     try:
@@ -81,6 +82,12 @@ def main():
             clean_argv.append(arg)
             
     app = JBLApp(start_in_tray=start_in_tray, auto_close_on_disconnect=(not no_autoclose))
+
+    def request_shutdown(_signal_number, _frame):
+        GLib.idle_add(app.quit)
+
+    signal.signal(signal.SIGTERM, request_shutdown)
+    signal.signal(signal.SIGINT, request_shutdown)
     return app.run(clean_argv)
 
 if __name__ == "__main__":

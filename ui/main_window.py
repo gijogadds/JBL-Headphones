@@ -37,7 +37,7 @@ class MainWindow(Adw.ApplicationWindow):
         self.registry = registry
         self.backend = backend
         self.current_model: Optional[DeviceModel] = None
-        self.active_anc_mode = AncMode.OFF
+        self.active_anc_mode: Optional[AncMode] = None
         self.active_preset_idx = 0
         self._updating_anc_ui = False
         self._updating_preset_ui = False
@@ -295,7 +295,6 @@ class MainWindow(Adw.ApplicationWindow):
 
         self.btn_off = Gtk.ToggleButton(label="⚪ Desligado")
         self.btn_off.set_group(self.btn_anc)
-        self.btn_off.set_active(True)
         self.btn_off.connect("toggled", lambda b: self._on_anc_button_toggled(AncMode.OFF, b))
         btn_box.append(self.btn_off)
 
@@ -369,7 +368,7 @@ class MainWindow(Adw.ApplicationWindow):
         self.content_box.append(self.extra_group)
 
         # 1. Modo Inteligente (Smart Audio & Video)
-        self.smart_mode_row = Adw.ComboRow(title="Modo Áudio & Vídeo (Smart Audio & Video)")
+        self.smart_mode_row = Adw.ComboRow(title="Modo Áudio e Vídeo (Smart Audio/Video)")
         self.smart_mode_row.set_subtitle("Alterne entre máxima fidelidade para música e baixa latência para vídeos e jogos")
         smart_opts = ["Modo Normal (Padrão)", "Modo Áudio (Alta Fidelidade)", "Modo Vídeo (Baixa Latência)"]
         self.smart_mode_row.set_model(Gtk.StringList.new(smart_opts))

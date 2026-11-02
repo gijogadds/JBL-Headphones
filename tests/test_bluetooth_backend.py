@@ -1,7 +1,12 @@
+import contextlib
+import io
+import threading
 import unittest
+from types import SimpleNamespace
 from unittest.mock import patch
 
 from core.bluetooth_backend import BluetoothBackend, BluetoothDevice
+from core.ble_controller import BLEController, HARMAN_SERVICE_UUID
 
 
 class FakeBleController:
@@ -49,6 +54,32 @@ class BluetoothBackendTests(unittest.TestCase):
         self.assertTrue(self.backend._send_queue.empty())
         self.assertTrue(self.backend._ble_only_queue.empty())
 
+    def test_shutdown_socket_close_does_not_log_as_communication_error(self):
+        recv_started = threading.Event()
+        allow_closed_recv = threading.Event()
+        stderr = io.StringIO()
+
+        class ClosingSocket:
+            def recv(self, _size):
+                recv_started.set()
+                allow_closed_recv.wait(timeout=2)
+                raise OSError(9, "Bad file descriptor")
+
+            def close(self):
+                pass
+
+        self.backend._rfcomm_socket = ClosingSocket()
+        worker = threading.Thread(target=self.backend._run_loop)
+        with contextlib.redirect_stderr(stderr):
+            worker.start()
+            self.assertTrue(recv_started.wait(timeout=2))
+            self.backend._running = False
+            allow_closed_recv.set()
+            worker.join(timeout=2)
+
+        self.assertFalse(worker.is_alive())
+        self.assertNotIn("Erro no loop de comunicação", stderr.getvalue())
+
     def test_flush_routes_each_command_through_ble_once(self):
         protocol3 = bytes.fromhex("AA 25 01 01")
         protocol4 = bytes.fromhex("F0 DC 01 00 01 00 01 00 01")
@@ -78,6 +109,40 @@ class BluetoothBackendTests(unittest.TestCase):
 
         self.assertEqual(self.ble.started, 0)
         self.assertTrue(self.backend._running)
+
+    def test_ble_discovery_rejects_same_name_fast_pair_advertisement(self):
+        device = SimpleNamespace(
+            address="5E:DD:01:86:2F:92",
+            name="JBL Tune Buds 2-LE",
+        )
+        advertisement = SimpleNamespace(
+            local_name="JBL Tune Buds 2-LE",
+            service_uuids=["0000fe2c-0000-1000-8000-00805f9b34fb"],
+            manufacturer_data={},
+        )
+
+        self.assertFalse(
+            BLEController._matches_target_device(
+                device, advertisement, "JBL TUNE BUDS 2", ""
+            )
+        )
+
+    def test_ble_discovery_accepts_harman_service_advertisement(self):
+        device = SimpleNamespace(
+            address="63:E7:F7:E4:E3:89",
+            name="JBL Tune Buds 2-LE",
+        )
+        advertisement = SimpleNamespace(
+            local_name="JBL Tune Buds 2-LE",
+            service_uuids=[HARMAN_SERVICE_UUID.upper()],
+            manufacturer_data={},
+        )
+
+        self.assertTrue(
+            BLEController._matches_target_device(
+                device, advertisement, "JBL TUNE BUDS 2", ""
+            )
+        )
 
 
 if __name__ == "__main__":

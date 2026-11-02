@@ -70,6 +70,11 @@ Para operações de áudio prioritárias (cancelamento de ruído, som ambiente, 
 - **Characteristic AUX**: `65786365-6C70-6F69-6E74-2E636F6D0003`
 - **Serviço de Atualização OTA (Firmware)**: `65786365-6c70-6f69-6e74-2e636f820000`
 
+A descoberta BLE deve confirmar o UUID Harman anunciado (ou o fabricante
+Harman/JBL associado ao nome exato do dispositivo). Alguns fones anunciam
+também endereços rotativos para Fast Pair com o mesmo nome, mas sem o serviço
+de controle; selecionar apenas pelo nome pode causar timeouts de conexão.
+
 ### 2.2 Canal Bluetooth Classic (RFCOMM SPP)
 - **UUID SPP Padrão**: `00001101-0000-1000-8000-00805F9B34FB` (Serial Port Profile)
 - **Canais Identificados**:
@@ -127,6 +132,10 @@ Microcontroladores Bestechnic (série BES2600) emitem quadros espontâneos em ca
   - Bit 7 (`0x80`): Flag de carregamento ativo (`True` se em recarga no estojo).
   - Bits 0-6 (`val & 0x7F`): Percentual real de bateria de 0% a 100%.
 - **Consulta de bateria**: `AA 25 01 01` (`CommandID 0x25`, subcomando `0x01`).
+- **Respostas de informações do dispositivo (`0x11`/`0x12`)**: O campo de PID
+  pode chegar em ordem little-endian (ex.: `0C 21` representa `0x210C`). Não
+  inferir níveis de bateria de offsets não documentados nessa resposta; usar
+  `0x25` ou a telemetria BES `0x03`.
 - **CommandID `0x09` (Versão de Firmware)**: String ASCII com a versão (ex: `"4.9.0.0"`).
 - **CommandID `0x01` (Status TWS)**: Estado de sincronização entre os auriculares.
 

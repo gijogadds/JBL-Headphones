@@ -93,7 +93,7 @@ class JBLTrayIndicator(dbus.service.Object):
         self.ch_l: bool = False
         self.ch_r: bool = False
         self.ch_c: bool = False
-        self.active_anc = AncMode.OFF
+        self.active_anc: Optional[AncMode] = None
         self.active_preset = 0
         self.active_smart_mode = "normal"
 
@@ -229,7 +229,11 @@ class JBLTrayIndicator(dbus.service.Object):
         children.append((102, {'type': 'separator'}, []))
 
         # 3. Submenu / Itens de Controle de Ruído (ANC)
-        anc_label = "Controle de Som e ANC"
+        anc_label = (
+            "Controle de Som e ANC"
+            if self.active_anc is not None
+            else "Controle de Som e ANC (estado não sincronizado)"
+        )
         anc_children = [
             (201, {'label': f"{'● ' if self.active_anc == AncMode.ANC else '  '}🔇 Cancelamento Ativo (ANC)"}, []),
             (202, {'label': f"{'● ' if self.active_anc == AncMode.AMBIENT_AWARE else '  '}👂 Som Ambiente (Ambient)"}, []),
@@ -260,7 +264,7 @@ class JBLTrayIndicator(dbus.service.Object):
             (383, {'label': f"{'● ' if self.active_smart_mode == 'video' else '  '}🎬 Modo Vídeo (Baixa Latência)"}, []),
         ]
         children.append((380, {
-            'label': "Modo Áudio & Vídeo (Latência)",
+            'label': "Modo Áudio e Vídeo (Latência)",
             'children-display': 'submenu'
         }, smart_children))
 
@@ -277,7 +281,7 @@ class JBLTrayIndicator(dbus.service.Object):
         elif parent_id == 350:
             return (350, {'label': "Predefinições de Equalizador", 'children-display': 'submenu'}, eq_children)
         elif parent_id == 380:
-            return (380, {'label': "Modo Áudio & Vídeo (Latência)", 'children-display': 'submenu'}, smart_children)
+            return (380, {'label': "Modo Áudio e Vídeo (Latência)", 'children-display': 'submenu'}, smart_children)
 
         root = (0, {'children-display': 'submenu'}, children)
         return root

@@ -112,7 +112,6 @@ class JBLBluetoothListener:
                 cwd=APP_DIR,
                 env=env,
                 stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
                 start_new_session=True
             )
             print("[JBLListener] Aplicativo disparado com sucesso na barra superior!")

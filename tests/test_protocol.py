@@ -34,6 +34,51 @@ class Protocol3Tests(unittest.TestCase):
         self.assertEqual(parsed["battery_right"], 80)
         self.assertTrue(parsed["charging_right"])
 
+    def test_parses_captured_tune_buds_2_battery_response(self):
+        packet = bytes.fromhex(
+            "AA 25 0D 01 00 00 64 5A 00 4B BF 10 B7 10 4E 0C"
+        )
+
+        parsed = Protocol3Handler.parse_packet(packet)
+
+        self.assertEqual(
+            (parsed["battery_left"], parsed["battery_right"], parsed["battery_case"]),
+            (100, 90, 75),
+        )
+
+    def test_parses_captured_anc_notification(self):
+        packet = bytes.fromhex("AA 91 07 12 01 01 02 00 03 00")
+
+        self.assertEqual(
+            Protocol3Handler.parse_packet(packet)["anc_mode"],
+            AncMode.ANC,
+        )
+        self.assertEqual(
+            Protocol3Handler.parse_packet(bytes.fromhex("AA 91 01 13"))["anc_mode"],
+            AncMode.OFF,
+        )
+
+    def test_device_info_response_does_not_misread_metadata_as_battery(self):
+        packet = bytes.fromhex(
+            "AA 12 25 4A 42 4C 20 54 75 6E 65 20 42 75 64 73 20 32 00 "
+            "0C 21 01 64 3E A4 21 6A 1B 50 04 09 00 64 5A BF 10 B7 10 03 00"
+        )
+
+        parsed = Protocol3Handler.parse_packet(packet)
+
+        self.assertEqual(parsed["device_name"], "JBL Tune Buds 2")
+        self.assertEqual(parsed["pid"], "210C")
+        self.assertNotIn("battery_left", parsed)
+        self.assertNotIn("battery_right", parsed)
+        self.assertNotIn("battery_case", parsed)
+
+    def test_harman_product_id_bytes_are_decoded_little_endian(self):
+        parsed = {}
+
+        Protocol3Handler._extract_harman_feature(parsed, 4, bytes.fromhex("0C 21"))
+
+        self.assertEqual(parsed["pid"], "210C")
+
     def test_extracts_fragmented_and_concatenated_rfcomm_frames(self):
         first = bytes.fromhex("AA 25 03 32 40 50")
         second = bytes.fromhex("AA 91 01 13")
