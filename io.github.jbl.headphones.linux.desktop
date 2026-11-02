@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=JBL Headphones
 Comment=Controle de Fones JBL para Linux
-Exec=/usr/bin/env python3 /mnt/giovanni/Projetos/REA/JBL Headphones/jbl-linux-app/main.py
+Exec=/usr/bin/python3 "/mnt/giovanni/Projetos/REA/JBL Headphones/jbl-linux-app/main.py"
 Icon=io.github.jbl.headphones.linux
 Terminal=false
 Type=Application

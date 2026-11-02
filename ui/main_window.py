@@ -40,6 +40,7 @@ class MainWindow(Adw.ApplicationWindow):
         self.active_preset_idx = 0
         self._updating_anc_ui = False
         self._updating_preset_ui = False
+        self._eq_debounce_timer: Optional[int] = None
         self.eq_sliders: List[Gtk.Scale] = []
         self.frequencies = [32, 64, 125, 250, 500, 1000, 2000, 4000, 8000, 16000]
 
@@ -328,8 +329,8 @@ class MainWindow(Adw.ApplicationWindow):
             slider.set_vexpand(True)
             slider.set_size_request(-1, 140)
             
-            # Atualiza o label conforme move
-            slider.connect("value-changed", lambda s, l=val_lbl: l.set_text(f"{s.get_value():+.1f} dB"))
+            # Atualiza o label conforme move e aplica equalização em tempo real debounced
+            slider.connect("value-changed", self._on_slider_value_changed, val_lbl)
             self.eq_sliders.append(slider)
 
             # Label de frequência
@@ -574,8 +575,12 @@ class MainWindow(Adw.ApplicationWindow):
 
         if idx in presets_gains:
             gains = presets_gains[idx]
-            for slider, gain in zip(self.eq_sliders, gains):
-                slider.set_value(gain)
+            self._updating_preset_ui = True
+            try:
+                for slider, gain in zip(self.eq_sliders, gains):
+                    slider.set_value(gain)
+            finally:
+                self._updating_preset_ui = False
             pkt_preset = Protocol3Handler.set_eq_preset(idx)
             pkt_eq2 = Protocol3Handler.build_eq2_packet(gains, preset_id=idx)
             self.backend.send_raw(pkt_preset)
@@ -601,15 +606,37 @@ class MainWindow(Adw.ApplicationWindow):
             self._updating_preset_ui = False
         self._on_preset_selected(self.preset_row, None)
 
-    def _apply_custom_eq(self):
+    def _on_slider_value_changed(self, slider: Gtk.Scale, label: Gtk.Label):
+        label.set_text(f"{slider.get_value():+.1f} dB")
+        if self._updating_preset_ui:
+            return
+        # Marca predefinição como 'Personalizado' (índice 7)
+        if hasattr(self, 'preset_row') and self.preset_row.get_selected() != 7:
+            self._updating_preset_ui = True
+            try:
+                self.preset_row.set_selected(7)
+            finally:
+                self._updating_preset_ui = False
+        # Aplicação contínua debounced (250ms) nos fones em tempo real
+        if self._eq_debounce_timer is not None:
+            GLib.source_remove(self._eq_debounce_timer)
+        self._eq_debounce_timer = GLib.timeout_add(250, self._debounced_apply_eq)
+
+    def _debounced_apply_eq(self):
+        self._eq_debounce_timer = None
+        self._apply_custom_eq(show_toast=False)
+        return False
+
+    def _apply_custom_eq(self, show_toast: bool = True):
         gains = [s.get_value() for s in self.eq_sliders]
         pkt = Protocol3Handler.build_eq2_packet(gains, preset_id=0)
         self.backend.send_raw(pkt)
         for p4_pkt in Protocol4Handler.build_eq_curve_packet(gains):
             self.backend.send_raw(p4_pkt)
-        toast = Adw.Toast.new("✅ Curva de equalização oficial (10 bandas) aplicada nos fones!")
-        toast.set_timeout(2)
-        self.toast_overlay.add_toast(toast)
+        if show_toast:
+            toast = Adw.Toast.new("✅ Curva de equalização oficial (10 bandas) aplicada nos fones!")
+            toast.set_timeout(2)
+            self.toast_overlay.add_toast(toast)
 
     def _on_voice_aware_selected(self, combo, _):
         level = VoiceAwareLevel(combo.get_selected())

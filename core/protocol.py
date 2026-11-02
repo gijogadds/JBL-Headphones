@@ -82,30 +82,46 @@ class Protocol3Handler:
         Monta o pacote oficial do Equalizador EQSettings2 (0xAA 0xA2) de alta fidelidade
         extraído do APK oficial (EQCmd.sendCmd / QMultiply10EQ).
         Utilizado por todos os fones modernos JBL BES (Tune Buds 2, Tune Beam 2, etc.).
+        Header de 16 bytes:
+          0: subSetCmd10 (0x03)
+          1: category (1B, preset_id ou 0 para custom)
+          2..5: calibration (4B float <f, 0.0)
+          6: sampleRate (1B, 0)
+          7..10: leftGain (4B float <f, 0.0)
+          11..14: rightGain (4B float <f, 0.0)
+          15: bandCount (1B, 10)
+        Seguido por 10 bandas de 10 bytes cada:
+          offset + 0: bandType (1B, 0)
+          offset + 1..4: gainValue (4B float <f)
+          offset + 5..8: frequency (4B float <f)
+          offset + 9: qValue * 10 (1B, 10 para Q=1.0)
         """
-        sub_set_cmd_10 = 0x03 # subSetCmd10 com Q*10
-        status = 1            # 1 = Ativado
+        sub_set_cmd_10 = 0x03  # isQMultiply10 = True
+        category = preset_id & 0xFF
+        calibration = 0.0
+        sample_rate = 0
         left_gain = 0.0
         right_gain = 0.0
         band_count = min(len(gains), len(cls.EQ_FREQUENCIES))
         
-        payload = bytearray()
-        payload.append(sub_set_cmd_10)
-        payload.extend(struct.pack('>H', preset_id & 0xFFFF)) # 2 bytes eq_id
-        payload.append(status)                               # 1 byte status
-        payload.extend(struct.pack('>f', left_gain))          # 4 bytes float left
-        payload.extend(struct.pack('>f', right_gain))         # 4 bytes float right
-        payload.append(band_count & 0xFF)                    # 1 byte quantidade de bandas
+        payload = bytearray(16)
+        payload[0] = sub_set_cmd_10
+        payload[1] = category
+        payload[2:6] = struct.pack("<f", calibration)
+        payload[6] = sample_rate
+        payload[7:11] = struct.pack("<f", left_gain)
+        payload[11:15] = struct.pack("<f", right_gain)
+        payload[15] = band_count
         
         for i in range(band_count):
-            band_type = 0 # 1 byte
+            band_type = 0
             gain_val = float(gains[i])
             freq_val = float(cls.EQ_FREQUENCIES[i])
-            q_val = int(round(1.0 * 10)) # Q=1.0 * 10 = 10
+            q_val = int(round(1.0 * 10))  # Q=1.0 * 10 = 10
             
             payload.append(band_type)
-            payload.extend(struct.pack('>f', gain_val))
-            payload.extend(struct.pack('>f', freq_val))
+            payload.extend(struct.pack("<f", gain_val))
+            payload.extend(struct.pack("<f", freq_val))
             payload.append(q_val & 0xFF)
             
         # combineLen2: [0xAA, 0xA2, len_lsb, len_msb, ...payload]
@@ -299,20 +315,36 @@ class Protocol3Handler:
 
                 # Status de Modos de Som / ANC / Ambient / TalkThru (0x91)
                 elif cmd == 0x91:
-                    if len(payload) >= 7 and payload[0] == 0x12:
-                        anc_val = payload[2]  # Modo 1 = ANC
-                        aa_val  = payload[4]  # Modo 2 = Ambient Aware
-                        tt_val  = payload[6]  # Modo 3 = TalkThru
-                        if anc_val == 1:
-                            res["anc_mode"] = AncMode.ANC
-                        elif aa_val == 1:
-                            res["anc_mode"] = AncMode.AMBIENT_AWARE
-                        elif tt_val == 1:
-                            res["anc_mode"] = AncMode.TALKTHRU
-                        else:
-                            res["anc_mode"] = AncMode.OFF
-                    elif len(payload) >= 1 and payload[0] == 0x13:
+                    # Formato oficial Harman (HandleParse.parseData):
+                    # subCmd 0x13 = Todos os modos desligados (OFF)
+                    # subCmd 0x10 ou 0x12 = Lista de pares (type, value) onde type 1=ANC, 2=Ambient, 3=TalkThru
+                    if len(payload) >= 1 and payload[0] == 0x13:
                         res["anc_mode"] = AncMode.OFF
+                    elif len(payload) >= 3 and payload[0] in (0x10, 0x12):
+                        pair_count = (len(payload) - 1) // 2
+                        active_mode = AncMode.OFF
+                        for p in range(pair_count):
+                            t_id = payload[1 + p * 2]
+                            val = payload[2 + p * 2]
+                            if val != 0:
+                                if t_id == 1:
+                                    active_mode = AncMode.ANC
+                                elif t_id == 2:
+                                    active_mode = AncMode.AMBIENT_AWARE
+                                elif t_id == 3:
+                                    active_mode = AncMode.TALKTHRU
+                        res["anc_mode"] = active_mode
+                    elif len(payload) == 1:
+                        # Resposta simples com 1 byte de status/filtro
+                        f_val = payload[0]
+                        if f_val == 1:
+                            res["anc_mode"] = AncMode.ANC
+                        elif f_val == 2:
+                            res["anc_mode"] = AncMode.AMBIENT_AWARE
+                        elif f_val == 3:
+                            res["anc_mode"] = AncMode.TALKTHRU
+                        elif f_val == 0:
+                            res["anc_mode"] = AncMode.OFF
 
                 # Status geral (0x21)
                 elif cmd == 0x21:

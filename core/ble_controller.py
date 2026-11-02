@@ -185,8 +185,11 @@ class BLEController:
         """Escreve na característica GATT Write sem resposta obrigatória (Write Without Response)."""
         if not client or not client.is_connected:
             return
-        await client.write_gatt_char(HARMAN_WRITE_CHAR, data, response=False)
-        print(f"[BLEController] Pacote enviado ({len(data)} bytes): {data.hex(' ')}")
+        try:
+            await client.write_gatt_char(HARMAN_WRITE_CHAR, data, response=False)
+            print(f"[BLEController] Pacote enviado ({len(data)} bytes): {data.hex(' ')}")
+        except Exception as e:
+            print(f"[BLEController] Erro ao enviar pacote GATT: {e}", file=sys.stderr)
 
     def _handle_notification(self, sender: Any, data: bytes):
         """Trata notificações do fone físico e eventos de toque no auricular."""
@@ -197,28 +200,33 @@ class BLEController:
         status_update: Dict[str, Any] = {"raw_ble_packet": data, "raw_packet": data}
 
         # 1. Notificação de modos de isolamento acústico / ANC (0xAA 0x91 ...)
-        # Formato oficial Harman/BES:
-        # Modo 1 (data[5]) = Cancelamento Ativo de Ruído (ANC)
-        # Modo 2 (data[7]) = Som Ambiente (Ambient Aware)
-        # Modo 3 (data[9]) = Modo Conversa (TalkThru)
-        if len(data) >= 10 and data[0] == 0xAA and data[1] == 0x91 and data[3] == 0x12:
-            anc_val = data[5]  # Modo 1 (ANC)
-            aa_val = data[7]   # Modo 2 (Ambient Aware)
-            tt_val = data[9]   # Modo 3 (TalkThru)
-
-            if anc_val == 1:
-                status_update["anc_mode"] = 1 # AncMode.ANC
-            elif aa_val == 1:
-                status_update["anc_mode"] = 2 # AncMode.AMBIENT_AWARE
-            elif tt_val == 1:
-                status_update["anc_mode"] = 3 # AncMode.TALKTHRU
-            else:
-                status_update["anc_mode"] = 0 # AncMode.OFF
-
-            status_update["anc_source"] = "earbud_notification"
-
-        elif len(data) >= 4 and data[0] == 0xAA and data[1] == 0x91 and data[3] == 0x13:
-            status_update["anc_mode"] = 0 # AncMode.OFF
-            status_update["anc_source"] = "earbud_notification"
+        # Formato oficial Harman (HandleParse.parseData):
+        # Header [0xAA, 0x91, len, subCmd, type_1, val_1, type_2, val_2, ...]
+        # type 1 = ANC, type 2 = Ambient Aware, type 3 = TalkThru
+        # subCmd 0x13 = Todos desligados (OFF)
+        pos_aa = data.find(0xAA)
+        if pos_aa != -1 and pos_aa + 3 < len(data) and data[pos_aa+1] == 0x91:
+            pkt_len = data[pos_aa+2]
+            sub_cmd = data[pos_aa+3]
+            if sub_cmd == 0x13:
+                status_update["anc_mode"] = 0  # AncMode.OFF
+                status_update["anc_source"] = "earbud_notification"
+            elif sub_cmd in (0x10, 0x12):
+                pair_count = (pkt_len - 1) // 2
+                active_mode = 0  # AncMode.OFF
+                for p in range(pair_count):
+                    p_idx = pos_aa + 4 + p * 2
+                    if p_idx + 1 < len(data):
+                        t_id = data[p_idx]
+                        val = data[p_idx + 1]
+                        if val != 0:
+                            if t_id == 1:
+                                active_mode = 1  # AncMode.ANC
+                            elif t_id == 2:
+                                active_mode = 2  # AncMode.AMBIENT_AWARE
+                            elif t_id == 3:
+                                active_mode = 3  # AncMode.TALKTHRU
+                status_update["anc_mode"] = active_mode
+                status_update["anc_source"] = "earbud_notification"
 
         self.on_status_changed(status_update)

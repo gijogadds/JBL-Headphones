@@ -29,11 +29,11 @@ class JBLApp(Adw.Application):
         self.auto_close_on_disconnect = auto_close_on_disconnect
         self.registry = DeviceRegistry()
         self.backend = BluetoothBackend()
+        self.main_win = None
 
     def do_activate(self):
-        win = self.props.active_window
-        if not win:
-            win = MainWindow(
+        if not self.main_win:
+            self.main_win = MainWindow(
                 self, 
                 self.registry, 
                 self.backend,
@@ -41,10 +41,10 @@ class JBLApp(Adw.Application):
                 auto_close_on_disconnect=self.auto_close_on_disconnect
             )
         if not self.start_in_tray:
-            win.set_visible(True)
-            win.present()
+            self.main_win.set_visible(True)
+            self.main_win.present()
         else:
-            win.set_visible(False)
+            self.main_win.set_visible(False)
             self.start_in_tray = False
 
     def do_shutdown(self):
