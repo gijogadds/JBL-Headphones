@@ -573,15 +573,15 @@ class MainWindow(Adw.ApplicationWindow):
         self.tray_indicator.update_eq_preset(idx)
 
         preset_names = ["Jazz", "Vocal", "Bass", "Extreme Bass", "Club", "Studio", "Pop", "Personalizado"]
-        # Ganhos oficiais extraídos de standard_preset_eq.json
+        # Ganhos oficiais extraídos dos perfis JBL (jbl_tune_buds_tws.json & standard_preset_eq.json)
         presets_gains = {
-            0: [4.0, 3.0, 1.0, 2.5, -1.5, -1.5, 0.0, 1.0, 3.0, 4.0],  # Jazz (Cat 1)
+            0: [4.0, 2.0, 1.0, 2.5, -1.5, -1.5, 0.0, 1.0, 2.0, 4.0],   # Jazz (Cat 1)
             1: [-1.5, -3.0, -3.0, 1.0, 3.5, 3.5, 3.0, 1.5, 0.0, -1.5], # Vocal (Cat 2)
-            2: [4.0, 4.0, 3.0, 2.5, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0],   # Bass (Cat 3)
-            3: [4.0, 4.5, 4.5, 3.5, -1.0, 0.0, 0.0, 2.0, 2.0, 0.0],   # Extreme Bass (Cat 9)
-            4: [2.0, 1.5, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 2.0],   # Club (Cat 6)
-            5: [-2.0, -1.0, -1.0, -0.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], # Studio (Cat 7)
-            6: [2.0, 2.0, 2.0, -2.0, 2.0, 0.0, 1.0, 2.0, 0.0, -3.0], # Pop (Cat 13)
+            2: [6.0, 3.0, 3.0, 2.5, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0],    # Bass (Cat 3 - Tune Buds)
+            3: [4.0, 3.0, 5.0, 3.5, -1.0, 0.0, 0.0, 2.0, 2.0, 0.0],   # Extreme Bass (Cat 9 - Tune Buds)
+            4: [1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0],    # Club (Cat 6 - Tune Buds)
+            5: [-2.0, -1.0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], # Studio (Cat 7 - Tune Buds)
+            6: [2.0, 2.0, 2.0, -2.0, 2.0, 0.0, 1.0, 2.0, 0.0, -3.0],  # Pop (Cat 13)
         }
 
         if idx in presets_gains:
@@ -592,13 +592,12 @@ class MainWindow(Adw.ApplicationWindow):
                     slider.set_value(gain)
             finally:
                 self._updating_preset_ui = False
-            pkt_preset = Protocol3Handler.set_eq_preset(idx)
+            # Envia pacote de equalização paramétrica oficial EQSettings2 (0xAA 0xA2)
             pkt_eq2 = Protocol3Handler.build_eq2_packet(gains, preset_id=idx)
-            self.backend.send_raw(pkt_preset)
             self.backend.send_raw(pkt_eq2)
-            # Envio simultâneo para modelos compatíveis com Protocolo 4
-            for p4_pkt in Protocol4Handler.build_eq_curve_packet(gains):
-                self.backend.send_raw(p4_pkt)
+            # Envia também sincronização de categoria de preset (0xAA 0x40)
+            pkt_preset = Protocol3Handler.set_eq_preset(idx)
+            self.backend.send_raw(pkt_preset)
             p_name = preset_names[idx] if idx < len(preset_names) else ""
             toast = Adw.Toast.new(f"🎵 Predefinição JBL aplicada: {p_name}")
             toast.set_timeout(2)
@@ -643,12 +642,11 @@ class MainWindow(Adw.ApplicationWindow):
 
     def _apply_custom_eq(self, show_toast: bool = True):
         gains = [s.get_value() for s in self.eq_sliders]
-        pkt_preset = Protocol3Handler.set_eq_preset(7)  # 7 mapeia para Categoria 0 (Custom)
+        # Aplica a curva paramétrica oficial EQSettings2 (0xAA 0xA2) com categoria 103 (Custom EQ).
+        # NUNCA enviar 0xAA 0x40 ao ajustar sliders, pois o firmware interpreta categoria 0 como 'desligar EQ'
+        # e reseta os filtros do DSP, causando dessincronização e corte de áudio momentâneo (mudo) no fone escravo.
         pkt = Protocol3Handler.build_eq2_packet(gains, preset_id=7)
-        self.backend.send_raw(pkt_preset)
         self.backend.send_raw(pkt)
-        for p4_pkt in Protocol4Handler.build_eq_curve_packet(gains):
-            self.backend.send_raw(p4_pkt)
         if show_toast:
             toast = Adw.Toast.new("✅ Curva de equalização oficial (10 bandas) aplicada nos fones!")
             toast.set_timeout(2)

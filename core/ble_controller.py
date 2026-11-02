@@ -186,8 +186,20 @@ class BLEController:
         if not client or not client.is_connected:
             return
         try:
-            await client.write_gatt_char(HARMAN_WRITE_CHAR, data, response=False)
-            print(f"[BLEController] Pacote enviado ({len(data)} bytes): {data.hex(' ')}")
+            mtu = getattr(client, "mtu_size", 23)
+            max_payload = max(20, mtu - 3)
+            if len(data) > max_payload:
+                from core.protocol import Protocol3Handler
+                # Se o pacote exceder o MTU negociado, fragmenta usando GenGroupCmd oficial Harman (0xAA 0xEF)
+                chunk_sz = max(12, max_payload - 8)
+                frags = Protocol3Handler.fragment_packet(data, chunk_size=chunk_sz)
+                for frag in frags:
+                    await client.write_gatt_char(HARMAN_WRITE_CHAR, frag, response=False)
+                    await asyncio.sleep(0.015)
+                print(f"[BLEController] Pacote fragmentado ({len(frags)} partes, total {len(data)} bytes) enviado via GATT")
+            else:
+                await client.write_gatt_char(HARMAN_WRITE_CHAR, data, response=False)
+                print(f"[BLEController] Pacote enviado ({len(data)} bytes): {data.hex(' ')}")
         except Exception as e:
             print(f"[BLEController] Erro ao enviar pacote GATT: {e}", file=sys.stderr)
 
