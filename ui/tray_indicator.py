@@ -73,12 +73,14 @@ class JBLTrayIndicator(dbus.service.Object):
         on_toggle_window: Optional[Callable[[], None]] = None,
         on_set_anc: Optional[Callable[[AncMode], None]] = None,
         on_set_preset: Optional[Callable[[int], None]] = None,
+        on_set_smart_mode: Optional[Callable[[str], None]] = None,
         on_refresh: Optional[Callable[[], None]] = None,
         on_quit: Optional[Callable[[], None]] = None
     ):
         self.on_toggle_window = on_toggle_window
         self.on_set_anc = on_set_anc
         self.on_set_preset = on_set_preset
+        self.on_set_smart_mode = on_set_smart_mode
         self.on_refresh = on_refresh
         self.on_quit = on_quit
 
@@ -93,6 +95,7 @@ class JBLTrayIndicator(dbus.service.Object):
         self.ch_c: bool = False
         self.active_anc = AncMode.OFF
         self.active_preset = 0
+        self.active_smart_mode = "normal"
 
         self.menu_service: Optional[TrayMenu] = None
         self._registered = False
@@ -250,9 +253,20 @@ class JBLTrayIndicator(dbus.service.Object):
             'children-display': 'submenu'
         }, eq_children))
 
+        # 5. Submenu de Modo Áudio / Vídeo (Latência)
+        smart_children = [
+            (381, {'label': f"{'● ' if self.active_smart_mode == 'normal' else '  '}⚪ Modo Normal (Padrão)"}, []),
+            (382, {'label': f"{'● ' if self.active_smart_mode == 'audio' else '  '}🎵 Modo Áudio (Alta Fidelidade)"}, []),
+            (383, {'label': f"{'● ' if self.active_smart_mode == 'video' else '  '}🎬 Modo Vídeo (Baixa Latência)"}, []),
+        ]
+        children.append((380, {
+            'label': "Modo Áudio & Vídeo (Latência)",
+            'children-display': 'submenu'
+        }, smart_children))
+
         children.append((400, {'type': 'separator'}, []))
 
-        # 5. Ações da Aplicação
+        # 6. Ações da Aplicação
         children.append((401, {'label': "👁️ Abrir / Ocultar Janela"}, []))
         children.append((402, {'label': "🔄 Procurar Fones / Reconectar"}, []))
         children.append((403, {'type': 'separator'}, []))
@@ -262,6 +276,8 @@ class JBLTrayIndicator(dbus.service.Object):
             return (200, {'label': anc_label, 'children-display': 'submenu'}, anc_children)
         elif parent_id == 350:
             return (350, {'label': "Predefinições de Equalizador", 'children-display': 'submenu'}, eq_children)
+        elif parent_id == 380:
+            return (380, {'label': "Modo Áudio & Vídeo (Latência)", 'children-display': 'submenu'}, smart_children)
 
         root = (0, {'children-display': 'submenu'}, children)
         return root
@@ -282,6 +298,14 @@ class JBLTrayIndicator(dbus.service.Object):
         elif 300 <= item_id <= 306 and self.on_set_preset:
             preset_idx = item_id - 300
             self.on_set_preset(preset_idx)
+
+        # Smart Audio & Video Modes
+        elif item_id == 381 and self.on_set_smart_mode:
+            self.on_set_smart_mode("normal")
+        elif item_id == 382 and self.on_set_smart_mode:
+            self.on_set_smart_mode("audio")
+        elif item_id == 383 and self.on_set_smart_mode:
+            self.on_set_smart_mode("video")
 
         # App Actions
         elif item_id == 401 and self.on_toggle_window:
@@ -325,6 +349,10 @@ class JBLTrayIndicator(dbus.service.Object):
 
     def update_eq_preset(self, preset_idx: int):
         self.active_preset = preset_idx
+        self._notify_layout_changed()
+
+    def update_smart_mode(self, mode: str):
+        self.active_smart_mode = mode
         self._notify_layout_changed()
 
     def _notify_layout_changed(self):

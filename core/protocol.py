@@ -38,6 +38,17 @@ class Protocol3Handler:
     CMD_SET_VOICE_AWARE = 0x98
     CMD_SET_FIND_BUDS = 0x36
     CMD_VOICE_PROMPT = 0x93
+    CMD_SET_AUTO_OFF = 0x33
+    CMD_SET_SMART_SWITCH = 0x81
+    CMD_REQ_SMART_SWITCH = 0x82
+    CMD_SET_SAFE_SOUND = 0xA5
+    CMD_SET_LR_BALANCE = 0xA8
+
+    # Comandos de Requisição Adicionais Oficiais
+    REQ_AUTO_OFF = bytes([0xAA, 0x33, 0x01, 0x00])
+    REQ_SMART_SWITCH = bytes([0xAA, 0x82, 0x01, 0x00])
+    REQ_LR_BALANCE = bytes([0xAA, 0xA8, 0x01, 0x01])
+    REQ_SAFE_SOUND = bytes([0xAA, 0xA5, 0x01, 0x01])
 
     # Frequências padrão do equalizador oficial JBL de 10 bandas
     EQ_FREQUENCIES = [32.0, 64.0, 125.0, 250.0, 500.0, 1000.0, 2000.0, 4000.0, 8000.0, 16000.0]
@@ -230,6 +241,67 @@ class Protocol3Handler:
         """Emite alerta sonoro para encontrar fones perdidos"""
         val = (1 if ring_left else 0) | ((2 if ring_right else 0))
         return cls.build_packet(cls.CMD_SET_FIND_BUDS, bytes([val]))
+
+    @classmethod
+    def set_auto_power_off(cls, timeout_minutes: int, enabled: bool = True) -> bytes:
+        """
+        Define o desligamento automático por inatividade do fone (SET_AUTO_OFF = 0xAA 0x33).
+        Payload: 1 byte: bit 7 (0x80) indica habilitado, bits 0-6 representam minutos (ex: 15, 30, 60, 120).
+        Valor 0x00 desativa o desligamento automático (Nunca desligar).
+        """
+        if not enabled or timeout_minutes <= 0:
+            val = 0x00
+        else:
+            val = 0x80 | (timeout_minutes & 0x7F)
+        return cls.build_packet(cls.CMD_SET_AUTO_OFF, bytes([val]))
+
+    @classmethod
+    def set_lr_balance(cls, balance: int, enabled: bool = True) -> bytes:
+        """
+        Define o balanço de som estéreo Esquerdo / Direito (LeftRightSoundBalanceCmd = 0xAA 0xA8).
+        balance: valor relativo de -16 (100% Esquerdo) até +16 (100% Direito), sendo 0 o centro equilibrado.
+        No protocolo oficial: level = 100 + balance (intervalo de 84 a 116, sendo 100 o centro).
+        Quadro: [0xAA, 0xA8, 0x05, subSetCmd=0x00, FEATURE_STATUS=0x01, isOn, FEATURE_BALANCE=0x02, level]
+        """
+        level = max(84, min(116, 100 + balance))
+        is_on = 1 if enabled else 0
+        payload = bytes([0x00, 0x01, is_on, 0x02, level])
+        return cls.build_packet(cls.CMD_SET_LR_BALANCE, payload)
+
+    @classmethod
+    def set_smart_audio_video(cls, mode: str = "normal") -> bytes:
+        """
+        Define o modo de sincronização inteligente de áudio e vídeo (Smart Audio & Video = 0xAA 0x81).
+        Alterna entre baixa latência para vídeos/jogos e alta fidelidade para música.
+        mode:
+          - "audio": Modo Música (Alta Fidelidade) -> [256, 53, 130, 230]
+          - "video": Modo Vídeo (Baixa Latência)   -> [197, 46, 100, 200]
+          - "normal": Modo Padrão                 -> [197, 46, 130, 230]
+        Quadro: [0xAA, 0x81, 0x08, aac_hi, aac_lo, sbc_hi, sbc_lo, lat_hi, lat_lo, lat2_hi, lat2_lo]
+        """
+        mode = mode.lower()
+        if mode == "video":
+            aac, sbc, lat, lat2 = 197, 46, 100, 200
+        elif mode == "audio":
+            aac, sbc, lat, lat2 = 256, 53, 130, 230
+        else: # normal
+            aac, sbc, lat, lat2 = 197, 46, 130, 230
+
+        payload = bytes([
+            (aac >> 8) & 0xFF, aac & 0xFF,
+            (sbc >> 8) & 0xFF, sbc & 0xFF,
+            (lat >> 8) & 0xFF, lat & 0xFF,
+            (lat2 >> 8) & 0xFF, lat2 & 0xFF
+        ])
+        return cls.build_packet(cls.CMD_SET_SMART_SWITCH, payload)
+
+    @classmethod
+    def set_safe_sound(cls, enabled: bool) -> bytes:
+        """
+        Define o limitador acústico de proteção auditiva Safe Sound a 85 dB (SafeSoundCmd = 0xAA 0xA5).
+        """
+        payload = bytes([0x00, 0x01, 1 if enabled else 0])
+        return cls.build_packet(cls.CMD_SET_SAFE_SOUND, payload)
 
     @staticmethod
     def _extract_harman_feature(res: Dict[str, Any], fid: int, fval: bytes):
@@ -436,6 +508,44 @@ class Protocol3Handler:
                     if len(payload) >= 1:
                         res["anc_status"] = payload[0]
 
+                # Desligamento Automático por Inatividade (0x33)
+                elif cmd == 0x33 and len(payload) >= 1:
+                    raw_val = payload[0]
+                    res["auto_off_enabled"] = bool(raw_val & 0x80)
+                    res["auto_off_minutes"] = raw_val & 0x7F
+
+                # Balanço Esquerdo / Direito (0xA8)
+                elif cmd == 0xA8 and len(payload) >= 4:
+                    for idx_b in range(len(payload) - 1):
+                        if payload[idx_b] == 0x01:
+                            res["lr_balance_enabled"] = bool(payload[idx_b + 1])
+                        elif payload[idx_b] == 0x02:
+                            lvl = payload[idx_b + 1]
+                            res["lr_balance_level"] = lvl
+                            res["lr_balance_offset"] = lvl - 100
+
+                # Modo Smart Audio & Video (0x81 ou 0x82)
+                elif cmd in (0x81, 0x82) and len(payload) >= 8:
+                    aac = (payload[0] << 8) | payload[1]
+                    sbc = (payload[2] << 8) | payload[3]
+                    lat = (payload[4] << 8) | payload[5]
+                    lat2 = (payload[6] << 8) | payload[7]
+                    res["smart_switch_aac"] = aac
+                    res["smart_switch_sbc"] = sbc
+                    res["smart_switch_latency"] = lat
+                    if lat <= 100:
+                        res["smart_audio_video_mode"] = "video"
+                    elif aac == 256:
+                        res["smart_audio_video_mode"] = "audio"
+                    else:
+                        res["smart_audio_video_mode"] = "normal"
+
+                # Limitador de Volume Safe Sound (0xA5)
+                elif cmd == 0xA5 and len(payload) >= 2:
+                    for idx_s in range(len(payload) - 1):
+                        if payload[idx_s] == 0x01:
+                            res["safe_sound_enabled"] = bool(payload[idx_s + 1])
+
         # 3. Parser de ACK de comando BES (ex: '07 10 00 00')
         if b'\x07\x10\x00\x00' in data:
             res["cmd_ack"] = "ANC_OK"
@@ -473,7 +583,8 @@ class Protocol4Handler:
     FEATURE_FIRMWARE = 0x000C
     FEATURE_BATTERY_LEFT = 0x000D
     FEATURE_BATTERY_RIGHT = 0x000E
-    FEATURE_CASE_BATTERY = 0x1F03
+    FEATURE_AUTO_POWER_OFF = 0x0012
+    FEATURE_LR_BALANCE = 0x0015
     FEATURE_ANC = 0x0018
     FEATURE_AMBIENT_AWARE = 0x0019
     FEATURE_TALKTHRU = 0x001A
@@ -481,8 +592,11 @@ class Protocol4Handler:
     FEATURE_SPATIAL_MODE = 0x0021
     FEATURE_SIDETONE = 0x0023  # VoiceAware
     FEATURE_AUDIO_LIMITER = 0x0027
+    FEATURE_AUTO_PLAY_PAUSE = 0x002A
     FEATURE_EQ_INFO = 0x0E02
     FEATURE_EQ_CURVE = 0x0E7F
+    FEATURE_SMART_SWITCH = 0x100F
+    FEATURE_CASE_BATTERY = 0x1F03
 
     @classmethod
     def build_packet(cls, cmd_id: int, payload: bytes = b'', mtu: int = 512) -> List[bytes]:
@@ -596,6 +710,37 @@ class Protocol4Handler:
         return cls.build_packet(cls.CMD_SET_DEVICE_INFO, bytes(payload))
 
     @classmethod
+    def set_auto_power_off(cls, timeout_minutes: int, enabled: bool = True) -> List[bytes]:
+        """Configura Desligamento Automático no Protocolo 4 (Feature 0x0012)"""
+        val = ((1 if enabled and timeout_minutes > 0 else 0) << 15) | (timeout_minutes & 0x7FFF)
+        payload = bytes([
+            cls.FEATURE_AUTO_POWER_OFF & 0xFF, (cls.FEATURE_AUTO_POWER_OFF >> 8) & 0xFF,
+            val & 0xFF, (val >> 8) & 0xFF
+        ])
+        return cls.build_packet(cls.CMD_SET_DEVICE_INFO, payload)
+
+    @classmethod
+    def set_lr_balance(cls, balance: int, enabled: bool = True) -> List[bytes]:
+        """Configura Balanço L/R no Protocolo 4 (Feature 0x0015)"""
+        level = max(84, min(116, 100 + balance))
+        val = ((1 if enabled else 0) << 7) | (level & 0x7F)
+        payload = bytes([
+            cls.FEATURE_LR_BALANCE & 0xFF, (cls.FEATURE_LR_BALANCE >> 8) & 0xFF,
+            val & 0xFF
+        ])
+        return cls.build_packet(cls.CMD_SET_DEVICE_INFO, payload)
+
+    @classmethod
+    def set_safe_sound(cls, enabled: bool) -> List[bytes]:
+        """Configura Limitador de Volume 85dB no Protocolo 4 (Feature 0x0027)"""
+        val = 0x80 if enabled else 0x00
+        payload = bytes([
+            cls.FEATURE_AUDIO_LIMITER & 0xFF, (cls.FEATURE_AUDIO_LIMITER >> 8) & 0xFF,
+            val & 0xFF
+        ])
+        return cls.build_packet(cls.CMD_SET_DEVICE_INFO, payload)
+
+    @classmethod
     def parse_packet(cls, data: bytes) -> Dict[str, Any]:
         """Faz a interpretação de respostas e notificações do Protocolo 4"""
         res: Dict[str, Any] = {}
@@ -654,6 +799,34 @@ class Protocol4Handler:
                 elif fid == cls.FEATURE_SIDETONE and idx < len(payload):
                     res["voice_aware_level"] = payload[idx]
                     idx += 1
+                elif fid == cls.FEATURE_AUTO_POWER_OFF and idx + 2 <= len(payload):
+                    val = payload[idx] | (payload[idx+1] << 8)
+                    res["auto_off_enabled"] = bool(val & 0x8000)
+                    res["auto_off_minutes"] = val & 0x7FFF
+                    idx += 2
+                elif fid == cls.FEATURE_LR_BALANCE and idx < len(payload):
+                    val = payload[idx]
+                    res["lr_balance_enabled"] = bool(val & 0x80)
+                    lvl = val & 0x7F
+                    res["lr_balance_level"] = lvl
+                    res["lr_balance_offset"] = lvl - 100
+                    idx += 1
+                elif fid == cls.FEATURE_AUDIO_LIMITER and idx < len(payload):
+                    val = payload[idx]
+                    res["safe_sound_enabled"] = bool(val & 0x80)
+                    idx += 1
+                elif fid == cls.FEATURE_SMART_SWITCH and idx + 8 <= len(payload):
+                    aac = (payload[idx] << 8) | payload[idx+1]
+                    sbc = (payload[idx+2] << 8) | payload[idx+3]
+                    lat = (payload[idx+4] << 8) | payload[idx+5]
+                    res["smart_switch_latency"] = lat
+                    if lat <= 100:
+                        res["smart_audio_video_mode"] = "video"
+                    elif aac == 256:
+                        res["smart_audio_video_mode"] = "audio"
+                    else:
+                        res["smart_audio_video_mode"] = "normal"
+                    idx += 8
                 else:
                     # Para features desconhecidas, pula 1 byte
                     idx += 1

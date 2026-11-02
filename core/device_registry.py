@@ -64,7 +64,19 @@ class DeviceModel:
 
     @property
     def has_smart_audio(self) -> bool:
-        return "SmartAudioVideoCard" in self.features_set
+        return "SmartAudioVideoCard" in self.features_set or "SmartAudio" in self.features_set
+
+    @property
+    def has_lr_balance(self) -> bool:
+        return "LeftRightBalanceCard" in self.features_set or "LeftRightBalance2Card" in self.features_set or "LRBalance" in self.features_set
+
+    @property
+    def has_auto_power_off(self) -> bool:
+        return "AutoPowerOffCard" in self.features_set or "PowerSavingCard" in self.features_set or "AutoOff" in self.features_set
+
+    @property
+    def has_safe_sound(self) -> bool:
+        return "SafeSoundCard" in self.features_set or "AudioLimiterCard" in self.features_set
 
     @property
     def has_find_my_buds(self) -> bool:

@@ -40,7 +40,9 @@ class MainWindow(Adw.ApplicationWindow):
         self.active_preset_idx = 0
         self._updating_anc_ui = False
         self._updating_preset_ui = False
+        self._updating_extra_ui = False
         self._eq_debounce_timer: Optional[int] = None
+        self._balance_debounce_timer: Optional[int] = None
         self.eq_sliders: List[Gtk.Scale] = []
         self.frequencies = [32, 64, 125, 250, 500, 1000, 2000, 4000, 8000, 16000]
 
@@ -49,6 +51,7 @@ class MainWindow(Adw.ApplicationWindow):
             on_toggle_window=self._toggle_window_visibility,
             on_set_anc=self._apply_anc_mode_from_external,
             on_set_preset=self._apply_preset_from_external,
+            on_set_smart_mode=self._apply_smart_mode_from_external,
             on_refresh=self._detect_connected_device,
             on_quit=lambda: self.get_application().quit()
         )
@@ -361,36 +364,84 @@ class MainWindow(Adw.ApplicationWindow):
         self.eq_group.add(btn_row)
 
     def _build_extra_features_card(self):
-        self.extra_group = Adw.PreferencesGroup(title="Recursos Adicionais e Áudio")
+        self.extra_group = Adw.PreferencesGroup(title="Recursos Avançados e Áudio")
         self.content_box.append(self.extra_group)
 
-        # VoiceAware (Retorno da própria voz em chamadas)
-        voice_row = Adw.ComboRow(title="VoiceAware (Retorno de Voz)")
-        voice_row.set_subtitle("Permite ouvir sua própria voz durante ligações")
+        # 1. Modo Inteligente (Smart Audio & Video)
+        self.smart_mode_row = Adw.ComboRow(title="Modo Áudio & Vídeo (Smart Audio & Video)")
+        self.smart_mode_row.set_subtitle("Alterne entre máxima fidelidade para música e baixa latência para vídeos e jogos")
+        smart_opts = ["Modo Normal (Padrão)", "Modo Áudio (Alta Fidelidade)", "Modo Vídeo (Baixa Latência)"]
+        self.smart_mode_row.set_model(Gtk.StringList.new(smart_opts))
+        self.smart_mode_row.connect("notify::selected", self._on_smart_audio_video_selected)
+        self.extra_group.add(self.smart_mode_row)
+
+        # 2. Balanço de Áudio Estéreo Esquerdo / Direito (Left / Right Sound Balance)
+        self.balance_row = Adw.ActionRow(title="Balanço de Som (Esquerdo / Direito)")
+        self.balance_row.set_subtitle("Distribuição estéreo entre os fones")
+
+        balance_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        balance_box.set_valign(Gtk.Align.CENTER)
+
+        lbl_l = Gtk.Label(label="E")
+        lbl_l.add_css_class("dim-label")
+        balance_box.append(lbl_l)
+
+        self.balance_scale = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, -16.0, 16.0, 1.0)
+        self.balance_scale.set_size_request(180, -1)
+        self.balance_scale.set_value(0.0)
+        self.balance_scale.set_round_digits(0)
+        self.balance_scale.add_mark(0.0, Gtk.PositionType.BOTTOM, None)
+        self.balance_scale.connect("value-changed", self._on_balance_changed)
+        balance_box.append(self.balance_scale)
+
+        lbl_r = Gtk.Label(label="D")
+        lbl_r.add_css_class("dim-label")
+        balance_box.append(lbl_r)
+
+        self.balance_val_lbl = Gtk.Label(label="Centro (Equilibrado)")
+        self.balance_val_lbl.set_size_request(130, -1)
+        self.balance_val_lbl.set_xalign(0.0)
+        self.balance_val_lbl.add_css_class("caption")
+        balance_box.append(self.balance_val_lbl)
+
+        self.balance_row.add_suffix(balance_box)
+        self.extra_group.add(self.balance_row)
+
+        # 3. Desligamento Automático por Inatividade (Auto Power Off)
+        self.auto_off_row = Adw.ComboRow(title="Desligamento Automático por Inatividade")
+        self.auto_off_row.set_subtitle("Desliga os fones se nenhum áudio for reproduzido para economizar bateria")
+        auto_off_opts = ["Nunca / Desativado", "15 minutos", "30 minutos", "1 hora (60 min)", "2 horas (120 min)"]
+        self.auto_off_row.set_model(Gtk.StringList.new(auto_off_opts))
+        self.auto_off_row.connect("notify::selected", self._on_auto_power_off_selected)
+        self.extra_group.add(self.auto_off_row)
+
+        # 4. Limitador de Volume Safe Sound (85 dB)
+        self.safe_sound_row = Adw.SwitchRow(title="Proteção Auditiva Safe Sound (85 dB)")
+        self.safe_sound_row.set_subtitle("Limita o volume a 85 dB para proteger a audição conforme recomendações da OMS")
+        self.safe_sound_row.connect("notify::active", self._on_safe_sound_toggled)
+        self.extra_group.add(self.safe_sound_row)
+
+        # 5. VoiceAware (Retorno da própria voz em chamadas)
+        self.voice_row = Adw.ComboRow(title="VoiceAware (Retorno de Voz)")
+        self.voice_row.set_subtitle("Permite ouvir sua própria voz com clareza durante chamadas")
         voice_opts = ["Desligado", "Baixo", "Médio", "Alto"]
-        voice_row.set_model(Gtk.StringList.new(voice_opts))
-        voice_row.connect("notify::selected", self._on_voice_aware_selected)
-        self.extra_group.add(voice_row)
+        self.voice_row.set_model(Gtk.StringList.new(voice_opts))
+        self.voice_row.connect("notify::selected", self._on_voice_aware_selected)
+        self.extra_group.add(self.voice_row)
 
-        # Smart Audio & Video
-        smart_mode_row = Adw.ComboRow(title="Modo Inteligente (Smart Audio &amp; Video)")
-        smart_mode_row.set_subtitle("Otimiza qualidade para música ou sincronismo para vídeos")
-        smart_mode_row.set_model(Gtk.StringList.new(["Modo Normal", "Modo Música (Alta Fidelidade)", "Modo Vídeo (Baixa Latência)"]))
-        self.extra_group.add(smart_mode_row)
-
-        # Localizar meus fones (Find My Buds)
-        find_row = Adw.ActionRow(title="Buscar Meus Fones (Find My Buds)")
-        find_row.set_subtitle("Emite um sinal sonoro de alerta no fone selecionado")
+        # 6. Localizar meus fones (Find My Buds)
+        self.find_row = Adw.ActionRow(title="Buscar Meus Fones (Find My Buds)")
+        self.find_row.set_subtitle("Emite um sinal sonoro de alerta no auricular selecionado")
         
         find_left_btn = Gtk.Button(label="Tocar Esquerdo")
         find_left_btn.connect("clicked", lambda _: self._ring_earbud(True, False))
-        find_row.add_suffix(find_left_btn)
+        self.find_row.add_suffix(find_left_btn)
 
         find_right_btn = Gtk.Button(label="Tocar Direito")
         find_right_btn.connect("clicked", lambda _: self._ring_earbud(False, True))
-        find_row.add_suffix(find_right_btn)
+        self.find_row.add_suffix(find_right_btn)
 
-        self.extra_group.add(find_row)
+        self.extra_group.add(self.find_row)
 
     def _build_model_selector_card(self):
         model_group = Adw.PreferencesGroup(title="Modelo JBL Detectado / Simulação")
@@ -444,6 +495,10 @@ class MainWindow(Adw.ApplicationWindow):
             self.backend.send_raw(Protocol3Handler.REQ_DEV_INFO)
             self.backend.send_raw(Protocol3Handler.REQ_BATTERY_INFO)
             self.backend.send_raw(Protocol3Handler.REQ_ANC_MODES)
+            self.backend.send_raw(Protocol3Handler.REQ_SMART_SWITCH)
+            self.backend.send_raw(Protocol3Handler.REQ_LR_BALANCE)
+            self.backend.send_raw(Protocol3Handler.REQ_AUTO_OFF)
+            self.backend.send_raw(Protocol3Handler.REQ_SAFE_SOUND)
 
         elif paired:
             dev = paired[0]
@@ -494,7 +549,24 @@ class MainWindow(Adw.ApplicationWindow):
         # Oculta ou exibe cards baseado nas capacidades do fone
         self.anc_group.set_visible(model.has_anc)
         self.eq_group.set_visible(model.has_equalizer)
-        self.extra_group.set_visible(model.has_voice_aware or model.has_find_my_buds)
+        
+        # Visibilidade individual dos recursos avançados
+        self.voice_row.set_visible(model.has_voice_aware)
+        self.smart_mode_row.set_visible(model.has_smart_audio)
+        self.balance_row.set_visible(model.has_lr_balance)
+        self.auto_off_row.set_visible(model.has_auto_power_off)
+        self.safe_sound_row.set_visible(model.has_safe_sound)
+        self.find_row.set_visible(model.has_find_my_buds)
+
+        has_any_extra = (
+            model.has_voice_aware or 
+            model.has_smart_audio or 
+            model.has_lr_balance or 
+            model.has_auto_power_off or 
+            model.has_safe_sound or 
+            model.has_find_my_buds
+        )
+        self.extra_group.set_visible(has_any_extra)
 
     def _on_model_combo_changed(self, combo, _):
         idx = combo.get_selected()
@@ -651,6 +723,101 @@ class MainWindow(Adw.ApplicationWindow):
             toast = Adw.Toast.new("✅ Curva de equalização oficial (10 bandas) aplicada nos fones!")
             toast.set_timeout(2)
             self.toast_overlay.add_toast(toast)
+
+    def _on_smart_audio_video_selected(self, combo, _):
+        if self._updating_extra_ui:
+            return
+        idx = combo.get_selected()
+        mode_map = {0: "normal", 1: "audio", 2: "video"}
+        mode = mode_map.get(idx, "normal")
+        pkt_p3 = Protocol3Handler.set_smart_audio_video(mode)
+        self.backend.send_raw(pkt_p3)
+        self.tray_indicator.update_smart_mode(mode)
+
+        labels = {
+            "normal": "Modo Normal (Padrão) ativado",
+            "audio": "🎵 Modo Áudio (Alta Fidelidade) ativado",
+            "video": "🎬 Modo Vídeo (Baixa Latência) ativado"
+        }
+        toast = Adw.Toast.new(labels.get(mode, "Modo de áudio e vídeo alterado"))
+        toast.set_timeout(2)
+        self.toast_overlay.add_toast(toast)
+
+    def _apply_smart_mode_from_external(self, mode: str):
+        """Chamado a partir do menu suspenso da barra superior para alternar o modo Smart Audio & Video."""
+        GLib.idle_add(self._do_apply_smart_mode_from_external, mode)
+
+    def _do_apply_smart_mode_from_external(self, mode: str):
+        mode_map = {"normal": 0, "audio": 1, "video": 2}
+        if mode in mode_map and hasattr(self, 'smart_mode_row'):
+            self._updating_extra_ui = True
+            try:
+                self.smart_mode_row.set_selected(mode_map[mode])
+            finally:
+                self._updating_extra_ui = False
+        pkt_p3 = Protocol3Handler.set_smart_audio_video(mode)
+        self.backend.send_raw(pkt_p3)
+        self.tray_indicator.update_smart_mode(mode)
+
+    def _on_balance_changed(self, scale: Gtk.Scale):
+        val = int(round(scale.get_value()))
+        if val == 0:
+            self.balance_val_lbl.set_text("Centro (Equilibrado)")
+        elif val < 0:
+            self.balance_val_lbl.set_text(f"Esquerdo ({abs(val)})")
+        else:
+            self.balance_val_lbl.set_text(f"Direito ({val})")
+
+        if self._updating_extra_ui:
+            return
+
+        if self._balance_debounce_timer is not None:
+            GLib.source_remove(self._balance_debounce_timer)
+        self._balance_debounce_timer = GLib.timeout_add(150, self._debounced_apply_balance, val)
+
+    def _debounced_apply_balance(self, val: int):
+        self._balance_debounce_timer = None
+        pkt_p3 = Protocol3Handler.set_lr_balance(val)
+        self.backend.send_raw(pkt_p3)
+        for pkt_p4 in Protocol4Handler.set_lr_balance(val):
+            self.backend.send_raw(pkt_p4)
+        return False
+
+    def _on_auto_power_off_selected(self, combo, _):
+        if self._updating_extra_ui:
+            return
+        idx = combo.get_selected()
+        time_map = {0: 0, 1: 15, 2: 30, 3: 60, 4: 120}
+        minutes = time_map.get(idx, 0)
+        enabled = minutes > 0
+
+        pkt_p3 = Protocol3Handler.set_auto_power_off(minutes, enabled)
+        self.backend.send_raw(pkt_p3)
+        for pkt_p4 in Protocol4Handler.set_auto_power_off(minutes, enabled):
+            self.backend.send_raw(pkt_p4)
+
+        if enabled:
+            toast = Adw.Toast.new(f"⏱️ Desligamento automático: {minutes} min de inatividade")
+        else:
+            toast = Adw.Toast.new("⏱️ Desligamento automático desativado (Nunca)")
+        toast.set_timeout(2)
+        self.toast_overlay.add_toast(toast)
+
+    def _on_safe_sound_toggled(self, switch, _):
+        if self._updating_extra_ui:
+            return
+        active = switch.get_active()
+        pkt_p3 = Protocol3Handler.set_safe_sound(active)
+        self.backend.send_raw(pkt_p3)
+        for pkt_p4 in Protocol4Handler.set_safe_sound(active):
+            self.backend.send_raw(pkt_p4)
+
+        if active:
+            toast = Adw.Toast.new("🛡️ Proteção auditiva Safe Sound ativada (85 dB)")
+        else:
+            toast = Adw.Toast.new("🛡️ Proteção auditiva Safe Sound desativada")
+        toast.set_timeout(2)
+        self.toast_overlay.add_toast(toast)
 
     def _on_voice_aware_selected(self, combo, _):
         level = VoiceAwareLevel(combo.get_selected())
@@ -815,3 +982,52 @@ class MainWindow(Adw.ApplicationWindow):
                     ch_r=charging_r,
                     ch_c=charging_c
                 )
+
+            # Sincronização de Desligamento Automático
+            if "auto_off_minutes" in parsed or "auto_off_minutes" in status:
+                mins = status.get("auto_off_minutes", parsed.get("auto_off_minutes"))
+                enabled = status.get("auto_off_enabled", parsed.get("auto_off_enabled", mins > 0))
+                idx_map = {0: 0, 15: 1, 30: 2, 60: 3, 120: 4}
+                sel_idx = idx_map.get(mins if enabled else 0, 0)
+                self._updating_extra_ui = True
+                try:
+                    self.auto_off_row.set_selected(sel_idx)
+                finally:
+                    self._updating_extra_ui = False
+
+            # Sincronização de Balanço L/R
+            if "lr_balance_offset" in parsed or "lr_balance_offset" in status:
+                offset = status.get("lr_balance_offset", parsed.get("lr_balance_offset"))
+                if offset is not None:
+                    self._updating_extra_ui = True
+                    try:
+                        self.balance_scale.set_value(float(offset))
+                        if offset == 0:
+                            self.balance_val_lbl.set_text("Centro (Equilibrado)")
+                        elif offset < 0:
+                            self.balance_val_lbl.set_text(f"Esquerdo ({abs(offset)})")
+                        else:
+                            self.balance_val_lbl.set_text(f"Direito ({offset})")
+                    finally:
+                        self._updating_extra_ui = False
+
+            # Sincronização de Smart Audio & Video
+            if "smart_audio_video_mode" in parsed or "smart_audio_video_mode" in status:
+                smode = status.get("smart_audio_video_mode", parsed.get("smart_audio_video_mode"))
+                smode_map = {"normal": 0, "audio": 1, "video": 2}
+                if smode in smode_map:
+                    self._updating_extra_ui = True
+                    try:
+                        self.smart_mode_row.set_selected(smode_map[smode])
+                    finally:
+                        self._updating_extra_ui = False
+
+            # Sincronização de Proteção Auditiva Safe Sound
+            if "safe_sound_enabled" in parsed or "safe_sound_enabled" in status:
+                ss = status.get("safe_sound_enabled", parsed.get("safe_sound_enabled"))
+                if ss is not None:
+                    self._updating_extra_ui = True
+                    try:
+                        self.safe_sound_row.set_active(bool(ss))
+                    finally:
+                        self._updating_extra_ui = False

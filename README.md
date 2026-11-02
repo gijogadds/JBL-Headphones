@@ -28,15 +28,18 @@ Para detalhes aprofundados sobre a engenharia reversa dos protocolos (Protocolo 
      - `32Hz, 64Hz, 125Hz, 250Hz, 500Hz, 1kHz, 2kHz, 4kHz, 8kHz, 16kHz`.
    - Ajuste de ganho de **-10.0 dB a +10.0 dB** com aplicação instantânea nos fones via pacotes `EQSettings2` (0xAA 0xA2).
 
-4. **Recursos de Chamadas e Utilidades:**
-   - **VoiceAware:** Retorno da sua própria voz durante reuniões e chamadas (Desligado, Baixo, Médio, Alto).
-   - **Smart Audio & Video:** Alternância entre alta fidelidade e modo de baixa latência para vídeos e jogos.
-   - **Buscar Meus Fones (Find My Buds):** Disparo de sinal sonoro independente no fone Esquerdo ou Direito.
+4. **Recursos Avançados e Áudio (Engenharia Reversa Completa):**
+   - **Modo Áudio & Vídeo (Smart Audio & Video):** Alternância em tempo real entre qualidade máxima de áudio musical (Alta Fidelidade) e redução de latência no DSP para 100ms para sincronismo labial perfeito em vídeos, filmes e jogos (`0xAA 0x81`).
+   - **Balanço Estéreo L/R (Left/Right Sound Balance):** Controle deslizante preciso de -16 (100% Esquerdo) a +16 (100% Direito) com valor central equilibrado (`0xAA 0xA8`).
+   - **Desligamento Automático por Inatividade:** Temporizador configurável para economia de bateria (*Nunca, 15 min, 30 min, 1 hora, 2 horas*) enviado diretamente para o microcontrolador (`0xAA 0x33`).
+   - **Proteção Auditiva Safe Sound (85 dB):** Limitador acústico automático conforme diretrizes da OMS para prevenção de perda auditiva (`0xAA 0xA5`).
+   - **VoiceAware:** Retorno da sua própria voz durante reuniões e chamadas (Desligado, Baixo, Médio, Alto) (`0xAA 0x98`).
+   - **Buscar Meus Fones (Find My Buds):** Disparo de sinal sonoro independente no fone Esquerdo ou Direito (`0xAA 0x36`).
 
 5. **Menu Suspenso na Barra Superior (Top Bar Tray / StatusNotifierItem):**
    - Indicador nativo e persistente na bandeja do sistema (Top Bar) via `org.kde.StatusNotifierItem` e `com.canonical.dbusmenu`.
    - Exibição de carga de bateria em tempo real (`L: X%⚡ | R: Y%⚡ | Case: Z%⚡`).
-   - Submenus rápidos para alternar modos de ANC (*ANC, Ambient Aware, TalkThru, Off*) e Presets de Equalizador diretamente da barra superior sem precisar abrir a janela principal.
+   - Submenus rápidos para alternar modos de ANC (*ANC, Ambient Aware, TalkThru, Off*), Presets de Equalizador e Modo Áudio & Vídeo diretamente da barra superior sem precisar abrir a janela principal.
    - Ao fechar a janela, o aplicativo continua em execução em segundo plano na barra superior, podendo ser reexibido com 1 clique no ícone ou no item "Abrir / Ocultar Janela".
 
 6. **Ícone Oficial e Integração Completa com a Dock do GNOME:**
@@ -97,3 +100,8 @@ Agora basta abrir o menu de aplicativos ou a dock do GNOME e buscar por **JBL He
 
 ## 📖 Documentação de Engenharia Reversa
 Para especificações detalhadas sobre os quadros binários, opcodes, UUIDs, chipsets e algoritmos, leia o arquivo [REA.md](REA.md).
+
+---
+
+## 📄 Licença
+Este projeto é licenciado sob a [Licença MIT](LICENSE) - veja o arquivo `LICENSE` para detalhes.
