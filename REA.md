@@ -242,3 +242,39 @@ Todos os conhecimentos adquiridos na engenharia reversa foram transpostos direta
 A engenharia reversa demonstrou que a Harman/JBL possui uma pilha de protocolos muito bem estruturada, combinando canais BLE GATT e RFCOMM para oferecer alta velocidade de resposta sem comprometer a estabilidade do fluxo de áudio estéreo (A2DP). 
 
 O código e os dados extraídos fornecem paridade de recursos entre a plataforma móvel oficial e o sistema operacional Linux, viabilizando controle integral de cancelamento de ruído, equalização acústica de estúdio e monitoramento contínuo de baterias.
+
+---
+
+## 9. Engenharia Reversa Aprofundada do Subsistema de Equalização (BES2600 / Harman Protocol)
+
+### 9.1 Diagnóstico do Problema de Dessincronização / Fone Mudo
+Durante os testes de movimentação dos sliders de equalização paramétrica personalizada, foi observado que um dos auriculares entrava momentaneamente em estado mudo ou dessincronizava o fluxo estéreo TWS.
+A inspeção do bytecode descompilado de `com.harman.sdk.message.EqCatIndex` e `BesEQControl` revelou:
+1. **Comando de Preset vs Curva Paramétrica**: O comando legado `CommandHeader.SET_EQ_PRESET` (`0xAA 0x40 0x01 <cat>`) é estritamente destinado à seleção de presets fixos pré-gravados em firmware (Jazz, Vocal, Bass, Extreme Bass, Club, Studio, Pop). 
+2. **Efeito da Categoria 0 (`EqCatIndex.OFF`)**: O valor `0` corresponde a `EqCatIndex.OFF` ("default EQ / turn off EQ"). Enviar repetidamente `0xAA 0x40 0x01 0x00` a cada movimento do slider instrui o hardware BES2600 a desligar os filtros do DSP e redefinir buffers em tempo de execução, resultando em interrupção abrupta de áudio no auricular escravo (TWS dropout).
+3. **Categoria Oficial do Custom EQ (`103` / `0x67`)**: Na enumeração oficial `EqCatIndex`, o equalizador de usuário customizado possui o identificador `CUSTOM_EQ = 103` (`0x67`). O pacote `EQSettings2` (`0xAA 0xA2`) com categoria `103` aplica as 10 bandas em tempo real via interpolação de coeficientes no DSP sem reiniciar o motor acústico nem silenciar os fones.
+
+### 9.2 Estrutura Oficial do Pacote EQSettings2 (`0xAA 0xA2`)
+- **Cabeçalho (16 bytes)**:
+  - Byte 0: `subSetCmd10 = 0x03` (`isQMultiply10 = True`)
+  - Byte 1: `category = 103` (`0x67` para Custom EQ) ou `1, 2, 3, 6, 7, 9, 13` para Presets
+  - Bytes 2..5: `calibration = 0.0f` (float IEEE-754 little-endian)
+  - Byte 6: `sampleRate = 0`
+  - Bytes 7..10: `leftGain` (`-5.8f` para Extreme Bass, `0.0f` para os demais)
+  - Bytes 11..14: `rightGain` (`-5.8f` para Extreme Bass, `0.0f` para os demais)
+  - Byte 15: `bandCount = 10`
+- **10 Bandas Paramétricas (10 bytes cada)**:
+  - Offset + 0: `bandType = 1` (Filtro Peaking ativo)
+  - Offset + 1..4: `gainValue` (float little-endian em dB, de -6.0 a +6.0)
+  - Offset + 5..8: `frequency` (float little-endian: 32, 64, 125, 250, 500, 1000, 2000, 4000, 8000, 16000 Hz)
+  - Offset + 9: `qValue * 10 = 10` (Fator Q = 1.0)
+- **Framing**: `[0xAA, 0xA2, len_lsb, len_msb, ...payload]` (total de 120 bytes).
+
+### 9.3 Fragmentação BLE GATT (`GenGroupCmd` - `0xAA 0xEF`)
+Para links BLE de baixo MTU, o pacote é fragmentado de acordo com a especificação oficial Harman:
+- Prefixo: `0xAA 0xEF`
+- Comprimento: `len(chunk) + 4`
+- Total de pacotes e índice do fragmento
+- Soma de verificação CRC16-IBM / ARC
+- Chunk de dados correspondente.
+No canal RFCOMM Classic (SPP 17), o pacote de 120 bytes é transmitido integralmente em frame único sem limites de MTU.
