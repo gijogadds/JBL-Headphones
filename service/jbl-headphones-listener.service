@@ -4,7 +4,7 @@ After=graphical-session.target bluetooth.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/python3 "/mnt/giovanni/Projetos/REA/JBL Headphones/jbl-linux-app/service/jbl_listener.py"
+ExecStart=%h/.local/bin/jbl-headphones-listener
 Restart=always
 RestartSec=3
 Environment=PYTHONUNBUFFERED=1

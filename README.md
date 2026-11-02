@@ -83,18 +83,16 @@ python3 main.py
 ### Instalar Lançador e Ícones no Sistema:
 Para instalar os ícones oficiais e o lançador na dock do sistema:
 ```bash
-# Copia o arquivo .desktop para aplicações locais
-cp io.github.jbl.headphones.linux.desktop ~/.local/share/applications/
-update-desktop-database ~/.local/share/applications/
-
-# Instala o ícone oficial em todas as resoluções do tema hicolor
-for sz in 48x48 64x64 128x128 256x256 scalable; do
-    mkdir -p ~/.local/share/icons/hicolor/$sz/apps
-    cp data/icon.png ~/.local/share/icons/hicolor/$sz/apps/io.github.jbl.headphones.linux.png
-done
-gtk-update-icon-cache -f -t ~/.local/share/icons/hicolor
+./install.sh
 ```
 Agora basta abrir o menu de aplicativos ou a dock do GNOME e buscar por **JBL Headphones**!
+
+Para habilitar também a inicialização automática ao conectar os fones:
+```bash
+./service/install_service.sh
+```
+
+Os instaladores geram os lançadores com o caminho atual do projeto, sem depender de um usuário ou diretório específico.
 
 ---
 
