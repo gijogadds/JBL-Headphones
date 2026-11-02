@@ -14,6 +14,8 @@ from typing import Optional, Callable, Dict, Any, List
 from bleak import BleakScanner, BleakClient
 from bleak.backends.device import BLEDevice
 
+from core.protocol import Protocol4PacketAssembler
+
 # UUIDs oficiais da Harman International / JBL
 HARMAN_SERVICE_UUID = "65786365-6c70-6f69-6e74-2e636f6d0000"
 HARMAN_NOTIFY_CHAR  = "65786365-6c70-6f69-6e74-2e636f6d0001"
@@ -27,7 +29,9 @@ class BLEController:
         self._running: bool = False
         self._thread: Optional[threading.Thread] = None
         self._loop: Optional[asyncio.AbstractEventLoop] = None
+        self._main_task: Optional[asyncio.Task] = None
         self._client: Optional[BleakClient] = None
+        self._p4_assembler = Protocol4PacketAssembler()
         self.is_connected: bool = False
         self.connected_address: Optional[str] = None
         self._send_queue: Optional[asyncio.Queue] = None
@@ -44,32 +48,63 @@ class BLEController:
     def stop(self):
         """Encerra a conexão BLE e a thread com segurança."""
         self._running = False
-        if self._loop and self._loop.is_running():
-            self._loop.call_soon_threadsafe(self._loop.stop)
+        if self._loop and self._loop.is_running() and self._main_task:
+            self._loop.call_soon_threadsafe(self._main_task.cancel)
         if self._thread and self._thread.is_alive():
-            self._thread.join(timeout=2.0)
+            self._thread.join(timeout=5.0)
+            if self._thread.is_alive():
+                print("[BLEController] O worker BLE não encerrou no prazo.", file=sys.stderr)
+                return
         self._thread = None
         self._loop = None
+        self._main_task = None
         self.is_connected = False
         self.connected_address = None
 
     def send_cmd(self, data: bytes) -> bool:
         """Enfileira pacote binário para envio via GATT Write Characteristic de forma thread-safe."""
-        if not data or not self._running or not self._loop or not self._send_queue:
+        if (
+            not data
+            or not self._running
+            or not self.is_connected
+            or not self._loop
+            or not self._loop.is_running()
+            or not self._send_queue
+        ):
             return False
-        self._loop.call_soon_threadsafe(self._send_queue.put_nowait, data)
+        try:
+            self._loop.call_soon_threadsafe(self._enqueue_command, data)
+        except RuntimeError as exc:
+            print(f"[BLEController] Não foi possível enfileirar comando BLE: {exc}", file=sys.stderr)
+            return False
         return True
+
+    def _enqueue_command(self, data: bytes):
+        if not self._send_queue:
+            return
+        try:
+            self._send_queue.put_nowait(data)
+        except asyncio.QueueFull:
+            print("[BLEController] Fila BLE cheia; comando descartado.", file=sys.stderr)
 
     def _run_event_loop(self):
         """Ponto de entrada da thread dedicada ao asyncio."""
         self._loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self._loop)
-        self._send_queue = asyncio.Queue()
+        self._send_queue = asyncio.Queue(maxsize=128)
+        self._main_task = self._loop.create_task(self._main_supervisor())
         try:
-            self._loop.run_until_complete(self._main_supervisor())
+            self._loop.run_until_complete(self._main_task)
+        except asyncio.CancelledError:
+            pass
         except Exception as e:
             print(f"[BLEController] Erro no loop: {e}", file=sys.stderr)
         finally:
+            pending = asyncio.all_tasks(self._loop)
+            for task in pending:
+                task.cancel()
+            if pending:
+                self._loop.run_until_complete(asyncio.gather(*pending, return_exceptions=True))
             self._loop.close()
 
     async def _main_supervisor(self):
@@ -86,6 +121,13 @@ class BLEController:
                 
                 # 2. Conectar com BleakClient
                 async with BleakClient(device, timeout=12.0) as client:
+                    services = client.services
+                    if (
+                        services.get_characteristic(HARMAN_NOTIFY_CHAR) is None
+                        or services.get_characteristic(HARMAN_WRITE_CHAR) is None
+                    ):
+                        raise RuntimeError("O dispositivo não expõe as características GATT Harman esperadas")
+
                     self._client = client
                     self.is_connected = True
                     self.connected_address = device.address
@@ -101,16 +143,7 @@ class BLEController:
                     except Exception as e:
                         print(f"[BLEController] Aviso ao ativar notificações: {e}", file=sys.stderr)
 
-                    # 4. Enviar requisições iniciais de sincronização
-                    req_anc = bytes([0xAA, 0x91, 0x01, 0x11])
-                    req_info = bytes([0xAA, 0x11, 0x01, 0x00])
-                    req_bat = bytes([0xAA, 0x25, 0x01, 0x01])
-                    await self._write_raw(client, req_anc)
-                    await self._write_raw(client, req_info)
-                    await self._write_raw(client, req_bat)
-
-                    # 5. Processar fila de envio e manter a conexão viva
-                    last_bat_query = time.time()
+                    # Processa a fila de envio e mantém a conexão viva.
                     while self._running and client.is_connected:
                         try:
                             # Espera comando para envio com timeout de 0.5s para checagem de integridade
@@ -118,11 +151,7 @@ class BLEController:
                             await self._write_raw(client, data)
                             self._send_queue.task_done()
                         except asyncio.TimeoutError:
-                            # Consulta periódica de status de bateria a cada 15s
-                            now = time.time()
-                            if now - last_bat_query > 15.0:
-                                last_bat_query = now
-                                await self._write_raw(client, req_bat)
+                            continue
                         except Exception as e:
                             print(f"[BLEController] Erro ao enviar pacote BLE: {e}", file=sys.stderr)
 
@@ -148,32 +177,18 @@ class BLEController:
                 except Exception:
                     pass
 
-            target_clean = self._target_name_hint.replace("-LE", "").strip().upper()
+            target_clean = self._target_name_hint.strip().upper().removesuffix("-LE").strip()
+            if not target_clean:
+                return None
             
             def filter_func(d: BLEDevice, adv) -> bool:
                 # 1. Correspondência direta por MAC
                 if self._target_mac and d.address.upper() == self._target_mac:
                     return True
 
-                # 2. Correspondência por Serviço GATT Harman
-                if adv.service_uuids and any(HARMAN_SERVICE_UUID.lower() in u.lower() for u in adv.service_uuids):
-                    return True
-
-                # 3. Correspondência por Fabricante Harman (0x0057 / 0x0ECB)
-                if adv.manufacturer_data and any(m_id in (0x0057, 0x0ECB) for m_id in adv.manufacturer_data.keys()):
-                    return True
-
-                # 4. Correspondência por Nome
                 name = (d.name or adv.local_name or "").upper()
-                if not name:
-                    return False
-                if target_clean and target_clean in name:
-                    return True
-                if "JBL" in name:
-                    return True
-                if any(w in name for w in ("BUDS", "BEAM", "FLEX", "LIVE", "TUNE", "TOUR", "QUANTUM", "SOUNDGEAR")):
-                    return True
-                return False
+                name = name.removesuffix("-LE").strip()
+                return name == target_clean
 
             dev = await BleakScanner.find_device_by_filter(filter_func, timeout=4.0)
             return dev
@@ -205,6 +220,10 @@ class BLEController:
 
     def _handle_notification(self, sender: Any, data: bytes):
         """Trata notificações do fone físico e eventos de toque no auricular."""
+        data = self._p4_assembler.feed(bytes(data))
+        if data is None:
+            return
+
         print(f"[BLEController] Notificação recebida ({len(data)} bytes): {data.hex(' ')}")
         if not self.on_status_changed:
             return

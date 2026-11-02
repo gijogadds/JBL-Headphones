@@ -31,6 +31,7 @@ class MainWindow(Adw.ApplicationWindow):
         self.start_in_tray = start_in_tray
         self.auto_close_on_disconnect = auto_close_on_disconnect
         self._device_ever_connected = False
+        self._ble_connected = False
         self._shutdown_timer_id: Optional[int] = None
 
         self.registry = registry
@@ -474,7 +475,7 @@ class MainWindow(Adw.ApplicationWindow):
             if matched_model:
                 self._apply_model(matched_model)
                 try:
-                    idx = [m.name for m in self.registry.all_models].index(matched_model.name)
+                    idx = self.registry.all_models.index(matched_model)
                     self.model_combo.set_selected(idx)
                 except ValueError:
                     pass
@@ -491,14 +492,7 @@ class MainWindow(Adw.ApplicationWindow):
 
             self.tray_indicator.update_device(dev.name, True)
 
-            # Envia requisições de telemetria completa via BLE e RFCOMM
-            self.backend.send_raw(Protocol3Handler.REQ_DEV_INFO)
-            self.backend.send_raw(Protocol3Handler.REQ_BATTERY_INFO)
-            self.backend.send_raw(Protocol3Handler.REQ_ANC_MODES)
-            self.backend.send_raw(Protocol3Handler.REQ_SMART_SWITCH)
-            self.backend.send_raw(Protocol3Handler.REQ_LR_BALANCE)
-            self.backend.send_raw(Protocol3Handler.REQ_AUTO_OFF)
-            self.backend.send_raw(Protocol3Handler.REQ_SAFE_SOUND)
+            self._request_device_state()
 
         elif paired:
             dev = paired[0]
@@ -506,7 +500,7 @@ class MainWindow(Adw.ApplicationWindow):
             if matched_model:
                 self._apply_model(matched_model)
                 try:
-                    idx = [m.name for m in self.registry.all_models].index(matched_model.name)
+                    idx = self.registry.all_models.index(matched_model)
                     self.model_combo.set_selected(idx)
                 except ValueError:
                     pass
@@ -519,16 +513,56 @@ class MainWindow(Adw.ApplicationWindow):
 
             # Tenta restabelecer conexão BlueZ em segundo plano
             self.backend.connect_bluez(dev.mac)
-            self.backend.connect(dev)
         else:
             self.title_widget.set_subtitle("Nenhum fone conectado")
             self.device_banner.set_title("Nenhum fone conectado")
             self.device_banner.set_subtitle("Conecte seu fone JBL pelo Bluetooth do sistema")
             self.battery_badge.set_text("--%")
             self.tray_indicator.update_device("Nenhum fone conectado", False)
+            self.current_model = None
             default_model = self.registry.find_by_name("JBL Tune Buds 2")
             if default_model:
                 self._apply_model(default_model)
+
+    def _request_device_state(self):
+        if self.current_model and self.current_model.protocol_version == 4:
+            feature_ids = [
+                Protocol4Handler.FEATURE_BATTERY_LEFT,
+                Protocol4Handler.FEATURE_BATTERY_RIGHT,
+                Protocol4Handler.FEATURE_CASE_BATTERY,
+                Protocol4Handler.FEATURE_AUTO_POWER_OFF,
+                Protocol4Handler.FEATURE_LR_BALANCE,
+                Protocol4Handler.FEATURE_ANC,
+                Protocol4Handler.FEATURE_AMBIENT_AWARE,
+                Protocol4Handler.FEATURE_TALKTHRU,
+                Protocol4Handler.FEATURE_SIDETONE,
+                Protocol4Handler.FEATURE_AUDIO_LIMITER,
+                Protocol4Handler.FEATURE_SMART_SWITCH,
+                Protocol4Handler.FEATURE_EQ_INFO,
+            ]
+            for packet in Protocol4Handler.build_get_features(feature_ids):
+                self.backend.send_raw(packet)
+            return
+
+        for packet in (
+            Protocol3Handler.REQ_DEV_INFO,
+            Protocol3Handler.REQ_BATTERY_INFO,
+            Protocol3Handler.REQ_ANC_MODES,
+            Protocol3Handler.REQ_SMART_SWITCH,
+            Protocol3Handler.REQ_LR_BALANCE,
+            Protocol3Handler.REQ_AUTO_OFF,
+            Protocol3Handler.REQ_SAFE_SOUND,
+        ):
+            self.backend.send_raw(packet)
+
+    def _send_packets(self, packets: List[bytes]) -> bool:
+        results = [self.backend.send_raw(packet) for packet in packets]
+        if results and not any(results):
+            toast = Adw.Toast.new("Comando não enviado: nenhum canal Bluetooth está disponível.")
+            toast.set_timeout(4)
+            self.toast_overlay.add_toast(toast)
+            return False
+        return bool(results)
 
     def _apply_model(self, model: DeviceModel):
         """Adapta a visibilidade dos cards e a foto oficial de acordo com o modelo."""
@@ -552,11 +586,11 @@ class MainWindow(Adw.ApplicationWindow):
         
         # Visibilidade individual dos recursos avançados
         self.voice_row.set_visible(model.has_voice_aware)
-        self.smart_mode_row.set_visible(model.has_smart_audio)
+        self.smart_mode_row.set_visible(model.has_smart_audio and model.protocol_version == 3)
         self.balance_row.set_visible(model.has_lr_balance)
         self.auto_off_row.set_visible(model.has_auto_power_off)
         self.safe_sound_row.set_visible(model.has_safe_sound)
-        self.find_row.set_visible(model.has_find_my_buds)
+        self.find_row.set_visible(model.has_find_my_buds and model.protocol_version == 3)
 
         has_any_extra = (
             model.has_voice_aware or 
@@ -580,15 +614,13 @@ class MainWindow(Adw.ApplicationWindow):
 
         self.active_anc_mode = mode
         
-        # 1. Envia pacotes oficiais Harman Protocol 3 (BES / Clássico)
-        pkts_p3 = Protocol3Handler.set_anc_mode(mode)
-        for pkt in pkts_p3:
-            self.backend.send_raw(pkt)
-
-        # 2. Envia pacotes oficiais Harman Protocol 4 (Geração Moderna)
-        pkts_p4 = Protocol4Handler.set_anc_mode(mode)
-        for pkt in pkts_p4:
-            self.backend.send_raw(pkt)
+        packets = (
+            Protocol4Handler.set_anc_mode(mode)
+            if self.current_model and self.current_model.protocol_version == 4
+            else Protocol3Handler.set_anc_mode(mode)
+        )
+        if not self._send_packets(packets):
+            return
 
         # Atualiza indicador da barra superior
         self.tray_indicator.update_anc_mode(mode)
@@ -623,12 +655,12 @@ class MainWindow(Adw.ApplicationWindow):
             self._updating_anc_ui = False
 
         self.active_anc_mode = mode
-        pkts_p3 = Protocol3Handler.set_anc_mode(mode)
-        for pkt in pkts_p3:
-            self.backend.send_raw(pkt)
-        pkts_p4 = Protocol4Handler.set_anc_mode(mode)
-        for pkt in pkts_p4:
-            self.backend.send_raw(pkt)
+        packets = (
+            Protocol4Handler.set_anc_mode(mode)
+            if self.current_model and self.current_model.protocol_version == 4
+            else Protocol3Handler.set_anc_mode(mode)
+        )
+        self._send_packets(packets)
         self.tray_indicator.update_anc_mode(mode)
 
     @staticmethod
@@ -664,12 +696,13 @@ class MainWindow(Adw.ApplicationWindow):
                     slider.set_value(gain)
             finally:
                 self._updating_preset_ui = False
-            # Envia pacote de equalização paramétrica oficial EQSettings2 (0xAA 0xA2)
-            pkt_eq2 = Protocol3Handler.build_eq2_packet(gains, preset_id=idx)
-            self.backend.send_raw(pkt_eq2)
-            # Envia também sincronização de categoria de preset (0xAA 0x40)
-            pkt_preset = Protocol3Handler.set_eq_preset(idx)
-            self.backend.send_raw(pkt_preset)
+            packets = (
+                Protocol4Handler.build_eq_curve_packet(gains)
+                if self.current_model and self.current_model.protocol_version == 4
+                else [Protocol3Handler.set_eq_preset(idx)]
+            )
+            if not self._send_packets(packets):
+                return
             p_name = preset_names[idx] if idx < len(preset_names) else ""
             toast = Adw.Toast.new(f"🎵 Predefinição JBL aplicada: {p_name}")
             toast.set_timeout(2)
@@ -714,11 +747,13 @@ class MainWindow(Adw.ApplicationWindow):
 
     def _apply_custom_eq(self, show_toast: bool = True):
         gains = [s.get_value() for s in self.eq_sliders]
-        # Aplica a curva paramétrica oficial EQSettings2 (0xAA 0xA2) com categoria 103 (Custom EQ).
-        # NUNCA enviar 0xAA 0x40 ao ajustar sliders, pois o firmware interpreta categoria 0 como 'desligar EQ'
-        # e reseta os filtros do DSP, causando dessincronização e corte de áudio momentâneo (mudo) no fone escravo.
-        pkt = Protocol3Handler.build_eq2_packet(gains, preset_id=7)
-        self.backend.send_raw(pkt)
+        packets = (
+            Protocol4Handler.build_eq_curve_packet(gains)
+            if self.current_model and self.current_model.protocol_version == 4
+            else [Protocol3Handler.build_eq2_packet(gains, preset_id=7)]
+        )
+        if not self._send_packets(packets):
+            return
         if show_toast:
             toast = Adw.Toast.new("✅ Curva de equalização oficial (10 bandas) aplicada nos fones!")
             toast.set_timeout(2)
@@ -727,11 +762,14 @@ class MainWindow(Adw.ApplicationWindow):
     def _on_smart_audio_video_selected(self, combo, _):
         if self._updating_extra_ui:
             return
+        if self.current_model and self.current_model.protocol_version == 4:
+            return
         idx = combo.get_selected()
         mode_map = {0: "normal", 1: "audio", 2: "video"}
         mode = mode_map.get(idx, "normal")
         pkt_p3 = Protocol3Handler.set_smart_audio_video(mode)
-        self.backend.send_raw(pkt_p3)
+        if not self._send_packets([pkt_p3]):
+            return
         self.tray_indicator.update_smart_mode(mode)
 
         labels = {
@@ -756,7 +794,7 @@ class MainWindow(Adw.ApplicationWindow):
             finally:
                 self._updating_extra_ui = False
         pkt_p3 = Protocol3Handler.set_smart_audio_video(mode)
-        self.backend.send_raw(pkt_p3)
+        self._send_packets([pkt_p3])
         self.tray_indicator.update_smart_mode(mode)
 
     def _on_balance_changed(self, scale: Gtk.Scale):
@@ -777,10 +815,12 @@ class MainWindow(Adw.ApplicationWindow):
 
     def _debounced_apply_balance(self, val: int):
         self._balance_debounce_timer = None
-        pkt_p3 = Protocol3Handler.set_lr_balance(val)
-        self.backend.send_raw(pkt_p3)
-        for pkt_p4 in Protocol4Handler.set_lr_balance(val):
-            self.backend.send_raw(pkt_p4)
+        packets = (
+            Protocol4Handler.set_lr_balance(val)
+            if self.current_model and self.current_model.protocol_version == 4
+            else [Protocol3Handler.set_lr_balance(val)]
+        )
+        self._send_packets(packets)
         return False
 
     def _on_auto_power_off_selected(self, combo, _):
@@ -791,10 +831,13 @@ class MainWindow(Adw.ApplicationWindow):
         minutes = time_map.get(idx, 0)
         enabled = minutes > 0
 
-        pkt_p3 = Protocol3Handler.set_auto_power_off(minutes, enabled)
-        self.backend.send_raw(pkt_p3)
-        for pkt_p4 in Protocol4Handler.set_auto_power_off(minutes, enabled):
-            self.backend.send_raw(pkt_p4)
+        packets = (
+            Protocol4Handler.set_auto_power_off(minutes, enabled)
+            if self.current_model and self.current_model.protocol_version == 4
+            else [Protocol3Handler.set_auto_power_off(minutes, enabled)]
+        )
+        if not self._send_packets(packets):
+            return
 
         if enabled:
             toast = Adw.Toast.new(f"⏱️ Desligamento automático: {minutes} min de inatividade")
@@ -807,10 +850,13 @@ class MainWindow(Adw.ApplicationWindow):
         if self._updating_extra_ui:
             return
         active = switch.get_active()
-        pkt_p3 = Protocol3Handler.set_safe_sound(active)
-        self.backend.send_raw(pkt_p3)
-        for pkt_p4 in Protocol4Handler.set_safe_sound(active):
-            self.backend.send_raw(pkt_p4)
+        packets = (
+            Protocol4Handler.set_safe_sound(active)
+            if self.current_model and self.current_model.protocol_version == 4
+            else [Protocol3Handler.set_safe_sound(active)]
+        )
+        if not self._send_packets(packets):
+            return
 
         if active:
             toast = Adw.Toast.new("🛡️ Proteção auditiva Safe Sound ativada (85 dB)")
@@ -821,12 +867,16 @@ class MainWindow(Adw.ApplicationWindow):
 
     def _on_voice_aware_selected(self, combo, _):
         level = VoiceAwareLevel(combo.get_selected())
-        pkt = Protocol3Handler.set_voice_aware(level)
-        self.backend.send_raw(pkt)
+        packets = (
+            Protocol4Handler.set_voice_aware(level)
+            if self.current_model and self.current_model.protocol_version == 4
+            else [Protocol3Handler.set_voice_aware(level)]
+        )
+        self._send_packets(packets)
 
     def _ring_earbud(self, ring_left: bool, ring_right: bool):
         pkt = Protocol3Handler.set_find_my_buds(ring_left, ring_right)
-        self.backend.send_raw(pkt)
+        self._send_packets([pkt])
 
     def _on_backend_status_changed(self, status: Dict[str, Any]):
         """Executado na thread principal para atualizar a UI de forma segura."""
@@ -836,10 +886,15 @@ class MainWindow(Adw.ApplicationWindow):
         # Atualização de status BLE / Conexão BlueZ
         if status.get("ble_connected"):
             if self.backend.connected_device:
+                if not self._ble_connected:
+                    self._request_device_state()
+                self._ble_connected = True
                 self.title_widget.set_subtitle(f"Conectado: {self.backend.connected_device.name} (GATT BLE Ativo)")
                 self.tray_indicator.update_device(self.backend.connected_device.name, True)
                 self._device_ever_connected = True
                 self._cancel_auto_shutdown()
+        elif "ble_connected" in status:
+            self._ble_connected = False
 
         if "bluez_connected" in status:
             is_conn = status["bluez_connected"]
@@ -902,6 +957,15 @@ class MainWindow(Adw.ApplicationWindow):
             for k, v in parsed_p4.items():
                 if k not in parsed or parsed[k] is None:
                     parsed[k] = v
+
+            if "eq_gains" in parsed and len(parsed["eq_gains"]) == len(self.eq_sliders):
+                self._updating_preset_ui = True
+                try:
+                    for slider, gain in zip(self.eq_sliders, parsed["eq_gains"]):
+                        slider.set_value(gain)
+                    self.preset_row.set_selected(7)
+                finally:
+                    self._updating_preset_ui = False
 
             if "anc_mode" in parsed and "anc_mode" not in status:
                 status["anc_mode"] = parsed["anc_mode"]

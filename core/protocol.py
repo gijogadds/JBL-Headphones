@@ -4,6 +4,7 @@ Responsável por empacotar e desempacotar comandos binários.
 """
 
 import struct
+import time
 from enum import IntEnum
 from typing import Dict, Any, Optional, List, Tuple
 
@@ -19,6 +20,49 @@ class VoiceAwareLevel(IntEnum):
     MEDIUM = 2
     HIGH = 3
 
+
+class Protocol4PacketAssembler:
+    """Recombina os fragmentos Protocol 4 antes da interpretação das features."""
+
+    def __init__(self):
+        self._partial: Dict[Tuple[int, int, int], Tuple[float, Dict[int, bytes]]] = {}
+
+    def feed(self, packet: bytes) -> Optional[bytes]:
+        if len(packet) < 8 or packet[:2] not in (b"\xF0\xDC", b"\xF1\xDC"):
+            return packet
+
+        packet_count = packet[4]
+        packet_index = packet[5]
+        payload_length = packet[6] | (packet[7] << 8)
+        if packet_count == 0 or packet_index >= packet_count or len(packet) != 8 + payload_length:
+            return None
+        if packet_count == 1:
+            return packet
+
+        command_id = packet[2] | (packet[3] << 8)
+        key = (packet[0] | (packet[1] << 8), command_id, packet_count)
+        now = time.monotonic()
+        self._partial = {
+            entry_key: value
+            for entry_key, value in self._partial.items()
+            if now - value[0] <= 10.0
+        }
+        created_at, fragments = self._partial.get(key, (now, {}))
+        fragments[packet_index] = packet[8:]
+        self._partial[key] = (created_at, fragments)
+
+        if len(fragments) != packet_count:
+            return None
+
+        payload = b"".join(fragments[index] for index in range(packet_count))
+        del self._partial[key]
+        return (
+            packet[:4]
+            + b"\x01\x00"
+            + len(payload).to_bytes(2, "little")
+            + payload
+        )
+
 class Protocol3Handler:
     """Gerencia comandos do Protocolo 3 oficial da Harman (Header 0xAA)"""
     MAGIC = 0xAA
@@ -26,7 +70,7 @@ class Protocol3Handler:
     # Comandos de Requisição Oficiais
     REQ_DEV_INFO = bytes([0xAA, 0x11, 0x01, 0x00])
     REQ_DEV_STATUS = bytes([0xAA, 0x21, 0x01, 0x00])
-    REQ_BATTERY_INFO = bytes([0xAA, 0x25, 0x01, 0x00])
+    REQ_BATTERY_INFO = bytes([0xAA, 0x25, 0x01, 0x01])
     REQ_TWS_STATUS = bytes([0xAA, 0x21, 0x01, 0x00])
     REQ_ANC_MODES = bytes([0xAA, 0x91, 0x01, 0x11])
     
@@ -56,7 +100,65 @@ class Protocol3Handler:
     @staticmethod
     def build_packet(cmd: int, payload: bytes) -> bytes:
         """Estrutura Harman padrão: [0xAA, cmd, len(payload), ...payload]"""
+        if len(payload) > 0xFF:
+            raise ValueError("Protocol 3 payloads cannot exceed 255 bytes")
         return bytes([0xAA, cmd, len(payload)]) + payload
+
+    @classmethod
+    def extract_packets(cls, buffer: bytearray) -> List[bytes]:
+        """Retira quadros completos dos protocolos JBL de um fluxo RFCOMM."""
+        packets = []
+        signatures = (b"\xAA", b"\x03", b"\xF0\xDC")
+
+        while buffer:
+            offsets = [
+                offset
+                for signature in signatures
+                if (offset := buffer.find(signature)) >= 0
+            ]
+            if not offsets:
+                keep = 1 if buffer[-1] in (0xAA, 0x03, 0xF0) else 0
+                if keep:
+                    del buffer[:-keep]
+                else:
+                    buffer.clear()
+                break
+
+            start = min(offsets)
+            if start:
+                del buffer[:start]
+
+            if buffer.startswith(b"\xF0\xDC"):
+                if len(buffer) < 8:
+                    break
+                payload_length = buffer[6] | (buffer[7] << 8)
+                packet_length = 8 + payload_length
+            elif buffer[0] == 0x03:
+                if len(buffer) < 4:
+                    break
+                payload_length = (buffer[2] << 8) | buffer[3]
+                packet_length = 4 + payload_length
+            else:
+                if len(buffer) < 3:
+                    break
+                if buffer[1] in (0xA2, 0xEF):
+                    if len(buffer) < 4:
+                        break
+                    payload_length = buffer[2] | (buffer[3] << 8)
+                    packet_length = 4 + payload_length
+                else:
+                    packet_length = 3 + buffer[2]
+
+            if packet_length < 3:
+                del buffer[0]
+                continue
+            if len(buffer) < packet_length:
+                break
+
+            packets.append(bytes(buffer[:packet_length]))
+            del buffer[:packet_length]
+
+        return packets
 
     @classmethod
     def set_anc_mode(cls, mode: AncMode) -> List[bytes]:
@@ -451,8 +553,8 @@ class Protocol3Handler:
                 # payload[1] = leftChargeStatus, payload[2] = rightChargeStatus
                 # payload[3] = leftBatteryLevel, payload[4] = rightBatteryLevel
                 # payload[5] = boxChargeStatus,  payload[6] = boxBatteryLevel
-                elif cmd == 0x25 and len(payload) >= 5:
-                    sub_cmd = payload[0]
+                elif cmd == 0x25:
+                    sub_cmd = payload[0] if payload else None
                     if sub_cmd == 1 and len(payload) >= 5:
                         res["charging_left"] = bool(payload[1])
                         res["charging_right"] = bool(payload[2])
@@ -461,14 +563,16 @@ class Protocol3Handler:
                         if len(payload) >= 7:
                             res["charging_case"] = bool(payload[5])
                             res["battery_case"] = payload[6]
-                    elif len(payload) >= 3 and payload[0] <= 100:
+                    elif len(payload) == 3:
                         # Fallback clássico 3-byte BES TWS [L, R, Case]
-                        res["battery_left"] = payload[0] & 0x7F
-                        res["charging_left"] = bool(payload[0] & 0x80)
-                        res["battery_right"] = payload[1] & 0x7F
-                        res["charging_right"] = bool(payload[1] & 0x80)
-                        res["battery_case"] = payload[2] & 0x7F
-                        res["charging_case"] = bool(payload[2] & 0x80)
+                        levels = [value & 0x7F for value in payload]
+                        if all(level <= 100 for level in levels):
+                            res["battery_left"] = levels[0]
+                            res["charging_left"] = bool(payload[0] & 0x80)
+                            res["battery_right"] = levels[1]
+                            res["charging_right"] = bool(payload[1] & 0x80)
+                            res["battery_case"] = levels[2]
+                            res["charging_case"] = bool(payload[2] & 0x80)
 
                 # Status de Modos de Som / ANC / Ambient / TalkThru (0x91)
                 elif cmd == 0x91:
@@ -649,7 +753,7 @@ class Protocol4Handler:
         for fid in feature_ids:
             payload.append(fid & 0xFF)
             payload.append((fid >> 8) & 0xFF)
-        return cls.build_packet(cls.CMD_GET_DEVICE_INFO, bytes(payload))
+        return cls.build_packet(cls.CMD_GET_DEVICE_INFO, bytes(payload), mtu=12)
 
     @classmethod
     def build_set_feature_byte(cls, feature_id: int, value: int) -> List[bytes]:
@@ -659,36 +763,20 @@ class Protocol4Handler:
             (feature_id >> 8) & 0xFF,
             value & 0xFF
         ])
-        return cls.build_packet(cls.CMD_SET_DEVICE_INFO, bytes(payload))
+        return cls.build_packet(cls.CMD_SET_DEVICE_INFO, bytes(payload), mtu=12)
 
     @classmethod
     def set_anc_mode(cls, mode: AncMode) -> List[bytes]:
         """Configura ANC / Som Ambiente / TalkThru no Protocolo 4"""
-        if mode == AncMode.ANC:
-            # Liga ANC (0x18 = 1), Desliga AA (0x19 = 0), Desliga TT (0x1A = 0)
-            payload = bytes([
-                cls.FEATURE_ANC & 0xFF, (cls.FEATURE_ANC >> 8) & 0xFF, 1,
-                cls.FEATURE_AMBIENT_AWARE & 0xFF, (cls.FEATURE_AMBIENT_AWARE >> 8) & 0xFF, 0,
-                cls.FEATURE_TALKTHRU & 0xFF, (cls.FEATURE_TALKTHRU >> 8) & 0xFF, 0,
-            ])
-        elif mode == AncMode.AMBIENT_AWARE:
-            payload = bytes([
-                cls.FEATURE_ANC & 0xFF, (cls.FEATURE_ANC >> 8) & 0xFF, 0,
-                cls.FEATURE_AMBIENT_AWARE & 0xFF, (cls.FEATURE_AMBIENT_AWARE >> 8) & 0xFF, 1,
-                cls.FEATURE_TALKTHRU & 0xFF, (cls.FEATURE_TALKTHRU >> 8) & 0xFF, 0,
-            ])
-        elif mode == AncMode.TALKTHRU:
-            payload = bytes([
-                cls.FEATURE_ANC & 0xFF, (cls.FEATURE_ANC >> 8) & 0xFF, 0,
-                cls.FEATURE_AMBIENT_AWARE & 0xFF, (cls.FEATURE_AMBIENT_AWARE >> 8) & 0xFF, 0,
-                cls.FEATURE_TALKTHRU & 0xFF, (cls.FEATURE_TALKTHRU >> 8) & 0xFF, 1,
-            ])
-        else:
-            payload = bytes([
-                cls.FEATURE_ANC & 0xFF, (cls.FEATURE_ANC >> 8) & 0xFF, 0,
-                cls.FEATURE_AMBIENT_AWARE & 0xFF, (cls.FEATURE_AMBIENT_AWARE >> 8) & 0xFF, 0,
-                cls.FEATURE_TALKTHRU & 0xFF, (cls.FEATURE_TALKTHRU >> 8) & 0xFF, 0,
-            ])
+        anc_on = 0x80 if mode == AncMode.ANC else 0
+        ambient_on = 0x80 if mode == AncMode.AMBIENT_AWARE else 0
+        talkthru_on = 0x80 if mode == AncMode.TALKTHRU else 0
+        # Bit 7 is the enable flag; bits 0-6 contain the feature level.
+        payload = bytes([
+            cls.FEATURE_ANC & 0xFF, (cls.FEATURE_ANC >> 8) & 0xFF, anc_on,
+            cls.FEATURE_AMBIENT_AWARE & 0xFF, (cls.FEATURE_AMBIENT_AWARE >> 8) & 0xFF, ambient_on,
+            cls.FEATURE_TALKTHRU & 0xFF, (cls.FEATURE_TALKTHRU >> 8) & 0xFF, talkthru_on,
+        ])
         return cls.build_packet(cls.CMD_SET_DEVICE_INFO, payload)
 
     @classmethod
@@ -707,7 +795,7 @@ class Protocol4Handler:
             if val < 0:
                 val = (val + 256) & 0xFF
             payload.append(val & 0xFF)
-        return cls.build_packet(cls.CMD_SET_DEVICE_INFO, bytes(payload))
+        return cls.build_packet(cls.CMD_SET_DEVICE_INFO, bytes(payload), mtu=12)
 
     @classmethod
     def set_auto_power_off(cls, timeout_minutes: int, enabled: bool = True) -> List[bytes]:
@@ -741,6 +829,11 @@ class Protocol4Handler:
         return cls.build_packet(cls.CMD_SET_DEVICE_INFO, payload)
 
     @classmethod
+    def set_voice_aware(cls, level: VoiceAwareLevel) -> List[bytes]:
+        """Configura VoiceAware/Sidetone no Protocolo 4."""
+        return cls.build_set_feature_byte(cls.FEATURE_SIDETONE, int(level))
+
+    @classmethod
     def parse_packet(cls, data: bytes) -> Dict[str, Any]:
         """Faz a interpretação de respostas e notificações do Protocolo 4"""
         res: Dict[str, Any] = {}
@@ -765,6 +858,8 @@ class Protocol4Handler:
         # Se for notificação ou resposta de telemetria / confirmação
         if cmd_id in (cls.CMD_GET_DEVICE_INFO, cls.CMD_NOTIFY_APP, cls.CMD_SET_DEVICE_INFO):
             idx = 0
+            mode_seen = False
+            active_mode = AncMode.OFF
             while idx + 2 <= len(payload):
                 fid = payload[idx] | (payload[idx+1] << 8)
                 idx += 2
@@ -772,18 +867,21 @@ class Protocol4Handler:
                 if fid == cls.FEATURE_ANC and idx < len(payload):
                     val = payload[idx]
                     idx += 1
-                    if val == 1:
-                        res["anc_mode"] = AncMode.ANC
+                    mode_seen = True
+                    if val == 1 or val & 0x80:
+                        active_mode = AncMode.ANC
                 elif fid == cls.FEATURE_AMBIENT_AWARE and idx < len(payload):
                     val = payload[idx]
                     idx += 1
-                    if val == 1:
-                        res["anc_mode"] = AncMode.AMBIENT_AWARE
+                    mode_seen = True
+                    if val == 1 or val & 0x80:
+                        active_mode = AncMode.AMBIENT_AWARE
                 elif fid == cls.FEATURE_TALKTHRU and idx < len(payload):
                     val = payload[idx]
                     idx += 1
-                    if val == 1:
-                        res["anc_mode"] = AncMode.TALKTHRU
+                    mode_seen = True
+                    if val == 1 or val & 0x80:
+                        active_mode = AncMode.TALKTHRU
                 elif fid == cls.FEATURE_BATTERY_LEFT and idx < len(payload):
                     res["battery_left"] = payload[idx] & 0x7F
                     res["charging_left"] = bool(payload[idx] & 0x80)
@@ -827,8 +925,26 @@ class Protocol4Handler:
                     else:
                         res["smart_audio_video_mode"] = "normal"
                     idx += 8
+                elif fid == cls.FEATURE_EQ_INFO:
+                    if idx + 19 > len(payload):
+                        break
+                    category = payload[idx]
+                    band_count = payload[idx + 2]
+                    value_length = 19 + 13 * band_count
+                    if idx + value_length > len(payload):
+                        break
+                    gains = []
+                    for band_index in range(band_count):
+                        band_offset = idx + 19 + band_index * 13
+                        gains.append(struct.unpack_from("<f", payload, band_offset + 5)[0])
+                    res["eq_category"] = category
+                    res["eq_gains"] = gains
+                    idx += value_length
                 else:
                     # Para features desconhecidas, pula 1 byte
                     idx += 1
+
+            if mode_seen:
+                res["anc_mode"] = active_mode
 
         return res

@@ -126,6 +126,7 @@ Microcontroladores Bestechnic (série BES2600) emitem quadros espontâneos em ca
   - Tamanho: Exatamente 3 bytes `[Left, Right, Case]`.
   - Bit 7 (`0x80`): Flag de carregamento ativo (`True` se em recarga no estojo).
   - Bits 0-6 (`val & 0x7F`): Percentual real de bateria de 0% a 100%.
+- **Consulta de bateria**: `AA 25 01 01` (`CommandID 0x25`, subcomando `0x01`).
 - **CommandID `0x09` (Versão de Firmware)**: String ASCII com a versão (ex: `"4.9.0.0"`).
 - **CommandID `0x01` (Status TWS)**: Estado de sincronização entre os auriculares.
 
@@ -161,9 +162,9 @@ Identificado no pacote `com.harman.protocol4.*` e especificado em `assets/protoc
 - `0x000E`: `RightDeviceBatteryStatus`
 - `0x0012`: `AutoPowerOff` (Bit 15: Status, Bits 0-14: Tempo em minutos)
 - `0x0015`: `LRBalance` (Bit 7: Status, Bits 0-6: Level 84..116)
-- `0x0018`: `ANC` (0: Off, 1: On)
-- `0x0019`: `AmbientAware` (0: Off, 1: On)
-- `0x001A`: `TalkThru` (0: Off, 1: On)
+- `0x0018`: `ANC` (bit 7: habilitado; bits 0-6: nível)
+- `0x0019`: `AmbientAware` (bit 7: habilitado; bits 0-6: nível)
+- `0x001A`: `TalkThru` (bit 7: habilitado; bits 0-6: nível)
 - `0x001B`: `AdaptiveANC`
 - `0x0021`: `SpatialSoundMode` (Áudio Espacial)
 - `0x0023`: `Sidetone` (VoiceAware)
@@ -173,6 +174,21 @@ Identificado no pacote `com.harman.protocol4.*` e especificado em `assets/protoc
 - `0x0E7F`: `EQCurve` (Ganhos de bandas em dB x 10)
 - `0x100F`: `SmartSwitch` (AAC, SBC, Latency, SecondLatency)
 - `0x1F03`: `CaseBatteryStatus`
+
+ANC, Ambient Aware e TalkThru são estados mutuamente exclusivos no controle do
+aplicativo: a escrita envia as três features, habilitando apenas a selecionada.
+Quando as três têm o bit 7 desligado, o estado é `OFF`. A estrutura de `EQInfo`
+(`0x0E02`) contém categoria, quantidade de bandas e os respectivos ganhos; a
+curva de equalização (`0x0E7F`) é enviada em pacotes Protocol 4 fragmentados,
+sem encapsulamento no framer GenGroup do Protocol 3.
+
+O dispositivo JBL Tune Buds 2 (PID `210c`) usa Protocol 3. A seleção de geração
+para os demais modelos é feita pelo campo `protocolVersion` do catálogo; na
+ausência dele, o modelo permanece no Protocol 3. Para evitar comandos duplicados
+ou aplicação de comandos atrasados ao conectar, BLE GATT é o transporte de
+controle quando disponível; RFCOMM é mantido para telemetria e fallback.
+Comandos aguardando um transporte expiram após 10 segundos para evitar que uma
+alteração de estado antiga seja aplicada depois de uma reconexão tardia.
 
 ---
 

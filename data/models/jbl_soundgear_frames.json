@@ -1,6 +1,7 @@
 {
   "name": "JBL Soundgear Frames",
     "pid": "20E6",
+    "protocolVersion": 4,
 
     "uiFeatures": [
       {"name": "ANC", "type": ["AscCard"],  "disable":["BTMono", "BTCallingVoiceAwareOn"]},

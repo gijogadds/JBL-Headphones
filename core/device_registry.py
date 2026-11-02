@@ -18,6 +18,7 @@ class DeviceModel:
         self.filepath = filepath
         self.name: str = data.get("name", "JBL Headphone Desconhecido")
         self.pid: str = str(data.get("pid", "")).lower()
+        self.protocol_version: int = int(data.get("protocolVersion", 3))
         self.ui_features: List[Dict[str, Any]] = data.get("uiFeatures", [])
         
         # Mapeamento rápido de recursos suportados

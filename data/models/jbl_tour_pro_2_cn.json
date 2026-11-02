@@ -1,6 +1,7 @@
 {
     "name": "JBL TOUR PRO 2",
     "pid": "2094",
+    "protocolVersion": 4,
 
     "caseConfig": {
         "settingsBoard": [

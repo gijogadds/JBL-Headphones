@@ -13,6 +13,7 @@ import os
 import sys
 import time
 import subprocess
+import fcntl
 
 try:
     import dbus
@@ -25,6 +26,20 @@ except ImportError as e:
 APP_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MAIN_SCRIPT = os.path.join(APP_DIR, "main.py")
 APP_ID = "io.github.jbl.headphones.linux"
+
+
+def _acquire_instance_lock():
+    lock_dir = os.environ.get("XDG_RUNTIME_DIR") or os.path.join(os.path.expanduser("~"), ".cache")
+    os.makedirs(lock_dir, exist_ok=True)
+    lock_file = open(os.path.join(lock_dir, "jbl-headphones-listener.lock"), "w")
+    try:
+        fcntl.flock(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        lock_file.close()
+        print("[JBLListener] Outra instância já está ativa; encerrando duplicata.")
+        return None
+    return lock_file
+
 
 class JBLBluetoothListener:
     def __init__(self):
@@ -148,6 +163,10 @@ class JBLBluetoothListener:
                 self._launch_app_in_tray(name)
 
 def main():
+    instance_lock = _acquire_instance_lock()
+    if instance_lock is None:
+        return
+
     listener = JBLBluetoothListener()
     loop = GLib.MainLoop()
     print("[JBLListener] Monitor de fones JBL ativo e monitorando conexões Bluetooth...")

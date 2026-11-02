@@ -13,6 +13,7 @@ import time
 from typing import Optional, Callable, Dict, Any, List
 
 from core.ble_controller import BLEController
+from core.protocol import Protocol3Handler
 
 try:
     import dbus
@@ -30,6 +31,8 @@ class BluetoothDevice:
         self.battery_percentage: Optional[int] = None
 
 class BluetoothBackend:
+    COMMAND_QUEUE_MAX_AGE = 10.0
+
     def __init__(self, on_status_changed: Optional[Callable[[Dict[str, Any]], None]] = None):
         self.on_status_changed = on_status_changed
         self.connected_device: Optional[BluetoothDevice] = None
@@ -38,7 +41,11 @@ class BluetoothBackend:
         self._running = False
         self._worker_thread: Optional[threading.Thread] = None
         self._lock = threading.Lock()
-        self._send_queue: queue.Queue = queue.Queue()
+        self._send_queue: queue.Queue = queue.Queue(maxsize=256)
+        self._ble_only_queue: queue.Queue = queue.Queue(maxsize=256)
+        self._bluez_connecting: set[str] = set()
+        self._connect_lock = threading.Lock()
+        self._rfcomm_rx_buffer = bytearray()
         self.is_socket_connected = False
         
         # Controlador BLE dedicado para comandos de áudio e toques
@@ -73,6 +80,9 @@ class BluetoothBackend:
 
     def _on_ble_status_changed(self, status: Dict[str, Any]):
         """Repassa atualizações do BLE para a UI."""
+        if status.get("ble_connected"):
+            self._flush_send_queue_to_ble(self._send_queue)
+            self._flush_send_queue_to_ble(self._ble_only_queue)
         if self.on_status_changed:
             self.on_status_changed(status)
 
@@ -117,9 +127,18 @@ class BluetoothBackend:
 
     def connect(self, device: BluetoothDevice) -> bool:
         """Inicia a conexão de controle dual (Classic RFCOMM + BLE GATT) com o dispositivo."""
+        if (
+            self._running
+            and self.connected_device
+            and self.connected_device.path == device.path
+        ):
+            self.connected_device = device
+            return True
+
         self.disconnect()
         self.connected_device = device
         self._running = True
+        self._rfcomm_rx_buffer.clear()
         
         # Inicia o controlador BLE com nome e MAC
         self.ble_controller.start(device.name, device.mac)
@@ -130,9 +149,25 @@ class BluetoothBackend:
         return True
 
     def connect_bluez(self, mac: str) -> bool:
-        """Solicita ao daemon BlueZ conectar ao dispositivo caso esteja pareado mas desconectado."""
+        """Solicita conexão BlueZ em uma thread para não bloquear a interface GTK."""
         if dbus is None:
             return False
+
+        normalized_mac = mac.upper()
+        with self._connect_lock:
+            if normalized_mac in self._bluez_connecting:
+                return True
+            self._bluez_connecting.add(normalized_mac)
+
+        threading.Thread(
+            target=self._connect_bluez_worker,
+            args=(normalized_mac,),
+            daemon=True,
+            name="JBL-BlueZ-Connect",
+        ).start()
+        return True
+
+    def _connect_bluez_worker(self, mac: str):
         try:
             bus = dbus.SystemBus()
             manager = dbus.Interface(bus.get_object('org.bluez', '/'), 'org.freedesktop.DBus.ObjectManager')
@@ -145,10 +180,18 @@ class BluetoothBackend:
                         dev_iface = dbus.Interface(dev_obj, 'org.bluez.Device1')
                         print(f"[BluetoothBackend] Solicitando conexão BlueZ com {mac}...")
                         dev_iface.Connect()
-                        return True
+                        for device in self.scan_jbl_devices():
+                            if device.mac.upper() == mac and device.connected:
+                                self.connect(device)
+                                return
+                        print(f"[BluetoothBackend] BlueZ não confirmou conexão com {mac}.", file=sys.stderr)
+                        return
+            print(f"[BluetoothBackend] Dispositivo JBL pareado não encontrado: {mac}.", file=sys.stderr)
         except Exception as e:
             print(f"[BluetoothBackend] Aviso ao conectar via BlueZ: {e}", file=sys.stderr)
-        return False
+        finally:
+            with self._connect_lock:
+                self._bluez_connecting.discard(mac)
 
     def disconnect(self):
         """Fecha as conexões Classic e BLE com o dispositivo."""
@@ -166,23 +209,52 @@ class BluetoothBackend:
                     pass
                 self._rfcomm_socket = None
         if self._worker_thread and self._worker_thread.is_alive():
-            self._worker_thread.join(timeout=1.0)
+            self._worker_thread.join(timeout=5.0)
         self.connected_device = None
+        self._rfcomm_rx_buffer.clear()
+        for pending in (self._send_queue, self._ble_only_queue):
+            while True:
+                try:
+                    pending.get_nowait()
+                    pending.task_done()
+                except queue.Empty:
+                    break
 
     def send_raw(self, data: bytes) -> bool:
         """
-        Envia pacote binário simultaneamente via canal BLE GATT e RFCOMM Classic.
-        Garante entrega prioritária imediata de comandos acústicos (ANC, EQ) e telemetria.
+        Enfileira cada comando para um único transporte disponível.
+        BLE é prioritário; RFCOMM atende dispositivos BLE-legados e telemetria.
         """
-        if not data:
+        if not data or not self._running:
             return False
-            
-        # 1. Envio prioritário pelo BLE GATT (canal principal dos fones JBL modernos)
-        self.ble_controller.send_cmd(data)
-        
-        # 2. Envio pelo canal RFCOMM Classic (compatibilidade com modelos legados)
-        self._send_queue.put(data)
-        return True
+
+        ble_only = data.startswith(b"\xF0\xDC")
+        pending = self._ble_only_queue if ble_only else self._send_queue
+        if self.ble_controller.is_connected and self.ble_controller.send_cmd(data):
+            return True
+
+        try:
+            pending.put_nowait((time.monotonic(), data))
+            return True
+        except queue.Full:
+            print("[BluetoothBackend] Fila de comandos cheia; pacote descartado.", file=sys.stderr)
+            return False
+
+    def _flush_send_queue_to_ble(self, pending: queue.Queue):
+        while True:
+            try:
+                queued_at, packet = pending.get_nowait()
+            except queue.Empty:
+                return
+
+            if time.monotonic() - queued_at > self.COMMAND_QUEUE_MAX_AGE:
+                print("[BluetoothBackend] Comando BLE expirado; descartado.", file=sys.stderr)
+            elif not self.ble_controller.send_cmd(packet):
+                try:
+                    pending.put_nowait((queued_at, packet))
+                except queue.Full:
+                    print("[BluetoothBackend] Fila BLE indisponível; pacote descartado.", file=sys.stderr)
+            pending.task_done()
 
     def _try_open_socket(self) -> bool:
         """Tenta abrir conexão RFCOMM no canal Harman SPP 17 (ou fallback 12, 1) com timeout reduzido."""
@@ -221,13 +293,13 @@ class BluetoothBackend:
         while self._running:
             now = time.time()
 
-            # 1. Tentativa de conexão RFCOMM não-bloqueante espaçada a cada 20 segundos
-            if not self._rfcomm_socket and (now - last_rfcomm_attempt >= 20.0):
+            # 1. Recupera o canal RFCOMM após desconexões sem espera prolongada.
+            if not self._rfcomm_socket and (now - last_rfcomm_attempt >= 5.0):
                 last_rfcomm_attempt = now
                 if self._try_open_socket():
                     try:
                         self.send_raw(bytes([0xAA, 0x11, 0x01, 0x00]))
-                        self.send_raw(bytes([0xAA, 0x25, 0x01, 0x00]))
+                        self.send_raw(bytes([0xAA, 0x25, 0x01, 0x01]))
                     except Exception:
                         pass
 
@@ -235,11 +307,32 @@ class BluetoothBackend:
                 # 2. Processar comandos pendentes na fila de envio RFCOMM
                 while not self._send_queue.empty():
                     try:
-                        cmd_pkt = self._send_queue.get_nowait()
-                        with self._lock:
-                            if self._rfcomm_socket:
-                                self._rfcomm_socket.send(cmd_pkt)
-                                print(f"[BluetoothBackend] Pacote RFCOMM enviado ({len(cmd_pkt)} bytes): {cmd_pkt.hex(' ')}")
+                        queued_at, cmd_pkt = self._send_queue.get_nowait()
+                        if time.monotonic() - queued_at > self.COMMAND_QUEUE_MAX_AGE:
+                            print("[BluetoothBackend] Comando RFCOMM expirado; descartado.", file=sys.stderr)
+                            self._send_queue.task_done()
+                            continue
+                        if self.ble_controller.is_connected:
+                            if not self.ble_controller.send_cmd(cmd_pkt):
+                                try:
+                                    self._send_queue.put_nowait((queued_at, cmd_pkt))
+                                except queue.Full:
+                                    print("[BluetoothBackend] Fila RFCOMM cheia; pacote descartado.", file=sys.stderr)
+                                self._send_queue.task_done()
+                                break
+                        else:
+                            with self._lock:
+                                sock = self._rfcomm_socket
+                                if sock:
+                                    sock.sendall(cmd_pkt)
+                                    print(f"[BluetoothBackend] Pacote RFCOMM enviado ({len(cmd_pkt)} bytes): {cmd_pkt.hex(' ')}")
+                                else:
+                                    try:
+                                        self._send_queue.put_nowait((queued_at, cmd_pkt))
+                                    except queue.Full:
+                                        print("[BluetoothBackend] Fila RFCOMM cheia; pacote descartado.", file=sys.stderr)
+                                    self._send_queue.task_done()
+                                    break
                         self._send_queue.task_done()
                         time.sleep(0.03)
                     except queue.Empty:
@@ -272,13 +365,23 @@ class BluetoothBackend:
                             pass
 
                 # 4. Leitura do socket RFCOMM se conectado
-                if self._rfcomm_socket:
+                sock = self._rfcomm_socket
+                if sock:
                     try:
-                        raw_data = self._rfcomm_socket.recv(1024)
+                        raw_data = sock.recv(1024)
                         if raw_data:
                             print(f"[BluetoothBackend] RFCOMM Recebido ({len(raw_data)} bytes): {raw_data.hex(' ')}")
-                            if self.on_status_changed:
-                                self.on_status_changed({"raw_packet": raw_data})
+                            self._rfcomm_rx_buffer.extend(raw_data)
+                            for packet in Protocol3Handler.extract_packets(self._rfcomm_rx_buffer):
+                                if self.on_status_changed:
+                                    self.on_status_changed({"raw_packet": packet})
+                        else:
+                            with self._lock:
+                                if self._rfcomm_socket is sock:
+                                    sock.close()
+                                    self._rfcomm_socket = None
+                                    self.is_socket_connected = False
+                            last_rfcomm_attempt = 0.0
                     except (socket.timeout, BlockingIOError):
                         pass
 
@@ -294,4 +397,5 @@ class BluetoothBackend:
                         except Exception:
                             pass
                         self._rfcomm_socket = None
+                last_rfcomm_attempt = 0.0
                 time.sleep(1.0)

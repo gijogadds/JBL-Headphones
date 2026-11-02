@@ -1,6 +1,7 @@
 {
   "name": "JBL Soundgear Sense",
     "pid": "20C4",
+    "protocolVersion": 4,
 
     "uiFeatures": [
       {"name": "ANC", "type": ["AscCard"],  "disable":["BTMono", "BTCallingVoiceAwareOn"]},

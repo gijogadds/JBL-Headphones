@@ -1,6 +1,7 @@
 {
   "name": "JBL Tour Pro 3",
   "pid": "20f2",
+  "protocolVersion": 4,
   "caseConfig": {
     "settingsBoard": [
       {"name": "CaseInfoCard"},
