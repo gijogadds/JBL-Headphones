@@ -11,27 +11,59 @@ from gi.repository import Gtk, Adw, GLib, Gio
 import os
 from typing import Optional, List, Dict, Any
 from core.device_registry import DeviceRegistry, DeviceModel
-from core.protocol import Protocol3Handler, AncMode, VoiceAwareLevel
+from core.protocol import Protocol3Handler, Protocol4Handler, AncMode, VoiceAwareLevel
 from core.bluetooth_backend import BluetoothBackend, BluetoothDevice
+from ui.tray_indicator import JBLTrayIndicator
 
 class MainWindow(Adw.ApplicationWindow):
     def __init__(self, app: Adw.Application, registry: DeviceRegistry, backend: BluetoothBackend):
         super().__init__(application=app, title="JBL Headphones Linux")
         self.set_default_size(720, 800)
+        self.set_icon_name("io.github.jbl.headphones.linux")
         
         self.registry = registry
         self.backend = backend
         self.current_model: Optional[DeviceModel] = None
         self.active_anc_mode = AncMode.OFF
+        self.active_preset_idx = 0
         self._updating_anc_ui = False
+        self._updating_preset_ui = False
         self.eq_sliders: List[Gtk.Scale] = []
         self.frequencies = [32, 64, 125, 250, 500, 1000, 2000, 4000, 8000, 16000]
+
+        # Configurar Indicador de Barra Superior (Top Bar Tray)
+        self.tray_indicator = JBLTrayIndicator(
+            on_toggle_window=self._toggle_window_visibility,
+            on_set_anc=self._apply_anc_mode_from_external,
+            on_set_preset=self._apply_preset_from_external,
+            on_refresh=self._detect_connected_device,
+            on_quit=lambda: self.get_application().quit()
+        )
+
+        # Intercepta solicitação de fechamento para minimizar para a barra superior
+        self.connect("close-request", self._on_close_request)
 
         # Configurar callback de atualizações de telemetria
         self.backend.on_status_changed = self._on_backend_status_changed
 
         self._build_ui()
         self._detect_connected_device()
+
+    def _on_close_request(self, window):
+        """Oculta a janela em vez de fechar, mantendo o app ativo na barra superior."""
+        self.set_visible(False)
+        return True
+
+    def _toggle_window_visibility(self):
+        """Alterna a visibilidade da janela ao clicar no ícone da barra superior."""
+        GLib.idle_add(self._do_toggle_visibility)
+
+    def _do_toggle_visibility(self):
+        if self.props.visible:
+            self.set_visible(False)
+        else:
+            self.set_visible(True)
+            self.present()
 
     def _build_ui(self):
         # Caixa principal vertical
@@ -233,12 +265,12 @@ class MainWindow(Adw.ApplicationWindow):
         self.content_box.append(self.eq_group)
 
         # Seletor de Presets
-        preset_row = Adw.ComboRow(title="Predefinição de Equalização")
+        self.preset_row = Adw.ComboRow(title="Predefinição de Equalização")
         preset_names = ["Jazz", "Vocal", "Bass", "Extreme Bass", "Club", "Studio", "Pop", "Personalizado"]
         self.preset_model = Gtk.StringList.new(preset_names)
-        preset_row.set_model(self.preset_model)
-        preset_row.connect("notify::selected", self._on_preset_selected)
-        self.eq_group.add(preset_row)
+        self.preset_row.set_model(self.preset_model)
+        self.preset_row.connect("notify::selected", self._on_preset_selected)
+        self.eq_group.add(self.preset_row)
 
         # Sliders das 10 frequências
         sliders_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
@@ -337,6 +369,7 @@ class MainWindow(Adw.ApplicationWindow):
         """Escaneia os fones conectados pelo BlueZ D-Bus e configura a interface."""
         devices = self.backend.scan_jbl_devices()
         connected = [d for d in devices if d.connected]
+        paired = [d for d in devices if not d.connected]
 
         if connected:
             dev = connected[0]
@@ -346,7 +379,6 @@ class MainWindow(Adw.ApplicationWindow):
             matched_model = self.registry.find_from_bluetooth(dev.name, dev.modalias)
             if matched_model:
                 self._apply_model(matched_model)
-                # Seleciona o modelo no combo
                 try:
                     idx = [m.name for m in self.registry.all_models].index(matched_model.name)
                     self.model_combo.set_selected(idx)
@@ -359,15 +391,43 @@ class MainWindow(Adw.ApplicationWindow):
             
             if dev.battery_percentage is not None:
                 self.battery_badge.set_text(f"{dev.battery_percentage}%")
+                self.tray_indicator.update_battery(overall=dev.battery_percentage)
             else:
                 self.battery_badge.set_text("Conectado")
 
-            # Envia requisição de informações completas
+            self.tray_indicator.update_device(dev.name, True)
+
+            # Envia requisições de telemetria completa via BLE e RFCOMM
             self.backend.send_raw(Protocol3Handler.REQ_DEV_INFO)
             self.backend.send_raw(Protocol3Handler.REQ_BATTERY_INFO)
+            self.backend.send_raw(Protocol3Handler.REQ_ANC_MODES)
+
+        elif paired:
+            dev = paired[0]
+            matched_model = self.registry.find_from_bluetooth(dev.name, dev.modalias)
+            if matched_model:
+                self._apply_model(matched_model)
+                try:
+                    idx = [m.name for m in self.registry.all_models].index(matched_model.name)
+                    self.model_combo.set_selected(idx)
+                except ValueError:
+                    pass
+
+            self.title_widget.set_subtitle(f"Pareado: {dev.name} (Desconectado)")
+            self.device_banner.set_title(dev.name)
+            self.device_banner.set_subtitle(f"MAC: {dev.mac} | Fone pareado no sistema (Tentando reconectar...)")
+            self.battery_badge.set_text("Desconectado")
+            self.tray_indicator.update_device(dev.name, False)
+
+            # Tenta restabelecer conexão BlueZ em segundo plano
+            self.backend.connect_bluez(dev.mac)
+            self.backend.connect(dev)
         else:
             self.title_widget.set_subtitle("Nenhum fone conectado")
-            # Se não há fone conectado, usa Tune Buds 2 por padrão para demonstração
+            self.device_banner.set_title("Nenhum fone conectado")
+            self.device_banner.set_subtitle("Conecte seu fone JBL pelo Bluetooth do sistema")
+            self.battery_badge.set_text("--%")
+            self.tray_indicator.update_device("Nenhum fone conectado", False)
             default_model = self.registry.find_by_name("JBL Tune Buds 2")
             if default_model:
                 self._apply_model(default_model)
@@ -404,9 +464,19 @@ class MainWindow(Adw.ApplicationWindow):
             return
 
         self.active_anc_mode = mode
-        pkts = Protocol3Handler.set_anc_mode(mode)
-        for pkt in pkts:
+        
+        # 1. Envia pacotes oficiais Harman Protocol 3 (BES / Clássico)
+        pkts_p3 = Protocol3Handler.set_anc_mode(mode)
+        for pkt in pkts_p3:
             self.backend.send_raw(pkt)
+
+        # 2. Envia pacotes oficiais Harman Protocol 4 (Geração Moderna)
+        pkts_p4 = Protocol4Handler.set_anc_mode(mode)
+        for pkt in pkts_p4:
+            self.backend.send_raw(pkt)
+
+        # Atualiza indicador da barra superior
+        self.tray_indicator.update_anc_mode(mode)
 
         # Notificação visual elegante Adwaita (Toast)
         labels = {
@@ -419,10 +489,41 @@ class MainWindow(Adw.ApplicationWindow):
         toast.set_timeout(2)
         self.toast_overlay.add_toast(toast)
 
+    def _apply_anc_mode_from_external(self, mode: AncMode):
+        """Chamado a partir do menu suspenso da barra superior para sincronizar a interface."""
+        GLib.idle_add(self._do_apply_anc_from_external, mode)
+
+    def _do_apply_anc_from_external(self, mode: AncMode):
+        self._updating_anc_ui = True
+        try:
+            if mode == AncMode.ANC:
+                self.btn_anc.set_active(True)
+            elif mode == AncMode.AMBIENT_AWARE:
+                self.btn_ambient.set_active(True)
+            elif mode == AncMode.TALKTHRU:
+                self.btn_talkthru.set_active(True)
+            else:
+                self.btn_off.set_active(True)
+        finally:
+            self._updating_anc_ui = False
+
+        self.active_anc_mode = mode
+        pkts_p3 = Protocol3Handler.set_anc_mode(mode)
+        for pkt in pkts_p3:
+            self.backend.send_raw(pkt)
+        pkts_p4 = Protocol4Handler.set_anc_mode(mode)
+        for pkt in pkts_p4:
+            self.backend.send_raw(pkt)
+        self.tray_indicator.update_anc_mode(mode)
+
     def _on_preset_selected(self, combo, _):
+        if self._updating_preset_ui:
+            return
         idx = combo.get_selected()
+        self.active_preset_idx = idx
+        self.tray_indicator.update_eq_preset(idx)
+
         preset_names = ["Jazz", "Vocal", "Bass", "Extreme Bass", "Club", "Studio", "Pop"]
-        # Presets oficiais: 0:Jazz, 1:Vocal, 2:Bass, 3:Extreme Bass, 4:Club, 5:Studio, 6:Pop
         presets_gains = {
             0: [4.0, 3.0, 1.0, 2.5, -1.5, -1.5, 0.0, 1.0, 3.0, 4.0],  # Jazz
             1: [-2.0, -1.5, 0.0, 1.0, 3.0, 3.5, 2.0, 1.0, 0.0, -1.0], # Vocal
@@ -441,15 +542,33 @@ class MainWindow(Adw.ApplicationWindow):
             pkt_eq2 = Protocol3Handler.build_eq2_packet(gains, preset_id=idx)
             self.backend.send_raw(pkt_preset)
             self.backend.send_raw(pkt_eq2)
+            # Envio simultâneo para modelos compatíveis com Protocolo 4
+            for p4_pkt in Protocol4Handler.build_eq_curve_packet(gains):
+                self.backend.send_raw(p4_pkt)
             p_name = preset_names[idx] if idx < len(preset_names) else ""
             toast = Adw.Toast.new(f"🎵 Predefinição JBL aplicada: {p_name}")
             toast.set_timeout(2)
             self.toast_overlay.add_toast(toast)
 
+    def _apply_preset_from_external(self, idx: int):
+        """Chamado a partir do menu da barra superior para selecionar um preset de equalização."""
+        GLib.idle_add(self._do_apply_preset_from_external, idx)
+
+    def _do_apply_preset_from_external(self, idx: int):
+        self._updating_preset_ui = True
+        try:
+            if hasattr(self, 'preset_row'):
+                self.preset_row.set_selected(idx)
+        finally:
+            self._updating_preset_ui = False
+        self._on_preset_selected(self.preset_row, None)
+
     def _apply_custom_eq(self):
         gains = [s.get_value() for s in self.eq_sliders]
         pkt = Protocol3Handler.build_eq2_packet(gains, preset_id=0)
         self.backend.send_raw(pkt)
+        for p4_pkt in Protocol4Handler.build_eq_curve_packet(gains):
+            self.backend.send_raw(p4_pkt)
         toast = Adw.Toast.new("✅ Curva de equalização oficial (10 bandas) aplicada nos fones!")
         toast.set_timeout(2)
         self.toast_overlay.add_toast(toast)
@@ -468,15 +587,25 @@ class MainWindow(Adw.ApplicationWindow):
         GLib.idle_add(self._update_ui_from_status, status)
 
     def _update_ui_from_status(self, status: Dict[str, Any]):
-        # Atualização de status BLE
+        # Atualização de status BLE / Conexão BlueZ
         if status.get("ble_connected"):
             if self.backend.connected_device:
                 self.title_widget.set_subtitle(f"Conectado: {self.backend.connected_device.name} (GATT BLE Ativo)")
+                self.tray_indicator.update_device(self.backend.connected_device.name, True)
+
+        if "bluez_connected" in status:
+            is_conn = status["bluez_connected"]
+            dev_name = status.get("device_name", "Fone JBL")
+            if not is_conn:
+                self.title_widget.set_subtitle(f"Pareado: {dev_name} (Desconectado)")
+                self.battery_badge.set_text("Desconectado")
+                self.tray_indicator.update_device(dev_name, False)
 
         # Sincronização em tempo real de ANC (toque no fone ou resposta de comando)
         if "anc_mode" in status:
             mode = status["anc_mode"]
             self.active_anc_mode = mode
+            self.tray_indicator.update_anc_mode(mode)
             self._updating_anc_ui = True
             try:
                 if mode == AncMode.ANC:
@@ -502,13 +631,46 @@ class MainWindow(Adw.ApplicationWindow):
                 self.toast_overlay.add_toast(toast)
 
         if "battery_overall" in status:
-            # Só atualiza pelo BlueZ caso ainda não tenhamos bateria específica dos fones
-            if self.badge_battery_left.get_text() == "--%":
-                self.battery_badge.set_text(f"{status['battery_overall']}%")
+            bat = status["battery_overall"]
+            self.battery_badge.set_text(f"{bat}%")
+            self.tray_indicator.update_battery(overall=bat)
+            # Se ainda não recebemos telemetria individual dos fones L/R, reflete a bateria geral
+            if self.badge_battery_left.get_text().startswith("--"):
+                self.badge_battery_left.set_text(f"{bat}%")
+                self.progress_battery_left.set_fraction(max(0.0, min(1.0, bat / 100.0)))
+                self.row_battery_left.set_subtitle("Conexão Bluetooth padrão (BlueZ)")
 
         if "raw_packet" in status:
-            parsed = Protocol3Handler.parse_packet(status["raw_packet"])
+            raw_pkt = status["raw_packet"]
+            parsed = Protocol3Handler.parse_packet(raw_pkt)
+            parsed_p4 = Protocol4Handler.parse_packet(raw_pkt)
+            for k, v in parsed_p4.items():
+                if k not in parsed or parsed[k] is None:
+                    parsed[k] = v
+
+            if "anc_mode" in parsed and "anc_mode" not in status:
+                status["anc_mode"] = parsed["anc_mode"]
+                mode = parsed["anc_mode"]
+                self.active_anc_mode = mode
+                self.tray_indicator.update_anc_mode(mode)
+                self._updating_anc_ui = True
+                try:
+                    if mode == AncMode.ANC:
+                        self.btn_anc.set_active(True)
+                    elif mode == AncMode.AMBIENT_AWARE:
+                        self.btn_ambient.set_active(True)
+                    elif mode == AncMode.TALKTHRU:
+                        self.btn_talkthru.set_active(True)
+                    else:
+                        self.btn_off.set_active(True)
+                finally:
+                    self._updating_anc_ui = False
             
+            if "device_name" in parsed:
+                dname = parsed["device_name"]
+                self.device_banner.set_title(dname)
+                self.tray_indicator.update_device(dname, True)
+
             if "firmware_version" in parsed:
                 fw = parsed["firmware_version"]
                 curr_sub = self.device_banner.get_subtitle() or ""
@@ -548,9 +710,20 @@ class MainWindow(Adw.ApplicationWindow):
                     else:
                         self.row_battery_case.set_subtitle("Carga restante do estojo (sincronizado)")
 
-                # Calcula média real e justa dos fones conectados (desconsiderando valores zerados de fones guardados)
+                # Calcula média real e justa dos fones conectados
                 active_buds = [val for val in (l, r) if val is not None and 0 < val <= 100]
+                avg_bat = None
                 if active_buds:
                     avg_bat = sum(active_buds) // len(active_buds)
                     is_charging = charging_l or charging_r
                     self.battery_badge.set_text(f"{avg_bat}%{' ⚡' if is_charging else ''}")
+
+                self.tray_indicator.update_battery(
+                    overall=avg_bat if avg_bat is not None else (self.backend.connected_device.battery_percentage if self.backend.connected_device else None),
+                    l=l,
+                    r=r,
+                    c=c,
+                    ch_l=charging_l,
+                    ch_r=charging_r,
+                    ch_c=charging_c
+                )

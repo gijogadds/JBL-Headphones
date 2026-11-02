@@ -23,6 +23,7 @@ class BLEController:
     def __init__(self, on_status_changed: Optional[Callable[[Dict[str, Any]], None]] = None):
         self.on_status_changed = on_status_changed
         self._target_name_hint: str = ""
+        self._target_mac: str = ""
         self._running: bool = False
         self._thread: Optional[threading.Thread] = None
         self._loop: Optional[asyncio.AbstractEventLoop] = None
@@ -31,10 +32,11 @@ class BLEController:
         self.connected_address: Optional[str] = None
         self._send_queue: Optional[asyncio.Queue] = None
 
-    def start(self, device_name_hint: str = ""):
+    def start(self, device_name_hint: str = "", device_mac: str = ""):
         """Inicia a thread em segundo plano com event loop asyncio dedicado."""
         self.stop()
         self._target_name_hint = device_name_hint
+        self._target_mac = device_mac.strip().upper() if device_mac else ""
         self._running = True
         self._thread = threading.Thread(target=self._run_event_loop, daemon=True, name="JBL-BLE-Worker")
         self._thread.start()
@@ -102,10 +104,13 @@ class BLEController:
                     # 4. Enviar requisições iniciais de sincronização
                     req_anc = bytes([0xAA, 0x91, 0x01, 0x11])
                     req_info = bytes([0xAA, 0x11, 0x01, 0x00])
+                    req_bat = bytes([0xAA, 0x25, 0x01, 0x01])
                     await self._write_raw(client, req_anc)
                     await self._write_raw(client, req_info)
+                    await self._write_raw(client, req_bat)
 
                     # 5. Processar fila de envio e manter a conexão viva
+                    last_bat_query = time.time()
                     while self._running and client.is_connected:
                         try:
                             # Espera comando para envio com timeout de 0.5s para checagem de integridade
@@ -113,7 +118,11 @@ class BLEController:
                             await self._write_raw(client, data)
                             self._send_queue.task_done()
                         except asyncio.TimeoutError:
-                            pass
+                            # Consulta periódica de status de bateria a cada 15s
+                            now = time.time()
+                            if now - last_bat_query > 15.0:
+                                last_bat_query = now
+                                await self._write_raw(client, req_bat)
                         except Exception as e:
                             print(f"[BLEController] Erro ao enviar pacote BLE: {e}", file=sys.stderr)
 
@@ -128,20 +137,41 @@ class BLEController:
                     await asyncio.sleep(2.0)
 
     async def _discover_target_device(self) -> Optional[BLEDevice]:
-        """Varre dispositivos BLE procurando fones JBL com sufixo -LE ou serviço Harman."""
+        """Varre dispositivos BLE procurando fones JBL com endereço MAC, sufixo -LE ou serviço Harman."""
         try:
+            # 1. Se possuímos o endereço MAC exato, tenta localização direta imediata
+            if self._target_mac:
+                try:
+                    dev = await BleakScanner.find_device_by_address(self._target_mac, timeout=2.5)
+                    if dev:
+                        return dev
+                except Exception:
+                    pass
+
             target_clean = self._target_name_hint.replace("-LE", "").strip().upper()
             
             def filter_func(d: BLEDevice, adv) -> bool:
+                # 1. Correspondência direta por MAC
+                if self._target_mac and d.address.upper() == self._target_mac:
+                    return True
+
+                # 2. Correspondência por Serviço GATT Harman
+                if adv.service_uuids and any(HARMAN_SERVICE_UUID.lower() in u.lower() for u in adv.service_uuids):
+                    return True
+
+                # 3. Correspondência por Fabricante Harman (0x0057 / 0x0ECB)
+                if adv.manufacturer_data and any(m_id in (0x0057, 0x0ECB) for m_id in adv.manufacturer_data.keys()):
+                    return True
+
+                # 4. Correspondência por Nome
                 name = (d.name or adv.local_name or "").upper()
-                if "JBL" not in name:
+                if not name:
                     return False
                 if target_clean and target_clean in name:
                     return True
-                if "-LE" in name or "BUDS" in name or "BEAM" in name or "FLEX" in name or "LIVE" in name or "TUNE" in name:
+                if "JBL" in name:
                     return True
-                # Checa por serviço Harman
-                if adv.service_uuids and HARMAN_SERVICE_UUID.lower() in [u.lower() for u in adv.service_uuids]:
+                if any(w in name for w in ("BUDS", "BEAM", "FLEX", "LIVE", "TUNE", "TOUR", "QUANTUM", "SOUNDGEAR")):
                     return True
                 return False
 
@@ -164,7 +194,7 @@ class BLEController:
         if not self.on_status_changed:
             return
 
-        status_update: Dict[str, Any] = {"raw_ble_packet": data}
+        status_update: Dict[str, Any] = {"raw_ble_packet": data, "raw_packet": data}
 
         # 1. Notificação de modos de isolamento acústico / ANC (0xAA 0x91 ...)
         # Formato oficial Harman/BES:
@@ -190,9 +220,5 @@ class BLEController:
         elif len(data) >= 4 and data[0] == 0xAA and data[1] == 0x91 and data[3] == 0x13:
             status_update["anc_mode"] = 0 # AncMode.OFF
             status_update["anc_source"] = "earbud_notification"
-
-        # 2. Notificação com informações do dispositivo e baterias (0xAA 0x12 ...)
-        elif len(data) >= 20 and data[0] == 0xAA and data[1] == 0x12:
-            status_update["raw_packet"] = data
 
         self.on_status_changed(status_update)

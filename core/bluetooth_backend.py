@@ -94,13 +94,34 @@ class BluetoothBackend:
         self.connected_device = device
         self._running = True
         
-        # Inicia o controlador BLE em segundo plano
-        self.ble_controller.start(device.name)
+        # Inicia o controlador BLE com nome e MAC
+        self.ble_controller.start(device.name, device.mac)
 
         # Inicia a thread clássica RFCOMM
         self._worker_thread = threading.Thread(target=self._run_loop, daemon=True)
         self._worker_thread.start()
         return True
+
+    def connect_bluez(self, mac: str) -> bool:
+        """Solicita ao daemon BlueZ conectar ao dispositivo caso esteja pareado mas desconectado."""
+        if dbus is None:
+            return False
+        try:
+            bus = dbus.SystemBus()
+            manager = dbus.Interface(bus.get_object('org.bluez', '/'), 'org.freedesktop.DBus.ObjectManager')
+            objects = manager.GetManagedObjects()
+            for path, interfaces in objects.items():
+                if 'org.bluez.Device1' in interfaces:
+                    props = interfaces['org.bluez.Device1']
+                    if str(props.get('Address', '')).upper() == mac.upper():
+                        dev_obj = bus.get_object('org.bluez', path)
+                        dev_iface = dbus.Interface(dev_obj, 'org.bluez.Device1')
+                        print(f"[BluetoothBackend] Solicitando conexão BlueZ com {mac}...")
+                        dev_iface.Connect()
+                        return True
+        except Exception as e:
+            print(f"[BluetoothBackend] Aviso ao conectar via BlueZ: {e}", file=sys.stderr)
+        return False
 
     def disconnect(self):
         """Fecha as conexões Classic e BLE com o dispositivo."""
@@ -137,7 +158,7 @@ class BluetoothBackend:
         return True
 
     def _try_open_socket(self) -> bool:
-        """Tenta abrir conexão RFCOMM no canal Harman SPP 17 (ou fallback 12, 1)."""
+        """Tenta abrir conexão RFCOMM no canal Harman SPP 17 (ou fallback 12, 1) com timeout reduzido."""
         if not self.connected_device or not self._running:
             return False
             
@@ -149,16 +170,16 @@ class BluetoothBackend:
                 return False
             try:
                 s = socket.socket(socket.AF_BLUETOOTH, socket.SOCK_STREAM, socket.BTPROTO_RFCOMM)
-                s.settimeout(5.0)
+                s.settimeout(1.2)
                 s.connect((target_mac, ch))
-                s.settimeout(0.3)
+                s.settimeout(0.2)
                 with self._lock:
                     self._rfcomm_channel = ch
                     self._rfcomm_socket = s
                     self.is_socket_connected = True
                 print(f"[BluetoothBackend] Canal RFCOMM {ch} conectado com sucesso para {target_mac}!")
                 return True
-            except Exception as e:
+            except Exception:
                 try:
                     s.close()
                 except Exception:
@@ -166,66 +187,78 @@ class BluetoothBackend:
         return False
 
     def _run_loop(self):
-        """Loop de fundo para leitura contínua e envio da fila de comandos."""
+        """Loop de fundo resiliente para telemetria BlueZ contínua, RFCOMM e esvaziamento de filas."""
         last_poll_time = 0.0
+        last_rfcomm_attempt = 0.0
+
         while self._running:
-            if not self._rfcomm_socket:
-                self.is_socket_connected = False
-                if not self._try_open_socket():
-                    time.sleep(2.0)
-                    continue
-                # Ao conectar com sucesso, envia comandos iniciais de identificação e telemetria
-                try:
-                    self.send_raw(bytes([0xAA, 0x11, 0x01, 0x00]))
-                    self.send_raw(bytes([0xAA, 0x25, 0x01, 0x00]))
-                except Exception:
-                    pass
+            now = time.time()
+
+            # 1. Tentativa de conexão RFCOMM não-bloqueante espaçada a cada 20 segundos
+            if not self._rfcomm_socket and (now - last_rfcomm_attempt >= 20.0):
+                last_rfcomm_attempt = now
+                if self._try_open_socket():
+                    try:
+                        self.send_raw(bytes([0xAA, 0x11, 0x01, 0x00]))
+                        self.send_raw(bytes([0xAA, 0x25, 0x01, 0x00]))
+                    except Exception:
+                        pass
 
             try:
-                # 1. Processar todos os comandos pendentes na fila de envio (Send Queue)
-                while not self._send_queue.empty() and self._rfcomm_socket:
+                # 2. Processar comandos pendentes na fila de envio RFCOMM
+                while not self._send_queue.empty():
                     try:
                         cmd_pkt = self._send_queue.get_nowait()
                         with self._lock:
                             if self._rfcomm_socket:
                                 self._rfcomm_socket.send(cmd_pkt)
-                                print(f"[BluetoothBackend] Pacote enviado ({len(cmd_pkt)} bytes): {cmd_pkt.hex(' ')}")
+                                print(f"[BluetoothBackend] Pacote RFCOMM enviado ({len(cmd_pkt)} bytes): {cmd_pkt.hex(' ')}")
                         self._send_queue.task_done()
-                        time.sleep(0.04) # pequeno intervalo para estabilidade do microcontrolador
+                        time.sleep(0.03)
                     except queue.Empty:
                         break
 
-                now = time.time()
-                # 2. Polling periódico de bateria do BlueZ a cada 3 segundos
-                if now - last_poll_time >= 3.0:
+                # 3. Polling de bateria do BlueZ a cada 2.5 segundos (funciona para todos os fones)
+                if now - last_poll_time >= 2.5:
                     last_poll_time = now
                     if self.connected_device and dbus is not None:
                         try:
                             bus = dbus.SystemBus()
                             dev = bus.get_object('org.bluez', self.connected_device.path)
                             props = dbus.Interface(dev, 'org.freedesktop.DBus.Properties')
-                            bat = int(props.Get('org.bluez.Battery1', 'Percentage'))
-                            self.connected_device.battery_percentage = bat
+                            
+                            # Verifica se o fone continua conectado no BlueZ
+                            is_conn = bool(props.Get('org.bluez.Device1', 'Connected'))
+                            self.connected_device.connected = is_conn
                             if self.on_status_changed:
-                                self.on_status_changed({"battery_overall": bat})
+                                self.on_status_changed({"bluez_connected": is_conn, "device_name": self.connected_device.name})
+
+                            # Lê a bateria reportada pelo BlueZ
+                            try:
+                                bat = int(props.Get('org.bluez.Battery1', 'Percentage'))
+                                self.connected_device.battery_percentage = bat
+                                if self.on_status_changed:
+                                    self.on_status_changed({"battery_overall": bat})
+                            except Exception:
+                                pass
                         except Exception:
                             pass
 
-                # 3. Leitura contínua não-bloqueante do socket RFCOMM
+                # 4. Leitura do socket RFCOMM se conectado
                 if self._rfcomm_socket:
                     try:
                         raw_data = self._rfcomm_socket.recv(1024)
                         if raw_data:
-                            print(f"[BluetoothBackend] Recebido ({len(raw_data)} bytes): {raw_data.hex(' ')}")
+                            print(f"[BluetoothBackend] RFCOMM Recebido ({len(raw_data)} bytes): {raw_data.hex(' ')}")
                             if self.on_status_changed:
                                 self.on_status_changed({"raw_packet": raw_data})
                     except (socket.timeout, BlockingIOError):
                         pass
-                
-                time.sleep(0.05)
+
+                time.sleep(0.08)
 
             except Exception as e:
-                print(f"[BluetoothBackend] Conexão perdida no loop: {e}", file=sys.stderr)
+                print(f"[BluetoothBackend] Erro no loop de comunicação: {e}", file=sys.stderr)
                 with self._lock:
                     self.is_socket_connected = False
                     if self._rfcomm_socket:
@@ -234,4 +267,4 @@ class BluetoothBackend:
                         except Exception:
                             pass
                         self._rfcomm_socket = None
-                time.sleep(2.0)
+                time.sleep(1.0)

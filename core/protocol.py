@@ -131,7 +131,35 @@ class Protocol3Handler:
         return cls.build_packet(cls.CMD_SET_FIND_BUDS, bytes([val]))
 
     @staticmethod
-    def parse_packet(data: bytes) -> Dict[str, Any]:
+    def _extract_harman_feature(res: Dict[str, Any], fid: int, fval: bytes):
+        """Extrai valores das features TLV padrão Harman/JBL."""
+        if fid == 26 and len(fval) >= 2:
+            res["charging_left"] = bool(fval[0])
+            res["battery_left"] = fval[1]
+        elif fid == 27 and len(fval) >= 2:
+            res["charging_right"] = bool(fval[0])
+            res["battery_right"] = fval[1]
+        elif fid == 28 and len(fval) >= 2:
+            res["charging_case"] = bool(fval[0])
+            res["battery_case"] = fval[1]
+        elif fid == 25 and len(fval) >= 2:
+            res["charging_overall"] = bool(fval[0])
+            res["battery_overall"] = fval[1]
+        elif fid == 6 and len(fval) > 0:
+            try:
+                res["device_name"] = bytes(fval).decode("utf-8", errors="ignore").strip("\x00")
+            except Exception:
+                pass
+        elif fid == 4 and len(fval) >= 2:
+            res["pid"] = f"{fval[0]:02X}{fval[1]:02X}"
+        elif fid == 12 and len(fval) > 0:
+            try:
+                res["firmware_version"] = bytes(fval).decode("utf-8", errors="ignore").strip("\x00")
+            except Exception:
+                pass
+
+    @classmethod
+    def parse_packet(cls, data: bytes) -> Dict[str, Any]:
         """Faz a interpretação de pacotes retornados pelo dispositivo (Protocolos BES e Harman)."""
         res: Dict[str, Any] = {}
         if not data or len(data) < 3:
@@ -188,32 +216,84 @@ class Protocol3Handler:
                 payload = data[pos_aa+3 : pos_aa+3+length]
 
                 # Informações do Dispositivo (0x11 ou 0x12)
-                if cmd in (0x11, 0x12) and len(payload) >= 18:
-                    try:
-                        raw_name = payload[0:16].split(b'\x00')[0]
-                        res["device_name"] = raw_name.decode("utf-8", errors="ignore").strip()
-                    except Exception:
-                        pass
-                    if len(payload) >= 18:
+                # Suporta formato estruturado TLV oficial do Harman Command3 e legado
+                if cmd in (0x11, 0x12):
+                    parsed_tlv = False
+
+                    # 1. Decodificador oficial Harman Command3 (16-bit payloadLen LSB/MSB + payloadType no byte 4)
+                    if pos_aa + 4 <= len(data):
+                        cmd3_len = data[pos_aa+2] | (data[pos_aa+3] << 8)
+                        if pos_aa + 4 + cmd3_len <= len(data) and cmd3_len >= 1:
+                            t_idx = pos_aa + 5  # pula payloadType no byte pos_aa+4
+                            end_tlv = pos_aa + 4 + cmd3_len
+                            while t_idx + 3 <= end_tlv:
+                                fid = (data[t_idx] << 8) | data[t_idx+1]
+                                flen = data[t_idx+2]
+                                if t_idx + 3 + flen > end_tlv:
+                                    break
+                                fval = data[t_idx+3 : t_idx+3+flen]
+                                if fid in (4, 6, 12, 25, 26, 27, 28):
+                                    parsed_tlv = True
+                                    cls._extract_harman_feature(res, fid, fval)
+                                t_idx += 3 + flen
+
+                    # 2. Varredura flexível de TLVs sobre o payload
+                    if not parsed_tlv and len(payload) >= 3:
+                        for try_start in (0, 1, 2):
+                            p_idx = try_start
+                            while p_idx + 3 <= len(payload):
+                                fid = (payload[p_idx] << 8) | payload[p_idx+1]
+                                flen = payload[p_idx+2]
+                                if flen == 0 or p_idx + 3 + flen > len(payload):
+                                    break
+                                fval = payload[p_idx+3 : p_idx+3+flen]
+                                if fid in (4, 6, 12, 25, 26, 27, 28):
+                                    parsed_tlv = True
+                                    cls._extract_harman_feature(res, fid, fval)
+                                p_idx += 3 + flen
+                            if parsed_tlv:
+                                break
+
+                    # 2. Fallback para cabeçalhos legados de posição fixa
+                    if not parsed_tlv and len(payload) >= 18:
+                        try:
+                            raw_name = payload[0:16].split(b'\x00')[0]
+                            res["device_name"] = raw_name.decode("utf-8", errors="ignore").strip()
+                        except Exception:
+                            pass
                         res["pid"] = f"{payload[16]:02X}{payload[17]:02X}"
-                    if len(payload) >= 20 and "battery_left" not in res:
-                        res["battery_left"] = payload[18] & 0x7F
-                        res["charging_left"] = bool(payload[18] & 0x80)
-                    if len(payload) >= 21 and "battery_right" not in res:
-                        res["battery_right"] = payload[19] & 0x7F
-                        res["charging_right"] = bool(payload[19] & 0x80)
-                    if len(payload) >= 22 and "battery_case" not in res:
-                        res["battery_case"] = payload[20] & 0x7F
-                        res["charging_case"] = bool(payload[20] & 0x80)
+                        if len(payload) >= 20 and "battery_left" not in res:
+                            res["battery_left"] = payload[18] & 0x7F
+                            res["charging_left"] = bool(payload[18] & 0x80)
+                        if len(payload) >= 21 and "battery_right" not in res:
+                            res["battery_right"] = payload[19] & 0x7F
+                            res["charging_right"] = bool(payload[19] & 0x80)
+                        if len(payload) >= 22 and "battery_case" not in res:
+                            res["battery_case"] = payload[20] & 0x7F
+                            res["charging_case"] = bool(payload[20] & 0x80)
 
                 # Resposta de Bateria Específica (0x25)
-                elif cmd == 0x25 and len(payload) >= 2 and "battery_left" not in res:
-                    res["battery_left"] = payload[0] & 0x7F
-                    res["charging_left"] = bool(payload[0] & 0x80)
-                    if len(payload) >= 2:
+                # Formato oficial Harman (BatteryInfoCmd.parseBatteryInfo):
+                # payload[0] = subCommand (1 = Battery Status)
+                # payload[1] = leftChargeStatus, payload[2] = rightChargeStatus
+                # payload[3] = leftBatteryLevel, payload[4] = rightBatteryLevel
+                # payload[5] = boxChargeStatus,  payload[6] = boxBatteryLevel
+                elif cmd == 0x25 and len(payload) >= 5:
+                    sub_cmd = payload[0]
+                    if sub_cmd == 1 and len(payload) >= 5:
+                        res["charging_left"] = bool(payload[1])
+                        res["charging_right"] = bool(payload[2])
+                        res["battery_left"] = payload[3]
+                        res["battery_right"] = payload[4]
+                        if len(payload) >= 7:
+                            res["charging_case"] = bool(payload[5])
+                            res["battery_case"] = payload[6]
+                    elif len(payload) >= 3 and payload[0] <= 100:
+                        # Fallback clássico 3-byte BES TWS [L, R, Case]
+                        res["battery_left"] = payload[0] & 0x7F
+                        res["charging_left"] = bool(payload[0] & 0x80)
                         res["battery_right"] = payload[1] & 0x7F
                         res["charging_right"] = bool(payload[1] & 0x80)
-                    if len(payload) >= 3:
                         res["battery_case"] = payload[2] & 0x7F
                         res["charging_case"] = bool(payload[2] & 0x80)
 
@@ -276,6 +356,7 @@ class Protocol4Handler:
     FEATURE_FIRMWARE = 0x000C
     FEATURE_BATTERY_LEFT = 0x000D
     FEATURE_BATTERY_RIGHT = 0x000E
+    FEATURE_CASE_BATTERY = 0x1F03
     FEATURE_ANC = 0x0018
     FEATURE_AMBIENT_AWARE = 0x0019
     FEATURE_TALKTHRU = 0x001A
@@ -283,6 +364,8 @@ class Protocol4Handler:
     FEATURE_SPATIAL_MODE = 0x0021
     FEATURE_SIDETONE = 0x0023  # VoiceAware
     FEATURE_AUDIO_LIMITER = 0x0027
+    FEATURE_EQ_INFO = 0x0E02
+    FEATURE_EQ_CURVE = 0x0E7F
 
     @classmethod
     def build_packet(cls, cmd_id: int, payload: bytes = b'', mtu: int = 512) -> List[bytes]:
@@ -378,6 +461,24 @@ class Protocol4Handler:
         return cls.build_packet(cls.CMD_SET_DEVICE_INFO, payload)
 
     @classmethod
+    def build_eq_curve_packet(cls, gains_db: List[float]) -> List[bytes]:
+        """
+        Gera pacotes Protocol 4 para envio da curva de equalização (Feature 0x0E7F - EQCurve).
+        Compatível com a especificação de comando SET_DEVICE_INFO (0x0002).
+        """
+        payload = bytearray([
+            cls.FEATURE_EQ_CURVE & 0xFF,
+            (cls.FEATURE_EQ_CURVE >> 8) & 0xFF,
+            len(gains_db) & 0xFF
+        ])
+        for g in gains_db:
+            val = int(round(g * 10))
+            if val < 0:
+                val = (val + 256) & 0xFF
+            payload.append(val & 0xFF)
+        return cls.build_packet(cls.CMD_SET_DEVICE_INFO, bytes(payload))
+
+    @classmethod
     def parse_packet(cls, data: bytes) -> Dict[str, Any]:
         """Faz a interpretação de respostas e notificações do Protocolo 4"""
         res: Dict[str, Any] = {}
@@ -428,6 +529,10 @@ class Protocol4Handler:
                 elif fid == cls.FEATURE_BATTERY_RIGHT and idx < len(payload):
                     res["battery_right"] = payload[idx] & 0x7F
                     res["charging_right"] = bool(payload[idx] & 0x80)
+                    idx += 1
+                elif fid == cls.FEATURE_CASE_BATTERY and idx < len(payload):
+                    res["battery_case"] = payload[idx] & 0x7F
+                    res["charging_case"] = bool(payload[idx] & 0x80)
                     idx += 1
                 elif fid == cls.FEATURE_SIDETONE and idx < len(payload):
                     res["voice_aware_level"] = payload[idx]

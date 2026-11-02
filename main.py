@@ -13,7 +13,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import gi
 gi.require_version('Gtk', '4.0')
 gi.require_version('Adw', '1')
-from gi.repository import Adw, Gio
+from gi.repository import Adw, Gio, GLib
 
 from core.device_registry import DeviceRegistry
 from core.bluetooth_backend import BluetoothBackend
@@ -45,6 +45,8 @@ class JBLApp(Adw.Application):
             pass
 
 def main():
+    GLib.set_prgname("io.github.jbl.headphones.linux")
+    GLib.set_application_name("JBL Headphones")
     app = JBLApp()
     return app.run(sys.argv)
 
