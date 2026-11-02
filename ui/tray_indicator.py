@@ -26,16 +26,31 @@ class TrayMenu(dbus.service.Object):
 
     @dbus.service.method('com.canonical.dbusmenu', in_signature='iiav', out_signature='u(ia{sv}av)')
     def GetLayout(self, parent_id: int, recursion_depth: int, property_names: List[str]):
-        return (self.revision, self.indicator.build_menu_layout(parent_id))
+        root = self.indicator.build_menu_layout(parent_id)
+        serialized = self.indicator.serialize_node(root)
+        return (dbus.UInt32(self.revision), serialized)
 
     @dbus.service.method('com.canonical.dbusmenu', in_signature='aias', out_signature='a(ia{sv})')
     def GetGroupProperties(self, ids: List[int], property_names: List[str]):
-        return []
+        res = dbus.Array([], signature='(ia{sv})')
+        m = self.indicator.get_all_menu_items_map()
+        for item_id in ids:
+            p = m.get(int(item_id), {})
+            d = dbus.Dictionary({}, signature='sv')
+            for k, v in p.items():
+                if isinstance(v, bool):
+                    d[dbus.String(k)] = dbus.Boolean(v, variant_level=1)
+                elif isinstance(v, int):
+                    d[dbus.String(k)] = dbus.Int32(v, variant_level=1)
+                else:
+                    d[dbus.String(k)] = dbus.String(str(v), variant_level=1)
+            res.append((dbus.Int32(item_id), d))
+        return res
 
     @dbus.service.method('com.canonical.dbusmenu', in_signature='isvu', out_signature='')
     def Event(self, item_id: int, event_id: str, data: Any, timestamp: int):
-        if event_id == "clicked":
-            self.indicator.handle_menu_click(item_id)
+        if event_id in ("clicked", "activate"):
+            self.indicator.handle_menu_click(int(item_id))
 
     @dbus.service.method('com.canonical.dbusmenu', in_signature='i', out_signature='b')
     def AboutToShow(self, item_id: int) -> bool:
@@ -43,6 +58,10 @@ class TrayMenu(dbus.service.Object):
 
     @dbus.service.signal('com.canonical.dbusmenu', signature='ui')
     def LayoutUpdated(self, revision: int, parent_id: int):
+        pass
+
+    @dbus.service.signal('com.canonical.dbusmenu', signature='a(ia{sv})a(ias)')
+    def ItemsPropertiesUpdated(self, updatedProps: Any, removedProps: Any):
         pass
 
 class JBLTrayIndicator(dbus.service.Object):
@@ -132,11 +151,49 @@ class JBLTrayIndicator(dbus.service.Object):
 
     @dbus.service.method('org.kde.StatusNotifierItem', in_signature='ii', out_signature='')
     def ContextMenu(self, x: int, y: int):
-        pass
+        """Clique com botão secundário / menu de contexto: alterna visibilidade."""
+        if self.on_toggle_window:
+            self.on_toggle_window()
+
+    @dbus.service.method('org.kde.StatusNotifierItem', in_signature='ii', out_signature='')
+    def SecondaryActivate(self, x: int, y: int):
+        if self.on_toggle_window:
+            self.on_toggle_window()
 
     @dbus.service.method('org.kde.StatusNotifierItem', in_signature='is', out_signature='')
     def Scroll(self, delta: int, orientation: str):
         pass
+
+    def serialize_node(self, node):
+        """Converte recursivamente um nó de menu (id, props, children) em formato D-Bus estritamente tipado."""
+        item_id, props, children = node
+        dbus_children = dbus.Array([], signature='v')
+        for child in children:
+            child_struct = self.serialize_node(child)
+            dbus_children.append(dbus.Struct(child_struct, signature='(ia{sv}av)', variant_level=1))
+
+        dbus_props = dbus.Dictionary({}, signature='sv')
+        for k, v in props.items():
+            if isinstance(v, bool):
+                dbus_props[dbus.String(k)] = dbus.Boolean(v, variant_level=1)
+            elif isinstance(v, int):
+                dbus_props[dbus.String(k)] = dbus.Int32(v, variant_level=1)
+            else:
+                dbus_props[dbus.String(k)] = dbus.String(str(v), variant_level=1)
+
+        return (dbus.Int32(item_id), dbus_props, dbus_children)
+
+    def get_all_menu_items_map(self) -> Dict[int, Dict[str, Any]]:
+        """Mapeia todas as propriedades de todos os itens do menu por ID para atendimento a GetGroupProperties."""
+        items_map = {}
+        def collect(node):
+            items_map[node[0]] = node[1]
+            for child in node[2]:
+                collect(child)
+
+        root = self.build_menu_layout(0)
+        collect(root)
+        return items_map
 
     def build_menu_layout(self, parent_id: int):
         """Gera a árvore de itens do menu suspenso nativo da barra superior."""
@@ -146,7 +203,7 @@ class JBLTrayIndicator(dbus.service.Object):
         dev_title = f"🎧 {self.device_name}"
         if self.is_connected:
             dev_title += " (Conectado)"
-        children.append((100, {'label': dbus.String(dev_title), 'enabled': dbus.Boolean(False)}, []))
+        children.append((100, {'label': dev_title, 'enabled': False}, []))
 
         # 2. Informações de Bateria
         if self.is_connected:
@@ -164,21 +221,21 @@ class JBLTrayIndicator(dbus.service.Object):
                 bat_text = f"🔋 Bateria: {self.battery_overall}%"
             else:
                 bat_text = "🔋 Bateria: Lendo..."
-            children.append((101, {'label': dbus.String(bat_text), 'enabled': dbus.Boolean(False)}, []))
+            children.append((101, {'label': bat_text, 'enabled': False}, []))
 
-        children.append((102, {'type': dbus.String('separator')}, []))
+        children.append((102, {'type': 'separator'}, []))
 
         # 3. Submenu / Itens de Controle de Ruído (ANC)
         anc_label = "Controle de Som e ANC"
         anc_children = [
-            (201, {'label': dbus.String(f"{'● ' if self.active_anc == AncMode.ANC else '  '}🔇 Cancelamento Ativo (ANC)")}, []),
-            (202, {'label': dbus.String(f"{'● ' if self.active_anc == AncMode.AMBIENT_AWARE else '  '}👂 Som Ambiente (Ambient)")}, []),
-            (203, {'label': dbus.String(f"{'● ' if self.active_anc == AncMode.TALKTHRU else '  '}💬 Modo Conversa (TalkThru)")}, []),
-            (204, {'label': dbus.String(f"{'● ' if self.active_anc == AncMode.OFF else '  '}⚪ Desligado")}, []),
+            (201, {'label': f"{'● ' if self.active_anc == AncMode.ANC else '  '}🔇 Cancelamento Ativo (ANC)"}, []),
+            (202, {'label': f"{'● ' if self.active_anc == AncMode.AMBIENT_AWARE else '  '}👂 Som Ambiente (Ambient)"}, []),
+            (203, {'label': f"{'● ' if self.active_anc == AncMode.TALKTHRU else '  '}💬 Modo Conversa (TalkThru)"}, []),
+            (204, {'label': f"{'● ' if self.active_anc == AncMode.OFF else '  '}⚪ Desligado"}, []),
         ]
         children.append((200, {
-            'label': dbus.String(anc_label),
-            'children-display': dbus.String('submenu')
+            'label': anc_label,
+            'children-display': 'submenu'
         }, anc_children))
 
         # 4. Submenu de Equalizador
@@ -186,22 +243,27 @@ class JBLTrayIndicator(dbus.service.Object):
         eq_children = []
         for idx, p_name in enumerate(presets):
             prefix = "● " if self.active_preset == idx else "  "
-            eq_children.append((300 + idx, {'label': dbus.String(f"{prefix}🎵 {p_name}")}, []))
+            eq_children.append((300 + idx, {'label': f"{prefix}🎵 {p_name}"}, []))
 
         children.append((350, {
-            'label': dbus.String("Predefinições de Equalizador"),
-            'children-display': dbus.String('submenu')
+            'label': "Predefinições de Equalizador",
+            'children-display': 'submenu'
         }, eq_children))
 
-        children.append((400, {'type': dbus.String('separator')}, []))
+        children.append((400, {'type': 'separator'}, []))
 
         # 5. Ações da Aplicação
-        children.append((401, {'label': dbus.String("👁️ Abrir / Ocultar Janela")}, []))
-        children.append((402, {'label': dbus.String("🔄 Procurar Fones / Reconectar")}, []))
-        children.append((403, {'type': dbus.String('separator')}, []))
-        children.append((404, {'label': dbus.String("❌ Sair do JBL Headphones")}, []))
+        children.append((401, {'label': "👁️ Abrir / Ocultar Janela"}, []))
+        children.append((402, {'label': "🔄 Procurar Fones / Reconectar"}, []))
+        children.append((403, {'type': 'separator'}, []))
+        children.append((404, {'label': "❌ Sair do JBL Headphones"}, []))
 
-        root = (0, {'children-display': dbus.String('submenu')}, children)
+        if parent_id == 200:
+            return (200, {'label': anc_label, 'children-display': 'submenu'}, anc_children)
+        elif parent_id == 350:
+            return (350, {'label': "Predefinições de Equalizador", 'children-display': 'submenu'}, eq_children)
+
+        root = (0, {'children-display': 'submenu'}, children)
         return root
 
     def handle_menu_click(self, item_id: int):
@@ -269,6 +331,6 @@ class JBLTrayIndicator(dbus.service.Object):
         if self.menu_service:
             self.menu_service.revision += 1
             try:
-                self.menu_service.LayoutUpdated(self.menu_service.revision, 0)
+                self.menu_service.LayoutUpdated(dbus.UInt32(self.menu_service.revision), dbus.Int32(0))
             except Exception:
                 pass

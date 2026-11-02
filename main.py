@@ -58,6 +58,12 @@ class JBLApp(Adw.Application):
             pass
 
 def main():
+    try:
+        from dbus.mainloop.glib import DBusGMainLoop
+        DBusGMainLoop(set_as_default=True)
+    except Exception:
+        pass
+
     GLib.set_prgname("io.github.jbl.headphones.linux")
     GLib.set_application_name("JBL Headphones")
     
