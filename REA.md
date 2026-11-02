@@ -101,21 +101,40 @@ Implementado no pacote `com.harman.cmdctrl.imp.control.u3.protocol3`:
    - Requisição: `AA 25 01 00`
    - Resposta: Bytes independentes para fone esquerdo, direito e estojo.
 3. **Controle de Modos Acústicos (`0x91`)**:
-   - **Ativar Cancelamento Ativo de Ruído (ANC)**:
-     `AA 91 07 10 01 01 02 00 03 00` (Modo 1=1, Modo 2=0, Modo 3=0)
-   - **Ativar Som Ambiente (Ambient Aware)**:
-     `AA 91 07 10 01 00 02 01 03 00` (Modo 1=0, Modo 2=1, Modo 3=0)
-   - **Ativar Modo Conversa (TalkThru)**:
-     `AA 91 07 10 01 00 02 00 03 01` (Modo 1=0, Modo 2=0, Modo 3=1)
-   - **Desligar Todos os Modos (Normal / Off)**:
-     `AA 91 01 13`
+   - Transmissão (`CmdGen.genSetANCModes` / `SubId.SET = 0x10`):
+     - **Ativar Cancelamento Ativo de Ruído (ANC)**:
+       `AA 91 07 10 01 01 02 00 03 00` (Tipo 1=ANC:1, Tipo 2=AA:0, Tipo 3=TT:0)
+     - **Ativar Som Ambiente (Ambient Aware)**:
+       `AA 91 07 10 01 00 02 01 03 00` (Tipo 1=ANC:0, Tipo 2=AA:1, Tipo 3=TT:0)
+     - **Ativar Modo Conversa (TalkThru)**:
+       `AA 91 07 10 01 00 02 00 03 01` (Tipo 1=ANC:0, Tipo 2=AA:0, Tipo 3=TT:1)
+     - **Desligar Todos os Modos (Normal / Off)**:
+       `AA 91 01 13` (`SubId.OFF = 0x13`)
+   - Recepção / Notificações (`HandleParse.parseData` / `SubId.RET = 0x12`):
+     - O pacote de telemetria possui cabeçalho `[0xAA, 0x91, Len, 0x12]` seguido de `(Len - 1) / 2` pares dinâmicos `[Type, Value]`.
+     - `Type = 1`: ANC (`Value != 0` -> ANC ativo).
+     - `Type = 2`: Ambient Aware (`Value != 0` -> Ambient Aware ativo).
+     - `Type = 3`: TalkThru (`Value != 0` -> TalkThru ativo).
+     - *Nota técnica*: O parser oficial inspeciona iterativamente os pares `(Type, Value)` em vez de assumir índices fixos, garantindo compatibilidade quando o fone reporta pares em ordens alternadas.
 4. **Equalizador Oficial Pré-definido (`0x40`)**:
    - Formato: `AA 40 01 [PresetID]`
    - Presets: `0`: Jazz, `1`: Vocal, `2`: Bass, `3`: Extreme Bass, `4`: Club, `5`: Studio, `6`: Pop.
 5. **Equalizador Paramétrico de Alta Fidelidade `EQSettings2` (`0xA2`)**:
-   - Utilizado em chips BES e Airoha modernos.
-   - Formato do cabeçalho extendido: `AA A2 [Len_LSB] [Len_MSB] 03 [PresetID_2B] 01 [LeftGain_Float4B] [RightGain_Float4B] [Bands_1B]`
-   - Cada uma das 10 bandas de frequência contém: `[Type_1B] [Gain_Float4B] [Freq_Float4B] [Q_Factor*10_1B]`.
+   - Decompilado de `com.harman.commands.EQCmd.sendCmd` e `com.harman.utils.HexArray.float2bytes`.
+   - Framing estendido: `AA A2 [Len_LSB] [Len_MSB] ...payload (116 bytes)`.
+   - Cabeçalho do payload (16 bytes fixos):
+     - Byte 0: `subSetCmd10` (`0x03` indicando escala de Q multiplicada por 10)
+     - Byte 1: `category` (`0x00` para curva personalizada ou PresetID 1 a 6)
+     - Bytes 2..5: `calibration` (float 32-bit Little-Endian `<f`, `0.0f`)
+     - Byte 6: `sampleRate` (1 byte, `0x00`)
+     - Bytes 7..10: `leftGain` (float 32-bit Little-Endian `<f`, `0.0f`)
+     - Bytes 11..14: `rightGain` (float 32-bit Little-Endian `<f`, `0.0f`)
+     - Byte 15: `bandCount` (1 byte, `0x0A` para 10 bandas)
+   - 10 bandas de frequência consecutivas (10 bytes cada, totalizando 100 bytes):
+     - Offset + 0: `bandType` (1 byte, `0x00`)
+     - Offset + 1..4: `gainValue` (float 32-bit Little-Endian `<f`, ex: `-10.0f` a `+10.0f`)
+     - Offset + 5..8: `frequency` (float 32-bit Little-Endian `<f`, ex: `32.0f`, `64.0f`, etc.)
+     - Offset + 9: `qValue * 10` (1 byte unsigned, ex: `10` para Q = 1.0)
    - As 10 frequências centrais oficiais extraídas dos assets são:
      `32 Hz, 64 Hz, 125 Hz, 250 Hz, 500 Hz, 1.000 Hz, 2.000 Hz, 4.000 Hz, 8.000 Hz, 16.000 Hz`.
 6. **VoiceAware / Sidetone (`0x98`)**:
