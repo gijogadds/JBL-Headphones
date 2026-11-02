@@ -33,12 +33,22 @@ Para detalhes aprofundados sobre a engenharia reversa dos protocolos (Protocolo 
    - **Smart Audio & Video:** Alternância entre alta fidelidade e modo de baixa latência para vídeos e jogos.
    - **Buscar Meus Fones (Find My Buds):** Disparo de sinal sonoro independente no fone Esquerdo ou Direito.
 
-5. **Arquitetura Dinâmica Universal:**
+5. **Menu Suspenso na Barra Superior (Top Bar Tray / StatusNotifierItem):**
+   - Indicador nativo e persistente na bandeja do sistema (Top Bar) via `org.kde.StatusNotifierItem` e `com.canonical.dbusmenu`.
+   - Exibição de carga de bateria em tempo real (`L: X%⚡ | R: Y%⚡ | Case: Z%⚡`).
+   - Submenus rápidos para alternar modos de ANC (*ANC, Ambient Aware, TalkThru, Off*) e Presets de Equalizador diretamente da barra superior sem precisar abrir a janela principal.
+   - Ao fechar a janela, o aplicativo continua em execução em segundo plano na barra superior, podendo ser reexibido com 1 clique no ícone ou no item "Abrir / Ocultar Janela".
+
+6. **Ícone Oficial e Integração Completa com a Dock do GNOME:**
+   - Identificador padronizado `io.github.jbl.headphones.linux` com ícones vetoriais e bitmaps de alta resolução instalados no tema hicolor do sistema (`48x48` até `256x256`).
+   - O logo oficial da JBL aparece na dock, no switcher Alt-Tab e nas notificações de forma idêntica aos aplicativos nativos do sistema.
+
+7. **Arquitetura Dinâmica Universal:**
    - Possui catálogo interno de **128 modelos da JBL** (linhas *Tune, Live, Tour, Wave, Vibe, Club, Everest, Endurance, Quantum*, etc.).
    - A interface oculta ou exibe os cards automaticamente com base nos recursos que o fone suporta.
    - Inclui seletor/simulador de modelos para inspecionar a interface de outros fones.
 
-6. **Camada de Comunicação Dual-Transport:**
+8. **Camada de Comunicação Dual-Transport:**
    - **BLE GATT**: Conecta ao serviço proprietário Harman (`65786365-6c70-6f69-6e74-2e636f6d0000`) para comandos prioritários e notificações em tempo real de toques físicos.
    - **RFCOMM SPP (Porta 17)**: Suporte a dispositivos legados e telemetria contínua.
    - **Suporte a Protocolo 3 e Protocolo 4**: Compatível com toda a linha tradicional BES e com a nova linha Harman (Tour Pro 2/3, Live 3).
@@ -62,13 +72,21 @@ pip install bleak dbus-python
 python3 main.py
 ```
 
-### Instalar Lançador no Menu do Sistema:
-Copie o arquivo `.desktop` para sua pasta de aplicativos locais:
+### Instalar Lançador e Ícones no Sistema:
+Para instalar os ícones oficiais e o lançador na dock do sistema:
 ```bash
-cp jbl-headphones.desktop ~/.local/share/applications/
+# Copia o arquivo .desktop para aplicações locais
+cp io.github.jbl.headphones.linux.desktop ~/.local/share/applications/
 update-desktop-database ~/.local/share/applications/
+
+# Instala o ícone oficial em todas as resoluções do tema hicolor
+for sz in 48x48 64x64 128x128 256x256 scalable; do
+    mkdir -p ~/.local/share/icons/hicolor/$sz/apps
+    cp data/icon.png ~/.local/share/icons/hicolor/$sz/apps/io.github.jbl.headphones.linux.png
+done
+gtk-update-icon-cache -f -t ~/.local/share/icons/hicolor
 ```
-Agora basta abrir o menu do sistema e buscar por **JBL Headphones**!
+Agora basta abrir o menu de aplicativos ou a dock do GNOME e buscar por **JBL Headphones**!
 
 ---
 
