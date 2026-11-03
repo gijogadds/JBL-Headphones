@@ -441,6 +441,14 @@ class MainWindow(Adw.ApplicationWindow):
         find_right_btn.connect("clicked", lambda _: self._ring_earbud(False, True))
         self.find_row.add_suffix(find_right_btn)
 
+        find_both_btn = Gtk.Button(label="Tocar Ambos")
+        find_both_btn.connect("clicked", lambda _: self._ring_earbud(True, True))
+        self.find_row.add_suffix(find_both_btn)
+
+        find_stop_btn = Gtk.Button(label="Parar alerta")
+        find_stop_btn.connect("clicked", lambda _: self._ring_earbud(False, False))
+        self.find_row.add_suffix(find_stop_btn)
+
         self.extra_group.add(self.find_row)
 
     def _build_model_selector_card(self):
@@ -543,15 +551,32 @@ class MainWindow(Adw.ApplicationWindow):
                 self.backend.send_raw(packet)
             return
 
-        for packet in (
-            Protocol3Handler.REQ_DEV_INFO,
-            Protocol3Handler.REQ_BATTERY_INFO,
-            Protocol3Handler.REQ_ANC_MODES,
-            Protocol3Handler.REQ_SMART_SWITCH,
-            Protocol3Handler.REQ_LR_BALANCE,
-            Protocol3Handler.REQ_AUTO_OFF,
-            Protocol3Handler.REQ_SAFE_SOUND,
-        ):
+        if self.current_model and self.current_model.uses_harman_ble_gen3_profile:
+            packets = (
+                Protocol3Handler.REQ_BATTERY_INFO,
+                Protocol3Handler.REQ_ANC_MODES,
+                Protocol3Handler.REQ_SMART_SWITCH_GEN3,
+                Protocol3Handler.REQ_LR_BALANCE,
+                Protocol3Handler.build_command3_get([
+                    Protocol3Handler.DEVICE_INFO_AUTO_OFF,
+                    Protocol3Handler.DEVICE_INFO_VOICE_AWARE,
+                    Protocol3Handler.DEVICE_INFO_SAFE_SOUND,
+                ]),
+                Protocol3Handler.request_eq_settings2(202),
+                Protocol3Handler.request_eq_settings2(201),
+                Protocol3Handler.request_eq_settings2(255),
+            )
+        else:
+            packets = (
+                Protocol3Handler.REQ_DEV_INFO,
+                Protocol3Handler.REQ_BATTERY_INFO,
+                Protocol3Handler.REQ_ANC_MODES,
+                Protocol3Handler.REQ_SMART_SWITCH,
+                Protocol3Handler.REQ_LR_BALANCE,
+                Protocol3Handler.REQ_AUTO_OFF,
+                Protocol3Handler.REQ_SAFE_SOUND,
+            )
+        for packet in packets:
             self.backend.send_raw(packet)
 
     def _send_packets(self, packets: List[bytes]) -> bool:
@@ -705,11 +730,12 @@ class MainWindow(Adw.ApplicationWindow):
                     slider.set_value(gain)
             finally:
                 self._updating_preset_ui = False
-            packets = (
-                Protocol4Handler.build_eq_curve_packet(gains)
-                if self.current_model and self.current_model.protocol_version == 4
-                else [Protocol3Handler.set_eq_preset(idx)]
-            )
+            if self.current_model and self.current_model.protocol_version == 4:
+                packets = Protocol4Handler.build_eq_curve_packet(gains)
+            elif self.current_model and self.current_model.uses_harman_ble_gen3_profile:
+                packets = [Protocol3Handler.build_eq2_packet(gains, preset_id=idx)]
+            else:
+                packets = [Protocol3Handler.set_eq_preset(idx)]
             if not self._send_packets(packets):
                 return
             p_name = preset_names[idx] if idx < len(preset_names) else ""
@@ -776,7 +802,7 @@ class MainWindow(Adw.ApplicationWindow):
         idx = combo.get_selected()
         mode_map = {0: "normal", 1: "audio", 2: "video"}
         mode = mode_map.get(idx, "normal")
-        pkt_p3 = Protocol3Handler.set_smart_audio_video(mode)
+        pkt_p3 = self._smart_audio_video_packet(mode)
         if not self._send_packets([pkt_p3]):
             return
         self.tray_indicator.update_smart_mode(mode)
@@ -790,6 +816,11 @@ class MainWindow(Adw.ApplicationWindow):
         toast.set_timeout(2)
         self.toast_overlay.add_toast(toast)
 
+    def _smart_audio_video_packet(self, mode: str) -> bytes:
+        if self.current_model and self.current_model.uses_harman_ble_gen3_profile:
+            return Protocol3Handler.set_smart_audio_video_gen3(mode)
+        return Protocol3Handler.set_smart_audio_video(mode)
+
     def _apply_smart_mode_from_external(self, mode: str):
         """Chamado a partir do menu suspenso da barra superior para alternar o modo Smart Audio & Video."""
         GLib.idle_add(self._do_apply_smart_mode_from_external, mode)
@@ -802,8 +833,9 @@ class MainWindow(Adw.ApplicationWindow):
                 self.smart_mode_row.set_selected(mode_map[mode])
             finally:
                 self._updating_extra_ui = False
-        pkt_p3 = Protocol3Handler.set_smart_audio_video(mode)
-        self._send_packets([pkt_p3])
+        pkt_p3 = self._smart_audio_video_packet(mode)
+        if not self._send_packets([pkt_p3]):
+            return
         self.tray_indicator.update_smart_mode(mode)
 
     def _on_balance_changed(self, scale: Gtk.Scale):
@@ -840,11 +872,12 @@ class MainWindow(Adw.ApplicationWindow):
         minutes = time_map.get(idx, 0)
         enabled = minutes > 0
 
-        packets = (
-            Protocol4Handler.set_auto_power_off(minutes, enabled)
-            if self.current_model and self.current_model.protocol_version == 4
-            else [Protocol3Handler.set_auto_power_off(minutes, enabled)]
-        )
+        if self.current_model and self.current_model.protocol_version == 4:
+            packets = Protocol4Handler.set_auto_power_off(minutes, enabled)
+        elif self.current_model and self.current_model.uses_harman_ble_gen3_profile:
+            packets = [Protocol3Handler.set_auto_power_off_gen3(minutes, enabled)]
+        else:
+            packets = [Protocol3Handler.set_auto_power_off(minutes, enabled)]
         if not self._send_packets(packets):
             return
 
@@ -875,17 +908,20 @@ class MainWindow(Adw.ApplicationWindow):
         self.toast_overlay.add_toast(toast)
 
     def _on_voice_aware_selected(self, combo, _):
+        if self._updating_extra_ui:
+            return
         level = VoiceAwareLevel(combo.get_selected())
-        packets = (
-            Protocol4Handler.set_voice_aware(level)
-            if self.current_model and self.current_model.protocol_version == 4
-            else [Protocol3Handler.set_voice_aware(level)]
-        )
+        if self.current_model and self.current_model.protocol_version == 4:
+            packets = Protocol4Handler.set_voice_aware(level)
+        elif self.current_model and self.current_model.uses_harman_ble_gen3_profile:
+            packets = [Protocol3Handler.set_voice_aware_gen3(level)]
+        else:
+            packets = [Protocol3Handler.set_voice_aware(level)]
         self._send_packets(packets)
 
     def _ring_earbud(self, ring_left: bool, ring_right: bool):
-        pkt = Protocol3Handler.set_find_my_buds(ring_left, ring_right)
-        self._send_packets([pkt])
+        packets = Protocol3Handler.set_find_my_buds(ring_left, ring_right)
+        self._send_packets(packets)
 
     def _on_backend_status_changed(self, status: Dict[str, Any]):
         """Executado na thread principal para atualizar a UI de forma segura."""
@@ -1092,6 +1128,22 @@ class MainWindow(Adw.ApplicationWindow):
                     self._updating_extra_ui = True
                     try:
                         self.smart_mode_row.set_selected(smode_map[smode])
+                    finally:
+                        self._updating_extra_ui = False
+
+            # Sincronização do VoiceAware/Sidetone
+            if "voice_aware_level" in parsed or "voice_aware_level" in status:
+                level = status.get("voice_aware_level", parsed.get("voice_aware_level"))
+                enabled = status.get(
+                    "voice_aware_enabled",
+                    parsed.get("voice_aware_enabled", bool(level and level > 0)),
+                )
+                if level is not None:
+                    self._updating_extra_ui = True
+                    try:
+                        self.voice_row.set_selected(
+                            max(0, min(3, int(level))) if enabled else 0
+                        )
                     finally:
                         self._updating_extra_ui = False
 

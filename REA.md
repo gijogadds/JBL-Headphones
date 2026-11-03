@@ -128,6 +128,28 @@ Implementado no pacote `com.harman.cmdctrl.imp.control.u3.protocol3` e `com.harm
 | `0xA8` | **Balanço Estéreo L/R (LeftRightSoundBalanceCmd)** | App <-> Dev | `05 00 01 [isOn] 02 [level 84..116]` |
 | `0xEF` | **Fragmentação GenGroupCmd (BLE GATT MTU)** | App -> Dev | Framer com CRC16-IBM para pacotes > MTU |
 
+#### Variação confirmada do JBL Tune Buds 2 (PID `210c`)
+
+A tabela acima descreve comandos genéricos/legados e não deve ser aplicada
+indiscriminadamente a este modelo. O controlador `TuneBuds2Control` usa:
+
+- **Smart Audio/Vídeo:** `SmartSwitchCmd`, comando `AA 80`. Consulta:
+  `AA 80 01 01`; escrita: `AA 80 09 00` seguida de quatro valores de 16 bits
+  little-endian. `AA 81/82` é o caminho legado.
+- **Auto Power Off:** `GenDeviceInfoCmd`, comando `AA 06`, feature `0x000B`.
+  A consulta usa payload type `01`; a escrita usa type `00` e valor
+  `[ligado, minutos_LSB, minutos_MSB]`.
+- **VoiceAware:** `AA 98 03 00 [nível] [ligado]`; o byte do subcomando e o
+  estado ligado/desligado fazem parte do payload.
+- **Find My Buds:** `AA 36 01 [enum]`; os enums são `0` parar direito, `1`
+  parar esquerdo, `16` iniciar direito e `17` iniciar esquerdo. Para controlar
+  os dois lados, o aplicativo oficial envia um comando por auricular.
+- **Equalizador:** o controlador específico implementa `setEQSettings2`, que
+  usa `EQCmd` (`AA A2`) com `QMultiply10EQ`. A aplicação Linux envia a curva
+  completa para os presets deste modelo; não usa o comando legado `AA 40`.
+  Quando a curva excede o MTU, o APK a divide com `GenGroupCmd` (`AA EF`),
+  usando blocos de `MTU - 18` bytes e CRC16.
+
 ### 3.3 Telemetria de Bateria TWS Bestechnic (Prefixo `0x03`)
 Microcontroladores Bestechnic (série BES2600) emitem quadros espontâneos em canal RFCOMM com o prefixo `0x03`:
 ```

@@ -14,7 +14,11 @@ from typing import Optional, Callable, Dict, Any, List
 from bleak import BleakScanner, BleakClient
 from bleak.backends.device import BLEDevice
 
-from core.protocol import Protocol4PacketAssembler
+from core.protocol import (
+    Protocol3GroupPacketAssembler,
+    Protocol3Handler,
+    Protocol4PacketAssembler,
+)
 
 # UUIDs oficiais da Harman International / JBL
 HARMAN_SERVICE_UUID = "65786365-6c70-6f69-6e74-2e636f6d0000"
@@ -33,6 +37,7 @@ class BLEController:
         self._main_task: Optional[asyncio.Task] = None
         self._client: Optional[BleakClient] = None
         self._p4_assembler = Protocol4PacketAssembler()
+        self._p3_group_assembler = Protocol3GroupPacketAssembler()
         self.is_connected: bool = False
         self.connected_address: Optional[str] = None
         self._send_queue: Optional[asyncio.Queue] = None
@@ -156,8 +161,10 @@ class BLEController:
                         try:
                             # Espera comando para envio com timeout de 0.5s para checagem de integridade
                             data = await asyncio.wait_for(self._send_queue.get(), timeout=0.5)
-                            await self._write_raw(client, data)
-                            self._send_queue.task_done()
+                            try:
+                                await self._write_raw(client, data)
+                            finally:
+                                self._send_queue.task_done()
                         except asyncio.TimeoutError:
                             continue
                         except Exception as e:
@@ -248,9 +255,8 @@ class BLEController:
             mtu = getattr(client, "mtu_size", 23)
             max_payload = max(20, mtu - 3)
             if len(data) > max_payload:
-                from core.protocol import Protocol3Handler
                 # Se o pacote exceder o MTU negociado, fragmenta usando GenGroupCmd oficial Harman (0xAA 0xEF)
-                chunk_sz = max(12, max_payload - 8)
+                chunk_sz = max(1, mtu - 18)
                 frags = Protocol3Handler.fragment_packet(data, chunk_size=chunk_sz)
                 for frag in frags:
                     await client.write_gatt_char(HARMAN_WRITE_CHAR, frag, response=False)
@@ -261,10 +267,14 @@ class BLEController:
                 print(f"[BLEController] Pacote enviado ({len(data)} bytes): {data.hex(' ')}")
         except Exception as e:
             print(f"[BLEController] Erro ao enviar pacote GATT: {e}", file=sys.stderr)
+            raise
 
     def _handle_notification(self, sender: Any, data: bytes):
         """Trata notificações do fone físico e eventos de toque no auricular."""
         data = self._p4_assembler.feed(bytes(data))
+        if data is None:
+            return
+        data = self._p3_group_assembler.feed(data)
         if data is None:
             return
 

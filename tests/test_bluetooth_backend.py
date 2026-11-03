@@ -1,3 +1,4 @@
+import asyncio
 import contextlib
 import io
 import threading
@@ -11,6 +12,7 @@ from core.ble_controller import (
     HARMAN_ADVERTISING_SERVICE_UUID,
     HARMAN_SERVICE_UUID,
 )
+from core.protocol import Protocol3Handler
 
 
 class FakeBleController:
@@ -183,6 +185,30 @@ class BluetoothBackendTests(unittest.TestCase):
             BLEController._matches_target_device(
                 device, advertisement, "JBL TUNE BUDS 2", ""
             )
+        )
+
+    def test_long_protocol3_writes_use_official_mtu_sized_group_frames(self):
+        class FakeGattClient:
+            is_connected = True
+            mtu_size = 23
+
+            def __init__(self):
+                self.writes = []
+
+            async def write_gatt_char(self, uuid, data, response):
+                self.writes.append((uuid, data, response))
+
+        packet = Protocol3Handler.build_eq2_packet([0.0] * 10)
+        client = FakeGattClient()
+
+        asyncio.run(BLEController()._write_raw(client, packet))
+
+        self.assertEqual(len(client.writes), 24)
+        self.assertTrue(all(len(data) <= 20 for _, data, _ in client.writes))
+        self.assertTrue(all(data[:2] == bytes.fromhex("AA EF") for _, data, _ in client.writes))
+        self.assertEqual(
+            [data[5] for _, data, _ in client.writes],
+            list(range(24)),
         )
 
     def test_ble_discovery_accepts_harman_advertising_service(self):

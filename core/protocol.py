@@ -63,6 +63,49 @@ class Protocol4PacketAssembler:
             + payload
         )
 
+
+class Protocol3GroupPacketAssembler:
+    """Recombina comandos Protocol 3 fragmentados pelo GenGroupCmd (AA EF)."""
+
+    def __init__(self):
+        self._partial: Dict[Tuple[int, int], Tuple[float, Dict[int, bytes]]] = {}
+
+    def feed(self, packet: bytes) -> Optional[bytes]:
+        if len(packet) < 8 or packet[:2] != b"\xAA\xEF":
+            return packet
+
+        payload_length = packet[2] | (packet[3] << 8)
+        packet_count = packet[4]
+        packet_index = packet[5]
+        checksum = packet[6] | (packet[7] << 8)
+        if (
+            payload_length < 4
+            or len(packet) != 4 + payload_length
+            or packet_count == 0
+            or packet_index >= packet_count
+        ):
+            return None
+
+        now = time.monotonic()
+        self._partial = {
+            key: value
+            for key, value in self._partial.items()
+            if now - value[0] <= 10.0
+        }
+        key = (packet_count, checksum)
+        created_at, fragments = self._partial.get(key, (now, {}))
+        fragments[packet_index] = packet[8:]
+        self._partial[key] = (created_at, fragments)
+        if len(fragments) != packet_count:
+            return None
+
+        payload = b"".join(fragments[index] for index in range(packet_count))
+        del self._partial[key]
+        if Protocol3Handler.calc_crc16(payload) != checksum:
+            return None
+        return payload
+
+
 class Protocol3Handler:
     """Gerencia comandos do Protocolo 3 oficial da Harman (Header 0xAA)"""
     MAGIC = 0xAA
@@ -85,14 +128,21 @@ class Protocol3Handler:
     CMD_SET_AUTO_OFF = 0x33
     CMD_SET_SMART_SWITCH = 0x81
     CMD_REQ_SMART_SWITCH = 0x82
+    CMD_SMART_SWITCH = 0x80
+    CMD_DEVICE_INFO = 0x06
     CMD_SET_SAFE_SOUND = 0xA5
     CMD_SET_LR_BALANCE = 0xA8
 
     # Comandos de Requisição Adicionais Oficiais
     REQ_AUTO_OFF = bytes([0xAA, 0x33, 0x01, 0x00])
     REQ_SMART_SWITCH = bytes([0xAA, 0x82, 0x01, 0x00])
+    REQ_SMART_SWITCH_GEN3 = bytes([0xAA, 0x80, 0x01, 0x01])
     REQ_LR_BALANCE = bytes([0xAA, 0xA8, 0x01, 0x01])
     REQ_SAFE_SOUND = bytes([0xAA, 0xA5, 0x01, 0x01])
+
+    DEVICE_INFO_AUTO_OFF = 0x000B
+    DEVICE_INFO_VOICE_AWARE = 0x000D
+    DEVICE_INFO_SAFE_SOUND = 0x0020
 
     # Frequências padrão do equalizador oficial JBL de 10 bandas
     EQ_FREQUENCIES = [32.0, 64.0, 125.0, 250.0, 500.0, 1000.0, 2000.0, 4000.0, 8000.0, 16000.0]
@@ -141,7 +191,15 @@ class Protocol3Handler:
             else:
                 if len(buffer) < 3:
                     break
-                if buffer[1] in (0xA2, 0xEF):
+                if buffer[1] == 0xA2 and buffer[2] == 0x02:
+                    if len(buffer) < 5:
+                        break
+                    if buffer[3] == 0x01:
+                        packet_length = 3 + buffer[2]
+                    else:
+                        payload_length = buffer[2] | (buffer[3] << 8)
+                        packet_length = 4 + payload_length
+                elif buffer[1] in (0x06, 0xA2, 0xEF):
                     if len(buffer) < 4:
                         break
                     payload_length = buffer[2] | (buffer[3] << 8)
@@ -335,14 +393,32 @@ class Protocol3Handler:
 
     @classmethod
     def set_voice_aware(cls, level: VoiceAwareLevel) -> bytes:
-        """Define o nível de retorno de voz durante chamadas"""
+        """Define VoiceAware no formato legado mantido para modelos antigos."""
         return cls.build_packet(cls.CMD_SET_VOICE_AWARE, bytes([int(level)]))
 
     @classmethod
-    def set_find_my_buds(cls, ring_left: bool, ring_right: bool) -> bytes:
-        """Emite alerta sonoro para encontrar fones perdidos"""
-        val = (1 if ring_left else 0) | ((2 if ring_right else 0))
-        return cls.build_packet(cls.CMD_SET_FIND_BUDS, bytes([val]))
+    def set_voice_aware_gen3(cls, level: VoiceAwareLevel) -> bytes:
+        """Define nível, estado e subcomando no formato usado pelo Tune Buds 2."""
+        return cls.build_packet(
+            cls.CMD_SET_VOICE_AWARE,
+            bytes([0x00, int(level), int(level != VoiceAwareLevel.OFF)]),
+        )
+
+    @classmethod
+    def set_find_my_buds(cls, ring_left: bool, ring_right: bool) -> List[bytes]:
+        """Inicia ou para os alertas usando os enums oficiais por auricular."""
+        if ring_left and ring_right:
+            values = (0x11, 0x10)
+        elif ring_left:
+            values = (0x11,)
+        elif ring_right:
+            values = (0x10,)
+        else:
+            values = (0x01, 0x00)
+        return [
+            cls.build_packet(cls.CMD_SET_FIND_BUDS, bytes([value]))
+            for value in values
+        ]
 
     @classmethod
     def set_auto_power_off(cls, timeout_minutes: int, enabled: bool = True) -> bytes:
@@ -372,14 +448,14 @@ class Protocol3Handler:
 
     @classmethod
     def set_smart_audio_video(cls, mode: str = "normal") -> bytes:
-        """
-        Define o modo de sincronização inteligente de áudio e vídeo (Smart Audio & Video = 0xAA 0x81).
+        """Define o modo inteligente pelo comando legado AA 81.
         Alterna entre baixa latência para vídeos/jogos e alta fidelidade para música.
         mode:
           - "audio": Modo Música (Alta Fidelidade) -> [256, 53, 130, 230]
           - "video": Modo Vídeo (Baixa Latência)   -> [197, 46, 100, 200]
           - "normal": Modo Padrão                 -> [197, 46, 130, 230]
-        Quadro: [0xAA, 0x81, 0x08, aac_hi, aac_lo, sbc_hi, sbc_lo, lat_hi, lat_lo, lat2_hi, lat2_lo]
+        Quadro legado: AA 81 08 seguido por quatro shorts big-endian.
+        O Tune Buds 2 usa set_smart_audio_video_gen3().
         """
         mode = mode.lower()
         if mode == "video":
@@ -396,6 +472,62 @@ class Protocol3Handler:
             (lat2 >> 8) & 0xFF, lat2 & 0xFF
         ])
         return cls.build_packet(cls.CMD_SET_SMART_SWITCH, payload)
+
+    @classmethod
+    def set_smart_audio_video_gen3(cls, mode: str = "normal") -> bytes:
+        """Serializa SmartSwitchCmd (AA 80) usado pelo Tune Buds 2."""
+        mode = mode.lower()
+        if mode == "video":
+            values = (197, 46, 100, 200)
+        elif mode == "audio":
+            values = (256, 53, 130, 230)
+        else:
+            values = (197, 46, 130, 230)
+
+        payload = bytearray([0x00])
+        for value in values:
+            payload.extend(value.to_bytes(2, "little"))
+        return cls.build_packet(cls.CMD_SMART_SWITCH, bytes(payload))
+
+    @classmethod
+    def build_command3_get(cls, feature_ids: List[int]) -> bytes:
+        """Monta uma consulta GenDeviceInfoCmd (AA 06) para features selecionadas."""
+        if not feature_ids:
+            raise ValueError("At least one device-info feature is required")
+        payload = bytearray([0x01])
+        for feature_id in feature_ids:
+            if not 0 <= feature_id <= 0xFFFF:
+                raise ValueError("Device-info feature IDs must fit in 16 bits")
+            payload.extend(feature_id.to_bytes(2, "big"))
+        return cls._build_command3_packet(bytes(payload))
+
+    @classmethod
+    def _build_command3_packet(cls, payload: bytes) -> bytes:
+        if len(payload) > 0xFFFF:
+            raise ValueError("Command3 payloads cannot exceed 65535 bytes")
+        return bytes([0xAA, cls.CMD_DEVICE_INFO]) + len(payload).to_bytes(2, "little") + payload
+
+    @classmethod
+    def set_auto_power_off_gen3(cls, timeout_minutes: int, enabled: bool = True) -> bytes:
+        """Define AutoOff pela feature 0x000B do Tune Buds 2."""
+        if not 0 <= timeout_minutes <= 0xFFFF:
+            raise ValueError("Auto-off timeout must fit in 16 bits")
+        is_on = enabled and timeout_minutes > 0
+        value = bytes([int(is_on)]) + timeout_minutes.to_bytes(2, "little")
+        payload = (
+            bytes([0x00])
+            + cls.DEVICE_INFO_AUTO_OFF.to_bytes(2, "big")
+            + bytes([len(value)])
+            + value
+        )
+        return cls._build_command3_packet(payload)
+
+    @classmethod
+    def request_eq_settings2(cls, category: int) -> bytes:
+        """Consulta uma categoria EQSettings2 no formato EQCmd do Tune Buds 2."""
+        if not 0 <= category <= 0xFF:
+            raise ValueError("EQSettings2 categories must fit in 8 bits")
+        return cls.build_packet(cls.CMD_SET_EQ2, bytes([0x01, category]))
 
     @classmethod
     def set_safe_sound(cls, enabled: bool) -> bytes:
@@ -490,9 +622,72 @@ class Protocol3Handler:
                 length = data[pos_aa+2]
                 payload = data[pos_aa+3 : pos_aa+3+length]
 
+                # GenDeviceInfoCmd (Tune Buds 2): len16 LE, payload type, then feature TLVs.
+                if cmd == cls.CMD_DEVICE_INFO and pos_aa + 5 <= len(data):
+                    command3_len = data[pos_aa+2] | (data[pos_aa+3] << 8)
+                    end = pos_aa + 4 + command3_len
+                    if command3_len >= 1 and end <= len(data):
+                        idx = pos_aa + 5
+                        while idx + 3 <= end:
+                            feature_id = (data[idx] << 8) | data[idx + 1]
+                            value_length = data[idx + 2]
+                            value_start = idx + 3
+                            value_end = value_start + value_length
+                            if value_end > end:
+                                break
+                            value = data[value_start:value_end]
+                            if feature_id == 1 and value:
+                                res["device_name"] = value.decode(
+                                    "utf-8", errors="ignore"
+                                ).strip("\x00")
+                            elif feature_id == 2 and len(value) >= 2:
+                                res["pid"] = f"{value[1]:02X}{value[0]:02X}"
+                            elif feature_id == 5 and value:
+                                res["firmware_version"] = ".".join(
+                                    str(component) for component in value
+                                )
+                            elif feature_id == cls.DEVICE_INFO_AUTO_OFF and len(value) == 3:
+                                res["auto_off_enabled"] = bool(value[0])
+                                res["auto_off_minutes"] = int.from_bytes(
+                                    value[1:3], "little"
+                                )
+                            elif feature_id == cls.DEVICE_INFO_VOICE_AWARE and len(value) >= 2:
+                                res["voice_aware_enabled"] = bool(value[0])
+                                res["voice_aware_level"] = value[1]
+                            elif feature_id == cls.DEVICE_INFO_SAFE_SOUND and value:
+                                res["safe_sound_enabled"] = bool(value[0])
+                            elif feature_id in (26, 27, 28) and len(value) >= 2:
+                                side = {26: "left", 27: "right", 28: "case"}[feature_id]
+                                res[f"charging_{side}"] = bool(value[0])
+                                res[f"battery_{side}"] = value[1]
+                            idx = value_end
+
+                elif cmd == cls.CMD_SET_EQ2 and pos_aa + 4 <= len(data):
+                    eq_length = data[pos_aa+2] | (data[pos_aa+3] << 8)
+                    end = pos_aa + 4 + eq_length
+                    if (
+                        eq_length >= 2
+                        and end <= len(data)
+                        and data[pos_aa+4] in (0x02, 0x04)
+                    ):
+                        eq_payload = data[pos_aa+4:end]
+                        res["eq_category"] = eq_payload[1]
+                        if len(eq_payload) >= 16:
+                            band_count = eq_payload[15]
+                            if (
+                                0 < band_count <= len(cls.EQ_FREQUENCIES)
+                                and len(eq_payload) >= 16 + band_count * 10
+                            ):
+                                res["eq_gains"] = [
+                                    struct.unpack_from(
+                                        "<f", eq_payload, 17 + band_index * 10
+                                    )[0]
+                                    for band_index in range(band_count)
+                                ]
+
                 # Informações do Dispositivo (0x11 ou 0x12)
                 # Suporta formato estruturado TLV oficial do Harman Command3 e legado
-                if cmd in (0x11, 0x12):
+                elif cmd in (0x11, 0x12):
                     parsed_tlv = False
 
                     # 1. Decodificador oficial Harman Command3 (16-bit payloadLen LSB/MSB + payloadType no byte 4)
@@ -619,7 +814,22 @@ class Protocol3Handler:
                             res["lr_balance_level"] = lvl
                             res["lr_balance_offset"] = lvl - 100
 
-                # Modo Smart Audio & Video (0x81 ou 0x82)
+                # SmartSwitchCmd (0x80): type RET followed by four little-endian shorts.
+                elif cmd == cls.CMD_SMART_SWITCH and len(payload) >= 9 and payload[0] == 0x02:
+                    values = [
+                        int.from_bytes(payload[offset:offset + 2], "little")
+                        for offset in range(1, 9, 2)
+                    ]
+                    aac, sbc, lat, lat2 = values
+                    res["smart_switch_aac"] = aac
+                    res["smart_switch_sbc"] = sbc
+                    res["smart_switch_latency"] = lat
+                    res["smart_switch_latency2"] = lat2
+                    res["smart_audio_video_mode"] = (
+                        "video" if lat <= 100 else "audio" if aac == 256 else "normal"
+                    )
+
+                # Modo Smart Audio & Video legado (0x81 ou 0x82)
                 elif cmd in (0x81, 0x82) and len(payload) >= 8:
                     aac = (payload[0] << 8) | payload[1]
                     sbc = (payload[2] << 8) | payload[3]
@@ -640,6 +850,13 @@ class Protocol3Handler:
                     for idx_s in range(len(payload) - 1):
                         if payload[idx_s] == 0x01:
                             res["safe_sound_enabled"] = bool(payload[idx_s + 1])
+
+                # VoiceAware (0x98): RET payload is [02, level, enabled].
+                elif cmd == cls.CMD_SET_VOICE_AWARE and len(payload) >= 2 and payload[0] == 0x02:
+                    res["voice_aware_level"] = payload[1]
+                    res["voice_aware_enabled"] = (
+                        bool(payload[2]) if len(payload) >= 3 else payload[1] > 0
+                    )
 
         # 3. Parser de ACK de comando BES (ex: '07 10 00 00')
         if b'\x07\x10\x00\x00' in data:

@@ -1,6 +1,7 @@
 {
   "name": "JBL Tune Buds 2",
   "pid": "210c",
+  "protocol3Profile": "harman_ble_gen3",
 
   "uiFeatures": [
     {"name": "ANC", "type": ["AscCard"]},

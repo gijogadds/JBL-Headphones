@@ -19,6 +19,7 @@ class DeviceModel:
         self.name: str = data.get("name", "JBL Headphone Desconhecido")
         self.pid: str = str(data.get("pid", "")).lower()
         self.protocol_version: int = int(data.get("protocolVersion", 3))
+        self.protocol3_profile: str = str(data.get("protocol3Profile", "legacy"))
         self.ui_features: List[Dict[str, Any]] = data.get("uiFeatures", [])
         
         # Mapeamento rápido de recursos suportados
@@ -82,6 +83,10 @@ class DeviceModel:
     @property
     def has_find_my_buds(self) -> bool:
         return "FindMyBudCard" in self.features_set
+
+    @property
+    def uses_harman_ble_gen3_profile(self) -> bool:
+        return self.protocol_version == 3 and self.protocol3_profile == "harman_ble_gen3"
 
 class DeviceRegistry:
     def __init__(self):
