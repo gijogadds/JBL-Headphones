@@ -175,7 +175,7 @@ class MainWindow(Adw.ApplicationWindow):
         # 4. Card de Recursos Adicionais (VoiceAware, Latência, Find Buds)
         self._build_extra_features_card()
 
-        # 5. Card de Simulação e Seleção de Modelos
+        # Mantém o perfil interno para sincronização; o seletor não é exibido.
         self._build_model_selector_card()
 
     def _build_device_status_card(self):
@@ -292,25 +292,34 @@ class MainWindow(Adw.ApplicationWindow):
         # Seletor de Modos (Segmented Button)
         btn_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
         btn_box.add_css_class("linked")
+        btn_box.set_valign(Gtk.Align.CENTER)
 
         self.btn_anc = Gtk.ToggleButton(label="🔇 ANC")
+        self.btn_anc.set_size_request(-1, 42)
+        self.btn_anc.set_valign(Gtk.Align.CENTER)
         self.btn_anc.set_tooltip_text("Cancelamento Ativo de Ruído")
         self.btn_anc.connect("toggled", lambda b: self._on_anc_button_toggled(AncMode.ANC, b))
         btn_box.append(self.btn_anc)
 
         self.btn_ambient = Gtk.ToggleButton(label="👂 Ambiente")
+        self.btn_ambient.set_size_request(-1, 42)
+        self.btn_ambient.set_valign(Gtk.Align.CENTER)
         self.btn_ambient.set_tooltip_text("Ambient Aware (Som do ambiente amplificado)")
         self.btn_ambient.set_group(self.btn_anc)
         self.btn_ambient.connect("toggled", lambda b: self._on_anc_button_toggled(AncMode.AMBIENT_AWARE, b))
         btn_box.append(self.btn_ambient)
 
         self.btn_talkthru = Gtk.ToggleButton(label="💬 TalkThru")
+        self.btn_talkthru.set_size_request(-1, 42)
+        self.btn_talkthru.set_valign(Gtk.Align.CENTER)
         self.btn_talkthru.set_tooltip_text("TalkThru (Música baixa e voz amplificada para conversar)")
         self.btn_talkthru.set_group(self.btn_anc)
         self.btn_talkthru.connect("toggled", lambda b: self._on_anc_button_toggled(AncMode.TALKTHRU, b))
         btn_box.append(self.btn_talkthru)
 
         self.btn_off = Gtk.ToggleButton(label="⚪ Desligado")
+        self.btn_off.set_size_request(-1, 42)
+        self.btn_off.set_valign(Gtk.Align.CENTER)
         self.btn_off.set_group(self.btn_anc)
         self.btn_off.connect("toggled", lambda b: self._on_anc_button_toggled(AncMode.OFF, b))
         btn_box.append(self.btn_off)
@@ -448,29 +457,48 @@ class MainWindow(Adw.ApplicationWindow):
         # 6. Localizar meus fones (Find My Buds)
         self.find_row = Adw.ActionRow(title="Buscar Meus Fones (Find My Buds)")
         self.find_row.set_subtitle("Emite um sinal sonoro de alerta no auricular selecionado")
-        
-        find_left_btn = Gtk.Button(label="Tocar Esquerdo")
-        find_left_btn.connect("clicked", lambda _: self._ring_earbud(True, False))
-        self.find_row.add_suffix(find_left_btn)
-
-        find_right_btn = Gtk.Button(label="Tocar Direito")
-        find_right_btn.connect("clicked", lambda _: self._ring_earbud(False, True))
-        self.find_row.add_suffix(find_right_btn)
-
-        find_both_btn = Gtk.Button(label="Tocar Ambos")
-        find_both_btn.connect("clicked", lambda _: self._ring_earbud(True, True))
-        self.find_row.add_suffix(find_both_btn)
-
-        find_stop_btn = Gtk.Button(label="Parar alerta")
-        find_stop_btn.connect("clicked", lambda _: self._ring_earbud(False, False))
-        self.find_row.add_suffix(find_stop_btn)
-
         self.extra_group.add(self.find_row)
 
-    def _build_model_selector_card(self):
-        model_group = Adw.PreferencesGroup(title="Modelo JBL Detectado / Simulação")
-        self.content_box.append(model_group)
+        self.find_buttons_row = Adw.ActionRow()
+        find_buttons_box = Gtk.Box(
+            orientation=Gtk.Orientation.HORIZONTAL,
+            spacing=8,
+        )
+        find_buttons_box.set_homogeneous(True)
+        find_buttons_box.set_hexpand(True)
 
+        find_left_btn = Gtk.Button(label="Esquerdo")
+        find_left_btn.set_tooltip_text("Tocar o fone esquerdo")
+        find_left_btn.set_size_request(-1, 42)
+        find_left_btn.set_valign(Gtk.Align.CENTER)
+        find_left_btn.connect("clicked", lambda _: self._ring_earbud(True, False))
+        find_buttons_box.append(find_left_btn)
+
+        find_right_btn = Gtk.Button(label="Direito")
+        find_right_btn.set_tooltip_text("Tocar o fone direito")
+        find_right_btn.set_size_request(-1, 42)
+        find_right_btn.set_valign(Gtk.Align.CENTER)
+        find_right_btn.connect("clicked", lambda _: self._ring_earbud(False, True))
+        find_buttons_box.append(find_right_btn)
+
+        find_both_btn = Gtk.Button(label="Ambos")
+        find_both_btn.set_tooltip_text("Tocar os dois fones")
+        find_both_btn.set_size_request(-1, 42)
+        find_both_btn.set_valign(Gtk.Align.CENTER)
+        find_both_btn.connect("clicked", lambda _: self._ring_earbud(True, True))
+        find_buttons_box.append(find_both_btn)
+
+        find_stop_btn = Gtk.Button(label="Parar")
+        find_stop_btn.set_tooltip_text("Parar o alerta sonoro")
+        find_stop_btn.set_size_request(-1, 42)
+        find_stop_btn.set_valign(Gtk.Align.CENTER)
+        find_stop_btn.connect("clicked", lambda _: self._ring_earbud(False, False))
+        find_buttons_box.append(find_stop_btn)
+
+        self.find_buttons_row.set_child(find_buttons_box)
+        self.extra_group.add(self.find_buttons_row)
+
+    def _build_model_selector_card(self):
         self.model_combo = Adw.ComboRow(title="Modelo em Uso")
         self.model_combo.set_subtitle(
             "Detectado ao conectar. A seleção manual simula a interface e não envia comandos."
@@ -481,7 +509,6 @@ class MainWindow(Adw.ApplicationWindow):
         self.model_combo.set_model(self.model_strings)
         self.model_combo.connect("notify::selected", self._on_model_combo_changed)
 
-        model_group.add(self.model_combo)
 
     def _detect_connected_device(self):
         """Escaneia os fones conectados pelo BlueZ D-Bus e configura a interface."""
@@ -684,6 +711,9 @@ class MainWindow(Adw.ApplicationWindow):
         self.auto_off_row.set_visible(model.has_auto_power_off)
         self.safe_sound_row.set_visible(model.has_safe_sound)
         self.find_row.set_visible(model.has_find_my_buds and model.protocol_version == 3)
+        self.find_buttons_row.set_visible(
+            model.has_find_my_buds and model.protocol_version == 3
+        )
 
         has_any_extra = (
             model.has_voice_aware or 

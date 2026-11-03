@@ -8,6 +8,8 @@ Este documento consolida o processo completo de **engenharia reversa e análise 
 
 O resultado desta análise serviu como base técnica para o desenvolvimento do **JBL Headphones Controller para Linux** (`jbl-linux-app`), um aplicativo desktop nativo em **Python + GTK4 + Libadwaita** com **128 perfis cadastrados**. O catálogo não implica compatibilidade integral verificada: 121 perfis usam Protocolo 3, sete usam Protocolo 4 e somente o Tune Buds 2 tem atualmente um perfil Protocolo 3 específico. A validação física varia por modelo e recurso.
 
+A lista individual de perfis, PIDs, recursos declarados e limites de validação está em [`docs/model-compatibility.md`](docs/model-compatibility.md). Os recursos do catálogo descrevem a configuração do app oficial e o mapeamento usado pela interface Linux; não são garantia de que comandos funcionem em todos os dispositivos ou firmwares.
+
 ---
 
 ## 1. Identificação do Artefato Binário e Assinatura

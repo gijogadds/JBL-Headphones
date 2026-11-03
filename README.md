@@ -4,6 +4,8 @@ Aplicativo desktop nativo para Linux desenvolvido em **Python + GTK4 + Libadwait
 
 O catálogo contém **128 perfis de modelos** e adapta a interface conforme o perfil identificado. Isso não significa compatibilidade comprovada com todos os comandos de todos os modelos: a maioria usa o caminho legado do Protocolo 3, sete perfis usam Protocolo 4 e o Tune Buds 2 tem um perfil Protocolo 3 específico. A validação física varia por modelo e recurso.
 
+Consulte o [catálogo de modelos e compatibilidade](docs/model-compatibility.md) para ver os PIDs, protocolos, recursos declarados e o estado de validação de cada perfil.
+
 Para detalhes aprofundados sobre a engenharia reversa dos protocolos (Protocolo 3, Protocolo 4, telemetria BES TWS e ecossistema Airoha), consulte o [Relatório Técnico de Engenharia Reversa (REA.md)](REA.md).
 
 ---
@@ -51,7 +53,7 @@ Para detalhes aprofundados sobre a engenharia reversa dos protocolos (Protocolo 
    - Possui catálogo interno de **128 perfis** (linhas *Tune, Live, Tour, Wave, Vibe, Club, Everest, Endurance, Quantum*, etc.); o número descreve os perfis cadastrados, não uma certificação de suporte integral.
    - A interface oculta ou exibe os cards automaticamente com base nos recursos que o fone suporta.
    - Há imagens locais para 67 dos 128 perfis; nos demais, a imagem grande é ocultada e permanece o ícone genérico.
-   - O seletor detecta o modelo Bluetooth quando possível. A escolha manual é uma simulação local da interface e bloqueia comandos para evitar enviar pacotes do modelo simulado ao fone conectado.
+   - O modelo Bluetooth é detectado quando possível; o seletor de modelo/simulação não é exibido na interface. Os perfis ainda adaptam os controles internamente, e comandos de simulação permanecem bloqueados para evitar enviá-los ao fone conectado.
 
 8. **Camada de Comunicação Dual-Transport:**
    - **BLE GATT**: Conecta ao serviço proprietário Harman (`65786365-6c70-6f69-6e74-2e636f6d0000`) para comandos prioritários e notificações em tempo real de toques físicos. A descoberta também reconhece anúncios Harman `FDDf` e valida as características antes de liberar o controle.
