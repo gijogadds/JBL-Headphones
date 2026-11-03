@@ -70,16 +70,25 @@ Para operações de áudio prioritárias (cancelamento de ruído, som ambiente, 
 - **Characteristic AUX**: `65786365-6C70-6F69-6E74-2E636F6D0003`
 - **Serviço de Atualização OTA (Firmware)**: `65786365-6c70-6f69-6e74-2e636f820000`
 
-A descoberta BLE deve confirmar o UUID Harman anunciado (ou o fabricante
-Harman/JBL associado ao nome exato do dispositivo). Alguns fones anunciam
-também endereços rotativos para Fast Pair com o mesmo nome, mas sem o serviço
-de controle; selecionar apenas pelo nome pode causar timeouts de conexão.
+A descoberta BLE deve confirmar o serviço GATT Harman, o serviço de anúncio
+Harman `0000fddf-0000-1000-8000-00805f9b34fb` ou o fabricante Harman/JBL
+associado ao nome exato do dispositivo. O controlador ainda valida as
+características GATT de notificação e escrita antes de liberar os controles.
+Anúncios Fast Pair (`0000fe2c-0000-1000-8000-00805f9b34fb`) com o mesmo nome,
+mas sem um identificador Harman, não são aceitos como canal de controle. Os
+endereços LE podem ser aleatórios e diferentes do MAC Bluetooth Classic.
 
 ### 2.2 Canal Bluetooth Classic (RFCOMM SPP)
 - **UUID SPP Padrão**: `00001101-0000-1000-8000-00805F9B34FB` (Serial Port Profile)
 - **Canais Identificados**:
   - **Canal 17**: Canal primário utilizado por quase toda a linha Tune, Live e Wave.
   - **Canal 12 / Canal 1**: Portas de contingência para modelos legados.
+
+Controles acústicos usam GATT quando um endpoint Harman é anunciado. Se esse
+endpoint foi identificado, mas ainda não conectou, o app não encaminha o
+comando silenciosamente pelo RFCOMM; a interface informa que o canal GATT
+ainda está indisponível. O RFCOMM continua disponível para telemetria e como
+compatibilidade de controle em dispositivos sem endpoint BLE identificado.
 
 ---
 

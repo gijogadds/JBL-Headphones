@@ -20,6 +20,7 @@ from core.protocol import Protocol4PacketAssembler
 HARMAN_SERVICE_UUID = "65786365-6c70-6f69-6e74-2e636f6d0000"
 HARMAN_NOTIFY_CHAR  = "65786365-6c70-6f69-6e74-2e636f6d0001"
 HARMAN_WRITE_CHAR   = "65786365-6c70-6f69-6e74-2e636f6d0002"
+HARMAN_ADVERTISING_SERVICE_UUID = "0000fddf-0000-1000-8000-00805f9b34fb"
 
 class BLEController:
     def __init__(self, on_status_changed: Optional[Callable[[Dict[str, Any]], None]] = None):
@@ -35,12 +36,14 @@ class BLEController:
         self.is_connected: bool = False
         self.connected_address: Optional[str] = None
         self._send_queue: Optional[asyncio.Queue] = None
+        self.has_control_candidate = False
 
     def start(self, device_name_hint: str = "", device_mac: str = ""):
         """Inicia a thread em segundo plano com event loop asyncio dedicado."""
         self.stop()
         self._target_name_hint = device_name_hint
         self._target_mac = device_mac.strip().upper() if device_mac else ""
+        self.has_control_candidate = False
         self._running = True
         self._thread = threading.Thread(target=self._run_event_loop, daemon=True, name="JBL-BLE-Worker")
         self._thread.start()
@@ -128,6 +131,8 @@ class BLEController:
                     ):
                         raise RuntimeError("O dispositivo não expõe as características GATT Harman esperadas")
 
+                    self.has_control_candidate = True
+
                     # A conexão só fica disponível para comandos depois que o canal
                     # de retorno também estiver ativo.
                     try:
@@ -189,9 +194,12 @@ class BLEController:
                 return None
             
             def filter_func(d: BLEDevice, adv) -> bool:
-                return self._matches_target_device(
+                matches = self._matches_target_device(
                     d, adv, target_clean, self._target_mac
                 )
+                if matches:
+                    self.has_control_candidate = True
+                return matches
 
             dev = await BleakScanner.find_device_by_filter(filter_func, timeout=4.0)
             return dev
@@ -218,6 +226,15 @@ class BLEController:
             for service_uuid in (advertisement.service_uuids or [])
         }
         if HARMAN_SERVICE_UUID.lower() in service_uuids:
+            return True
+        if HARMAN_ADVERTISING_SERVICE_UUID.lower() in service_uuids:
+            return True
+
+        service_data = {
+            service_uuid.lower()
+            for service_uuid in (getattr(advertisement, "service_data", {}) or {})
+        }
+        if HARMAN_ADVERTISING_SERVICE_UUID.lower() in service_data:
             return True
 
         manufacturer_ids = set((advertisement.manufacturer_data or {}).keys())

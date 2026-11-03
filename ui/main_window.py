@@ -368,9 +368,9 @@ class MainWindow(Adw.ApplicationWindow):
         self.content_box.append(self.extra_group)
 
         # 1. Modo Inteligente (Smart Audio & Video)
-        self.smart_mode_row = Adw.ComboRow(title="Modo Áudio e Vídeo (Smart Audio/Video)")
-        self.smart_mode_row.set_subtitle("Alterne entre máxima fidelidade para música e baixa latência para vídeos e jogos")
-        smart_opts = ["Modo Normal (Padrão)", "Modo Áudio (Alta Fidelidade)", "Modo Vídeo (Baixa Latência)"]
+        self.smart_mode_row = Adw.ComboRow(title="Modo Inteligente de Áudio/Vídeo")
+        self.smart_mode_row.set_subtitle("Áudio prioriza fidelidade; vídeo e jogos reduzem a latência.")
+        smart_opts = ["Normal", "Áudio", "Vídeo"]
         self.smart_mode_row.set_model(Gtk.StringList.new(smart_opts))
         self.smart_mode_row.connect("notify::selected", self._on_smart_audio_video_selected)
         self.extra_group.add(self.smart_mode_row)
@@ -555,9 +555,19 @@ class MainWindow(Adw.ApplicationWindow):
             self.backend.send_raw(packet)
 
     def _send_packets(self, packets: List[bytes]) -> bool:
-        results = [self.backend.send_raw(packet) for packet in packets]
-        if results and not any(results):
-            toast = Adw.Toast.new("Comando não enviado: nenhum canal Bluetooth está disponível.")
+        results = [self.backend.send_control(packet) for packet in packets]
+        if results and not all(results):
+            if (
+                any(packet.startswith(b"\xF0\xDC") for packet in packets)
+                or (
+                    getattr(self.backend.ble_controller, "has_control_candidate", False)
+                    and not self.backend.ble_controller.is_connected
+                )
+            ):
+                message = "Comando não enviado: o controle GATT BLE do fone ainda não conectou."
+            else:
+                message = "Comando não enviado: nenhum canal Bluetooth está disponível."
+            toast = Adw.Toast.new(message)
             toast.set_timeout(4)
             self.toast_overlay.add_toast(toast)
             return False

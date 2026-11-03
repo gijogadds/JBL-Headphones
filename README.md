@@ -52,8 +52,8 @@ Para detalhes aprofundados sobre a engenharia reversa dos protocolos (Protocolo 
    - Inclui seletor/simulador de modelos para inspecionar a interface de outros fones.
 
 8. **Camada de Comunicação Dual-Transport:**
-   - **BLE GATT**: Conecta ao serviço proprietário Harman (`65786365-6c70-6f69-6e74-2e636f6d0000`) para comandos prioritários e notificações em tempo real de toques físicos.
-   - **RFCOMM SPP (Porta 17)**: Suporte a dispositivos legados e telemetria contínua.
+   - **BLE GATT**: Conecta ao serviço proprietário Harman (`65786365-6c70-6f69-6e74-2e636f6d0000`) para comandos prioritários e notificações em tempo real de toques físicos. A descoberta também reconhece anúncios Harman `FDDf` e valida as características antes de liberar o controle.
+   - **RFCOMM SPP (Porta 17)**: Telemetria contínua e compatibilidade de controle com dispositivos sem endpoint BLE identificado; não é usado como fallback silencioso quando o canal GATT Harman está disponível.
    - **Suporte a Protocolo 3 e Protocolo 4**: Compatível com toda a linha tradicional BES e com a nova linha Harman (Tour Pro 2/3, Live 3).
 
 9. **Detecção, Inicialização e Encerramento Automático:**

@@ -240,6 +240,31 @@ class BluetoothBackend:
             print("[BluetoothBackend] Fila de comandos cheia; pacote descartado.", file=sys.stderr)
             return False
 
+    def send_control(self, data: bytes) -> bool:
+        """Envia controles pelo GATT quando o anúncio do fone indica suporte Harman."""
+        if not data or not self._running:
+            return False
+
+        if self.ble_controller.is_connected:
+            return self.ble_controller.send_cmd(data)
+
+        if data.startswith(b"\xF0\xDC"):
+            print(
+                "[BluetoothBackend] Controle não enviado: o canal GATT BLE ainda não conectou.",
+                file=sys.stderr,
+            )
+            return False
+
+        if getattr(self.ble_controller, "has_control_candidate", False):
+            print(
+                "[BluetoothBackend] Controle não enviado: o dispositivo Harman foi "
+                "encontrado, mas o GATT ainda não está conectado.",
+                file=sys.stderr,
+            )
+            return False
+
+        return self.send_raw(data)
+
     def _flush_send_queue_to_ble(self, pending: queue.Queue):
         while True:
             try:

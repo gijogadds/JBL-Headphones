@@ -6,12 +6,17 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 from core.bluetooth_backend import BluetoothBackend, BluetoothDevice
-from core.ble_controller import BLEController, HARMAN_SERVICE_UUID
+from core.ble_controller import (
+    BLEController,
+    HARMAN_ADVERTISING_SERVICE_UUID,
+    HARMAN_SERVICE_UUID,
+)
 
 
 class FakeBleController:
     def __init__(self, is_connected=False):
         self.is_connected = is_connected
+        self.has_control_candidate = False
         self.sent = []
         self.started = 0
 
@@ -93,6 +98,42 @@ class BluetoothBackendTests(unittest.TestCase):
         self.assertTrue(self.backend._send_queue.empty())
         self.assertTrue(self.backend._ble_only_queue.empty())
 
+    def test_control_uses_ble_when_connected(self):
+        packet = bytes.fromhex("AA 91 01 13")
+        self.ble.is_connected = True
+
+        self.assertTrue(self.backend.send_control(packet))
+
+        self.assertEqual(self.ble.sent, [packet])
+        self.assertTrue(self.backend._send_queue.empty())
+
+    def test_control_keeps_rfcomm_compatibility_without_ble_target(self):
+        packet = bytes.fromhex("AA 91 01 13")
+
+        self.assertTrue(self.backend.send_control(packet))
+
+        self.assertEqual(self.backend._send_queue.qsize(), 1)
+
+    def test_control_does_not_fall_back_to_rfcomm_for_harman_ble_target(self):
+        packet = bytes.fromhex("AA 91 01 13")
+        self.ble.has_control_candidate = True
+        stderr = io.StringIO()
+
+        with contextlib.redirect_stderr(stderr):
+            sent = self.backend.send_control(packet)
+
+        self.assertFalse(sent)
+        self.assertTrue(self.backend._send_queue.empty())
+        self.assertIn("GATT ainda não está conectado", stderr.getvalue())
+
+    def test_protocol4_control_is_not_reported_as_sent_without_gatt(self):
+        packet = bytes.fromhex("F0 DC 01 00 01 00 01 00 01")
+
+        self.assertFalse(self.backend.send_control(packet))
+
+        self.assertTrue(self.backend._send_queue.empty())
+        self.assertTrue(self.backend._ble_only_queue.empty())
+
     def test_expired_command_is_not_replayed_after_connection(self):
         packet = bytes.fromhex("AA 25 01 01")
         self.backend._send_queue.put((0.0, packet))
@@ -135,6 +176,42 @@ class BluetoothBackendTests(unittest.TestCase):
         advertisement = SimpleNamespace(
             local_name="JBL Tune Buds 2-LE",
             service_uuids=[HARMAN_SERVICE_UUID.upper()],
+            manufacturer_data={},
+        )
+
+        self.assertTrue(
+            BLEController._matches_target_device(
+                device, advertisement, "JBL TUNE BUDS 2", ""
+            )
+        )
+
+    def test_ble_discovery_accepts_harman_advertising_service(self):
+        device = SimpleNamespace(
+            address="63:E7:F7:E4:E3:89",
+            name="JBL Tune Buds 2-LE",
+        )
+        advertisement = SimpleNamespace(
+            local_name="JBL Tune Buds 2-LE",
+            service_uuids=[HARMAN_ADVERTISING_SERVICE_UUID],
+            service_data={},
+            manufacturer_data={},
+        )
+
+        self.assertTrue(
+            BLEController._matches_target_device(
+                device, advertisement, "JBL TUNE BUDS 2", "50:1B:6A:21:A4:3E"
+            )
+        )
+
+    def test_ble_discovery_accepts_harman_service_data(self):
+        device = SimpleNamespace(
+            address="63:E7:F7:E4:E3:89",
+            name="JBL Tune Buds 2-LE",
+        )
+        advertisement = SimpleNamespace(
+            local_name="JBL Tune Buds 2-LE",
+            service_uuids=[],
+            service_data={HARMAN_ADVERTISING_SERVICE_UUID: b"\x0c\x21"},
             manufacturer_data={},
         )
 
