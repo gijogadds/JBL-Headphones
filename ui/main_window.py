@@ -42,6 +42,8 @@ class MainWindow(Adw.ApplicationWindow):
         self._device_mac = ""
         self._device_pid = ""
         self._device_firmware = ""
+        self._is_model_simulation = False
+        self._updating_model_selector = False
         self.active_anc_mode: Optional[AncMode] = None
         self.active_preset_idx = 0
         self._updating_anc_ui = False
@@ -198,25 +200,14 @@ class MainWindow(Adw.ApplicationWindow):
         self.device_banner.set_title("Nenhum fone conectado")
         self.device_banner.set_subtitle("Conecte seu fone JBL pelo Bluetooth do sistema")
 
-        # Container de prefixo (Ícone ou Miniatura da Foto)
+        # Ícone genérico do dispositivo; a imagem do modelo já aparece acima.
         prefix_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        
-        self.device_thumb = Gtk.Image()
-        self.device_thumb.set_pixel_size(44)
-        self.device_thumb.set_visible(False)
-        prefix_box.append(self.device_thumb)
 
         self.device_icon = Gtk.Image.new_from_icon_name("audio-headphones-symbolic")
         self.device_icon.set_pixel_size(36)
         prefix_box.append(self.device_icon)
 
         self.device_banner.add_prefix(prefix_box)
-
-        # Badge de status geral / bateria
-        self.battery_badge = Gtk.Label(label="--%")
-        self.battery_badge.add_css_class("heading")
-        self.battery_badge.add_css_class("accent")
-        self.device_banner.add_suffix(self.battery_badge)
 
         status_group.add(self.device_banner)
 
@@ -481,7 +472,9 @@ class MainWindow(Adw.ApplicationWindow):
         self.content_box.append(model_group)
 
         self.model_combo = Adw.ComboRow(title="Modelo em Uso")
-        self.model_combo.set_subtitle("O app adapta a interface automaticamente de acordo com o modelo")
+        self.model_combo.set_subtitle(
+            "Detectado ao conectar. A seleção manual simula a interface e não envia comandos."
+        )
 
         model_names = [m.name for m in self.registry.all_models]
         self.model_strings = Gtk.StringList.new(model_names)
@@ -506,11 +499,9 @@ class MainWindow(Adw.ApplicationWindow):
             matched_model = self.registry.find_from_bluetooth(dev.name, dev.modalias)
             if matched_model:
                 self._apply_model(matched_model)
-                try:
-                    idx = self.registry.all_models.index(matched_model)
-                    self.model_combo.set_selected(idx)
-                except ValueError:
-                    pass
+                self._select_model_in_combo(matched_model)
+            else:
+                self._clear_model_profile()
 
             self.title_widget.set_subtitle(f"Conectado: {dev.name}")
             self.device_banner.set_title(dev.name)
@@ -520,10 +511,7 @@ class MainWindow(Adw.ApplicationWindow):
             self._update_device_metadata()
             
             if dev.battery_percentage is not None:
-                self.battery_badge.set_text(f"{dev.battery_percentage}%")
                 self.tray_indicator.update_battery(overall=dev.battery_percentage)
-            else:
-                self.battery_badge.set_text("Conectado")
 
             self.tray_indicator.update_device(dev.name, True)
 
@@ -539,16 +527,13 @@ class MainWindow(Adw.ApplicationWindow):
             matched_model = self.registry.find_from_bluetooth(dev.name, dev.modalias)
             if matched_model:
                 self._apply_model(matched_model)
-                try:
-                    idx = self.registry.all_models.index(matched_model)
-                    self.model_combo.set_selected(idx)
-                except ValueError:
-                    pass
+                self._select_model_in_combo(matched_model)
+            else:
+                self._clear_model_profile()
 
             self.title_widget.set_subtitle(f"Pareado: {dev.name} (Desconectado)")
             self.device_banner.set_title(dev.name)
             self.device_banner.set_subtitle(f"MAC: {dev.mac} | Fone pareado no sistema (Tentando reconectar...)")
-            self.battery_badge.set_text("Desconectado")
             self.tray_indicator.update_device(dev.name, False)
 
             # Tenta restabelecer conexão BlueZ em segundo plano
@@ -558,12 +543,24 @@ class MainWindow(Adw.ApplicationWindow):
             self.device_banner.set_title("Nenhum fone conectado")
             self.device_banner.set_subtitle("Conecte seu fone JBL pelo Bluetooth do sistema")
             self.device_banner.set_tooltip_text(None)
-            self.battery_badge.set_text("--%")
             self.tray_indicator.update_device("Nenhum fone conectado", False)
-            self.current_model = None
             default_model = self.registry.find_by_name("JBL Tune Buds 2")
             if default_model:
-                self._apply_model(default_model)
+                self._apply_model(default_model, simulation=True)
+                self._select_model_in_combo(default_model)
+            else:
+                self._clear_model_profile()
+
+    def _select_model_in_combo(self, model: DeviceModel):
+        try:
+            idx = self.registry.all_models.index(model)
+        except ValueError:
+            return
+        self._updating_model_selector = True
+        try:
+            self.model_combo.set_selected(idx)
+        finally:
+            self._updating_model_selector = False
 
     def _update_device_metadata(self):
         details = []
@@ -580,6 +577,9 @@ class MainWindow(Adw.ApplicationWindow):
         self.device_banner.set_tooltip_text(" | ".join(full_details) or None)
 
     def _request_device_state(self):
+        if self._is_model_simulation or not self.current_model:
+            return
+
         if self.current_model and self.current_model.protocol_version == 4:
             feature_ids = [
                 Protocol4Handler.FEATURE_BATTERY_LEFT,
@@ -628,6 +628,14 @@ class MainWindow(Adw.ApplicationWindow):
             self.backend.send_raw(packet)
 
     def _send_packets(self, packets: List[bytes]) -> bool:
+        if self._is_model_simulation:
+            toast = Adw.Toast.new(
+                "Simulação ativa: conecte o modelo selecionado para enviar comandos."
+            )
+            toast.set_timeout(4)
+            self.toast_overlay.add_toast(toast)
+            return False
+
         results = [self.backend.send_control(packet) for packet in packets]
         if results and not all(results):
             if (
@@ -646,20 +654,23 @@ class MainWindow(Adw.ApplicationWindow):
             return False
         return bool(results)
 
-    def _apply_model(self, model: DeviceModel):
+    def _apply_model(self, model: DeviceModel, simulation: bool = False):
         """Adapta a visibilidade dos cards e a foto oficial de acordo com o modelo."""
         self.current_model = model
+        self._is_model_simulation = simulation
+        self.model_combo.set_subtitle(
+            f"Simulação local de {model.name}; comandos ao fone estão bloqueados."
+            if simulation
+            else "Modelo identificado pelo Bluetooth; selecione outro apenas para simular."
+        )
         
         # Atualiza a foto oficial do fone
         if model.image_path and os.path.exists(model.image_path):
             self.device_hero_image.set_from_file(model.image_path)
             self.hero_box.set_visible(True)
-            self.device_thumb.set_from_file(model.image_path)
-            self.device_thumb.set_visible(True)
-            self.device_icon.set_visible(False)
+            self.device_icon.set_visible(True)
         else:
             self.hero_box.set_visible(False)
-            self.device_thumb.set_visible(False)
             self.device_icon.set_visible(True)
 
         # Oculta ou exibe cards baseado nas capacidades do fone
@@ -684,11 +695,30 @@ class MainWindow(Adw.ApplicationWindow):
         )
         self.extra_group.set_visible(has_any_extra)
 
+    def _clear_model_profile(self):
+        self.current_model = None
+        self._is_model_simulation = False
+        self.hero_box.set_visible(False)
+        self.device_icon.set_visible(True)
+        self.anc_group.set_visible(False)
+        self.eq_group.set_visible(False)
+        self.extra_group.set_visible(False)
+        self._updating_model_selector = True
+        try:
+            self.model_combo.set_selected(Gtk.INVALID_LIST_POSITION)
+        finally:
+            self._updating_model_selector = False
+        self.model_combo.set_subtitle(
+            "Modelo não identificado; os controles específicos estão desativados."
+        )
+
     def _on_model_combo_changed(self, combo, _):
+        if self._updating_model_selector:
+            return
         idx = combo.get_selected()
         if 0 <= idx < len(self.registry.all_models):
             selected_model = self.registry.all_models[idx]
-            self._apply_model(selected_model)
+            self._apply_model(selected_model, simulation=True)
 
     def _on_anc_button_toggled(self, mode: AncMode, button: Gtk.ToggleButton):
         if self._updating_anc_ui or not button.get_active():
@@ -1036,7 +1066,6 @@ class MainWindow(Adw.ApplicationWindow):
             dev_name = status.get("device_name", "Fone JBL")
             if not is_conn:
                 self.title_widget.set_subtitle(f"Pareado: {dev_name} (Desconectado)")
-                self.battery_badge.set_text("Desconectado")
                 self.tray_indicator.update_device(dev_name, False)
                 if self.auto_close_on_disconnect and self._device_ever_connected:
                     self._schedule_auto_shutdown()
@@ -1077,7 +1106,6 @@ class MainWindow(Adw.ApplicationWindow):
 
         if "battery_overall" in status:
             bat = status["battery_overall"]
-            self.battery_badge.set_text(f"{bat}%")
             self.tray_indicator.update_battery(overall=bat)
             # Se ainda não recebemos telemetria individual dos fones L/R, reflete a bateria geral
             if self.badge_battery_left.get_text().startswith("--"):
@@ -1180,8 +1208,6 @@ class MainWindow(Adw.ApplicationWindow):
                 avg_bat = None
                 if active_buds:
                     avg_bat = sum(active_buds) // len(active_buds)
-                    is_charging = charging_l or charging_r
-                    self.battery_badge.set_text(f"{avg_bat}%{' ⚡' if is_charging else ''}")
 
                 self.tray_indicator.update_battery(
                     overall=avg_bat if avg_bat is not None else (self.backend.connected_device.battery_percentage if self.backend.connected_device else None),

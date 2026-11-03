@@ -1,8 +1,8 @@
 # JBL Headphones Controller para Linux
 
-Aplicativo desktop nativo para Linux desenvolvido em **Python + GTK4 + Libadwaita**, projetado para gerenciar e controlar todos os recursos de fones de ouvido **JBL / Harman**.
+Aplicativo desktop nativo para Linux desenvolvido em **Python + GTK4 + Libadwaita**, com perfis para diversos fones de ouvido **JBL / Harman**.
 
-Criado a partir da **engenharia reversa completa** do aplicativo oficial Android (`jbl.stc.com`), ele suporta **128 modelos diferentes da JBL** e adapta a interface gráfica dinamicamente conforme o modelo conectado.
+O catálogo contém **128 perfis de modelos** e adapta a interface conforme o perfil identificado. Isso não significa compatibilidade comprovada com todos os comandos de todos os modelos: a maioria usa o caminho legado do Protocolo 3, sete perfis usam Protocolo 4 e o Tune Buds 2 tem um perfil Protocolo 3 específico. A validação física varia por modelo e recurso.
 
 Para detalhes aprofundados sobre a engenharia reversa dos protocolos (Protocolo 3, Protocolo 4, telemetria BES TWS e ecossistema Airoha), consulte o [Relatório Técnico de Engenharia Reversa (REA.md)](REA.md).
 
@@ -13,7 +13,8 @@ Para detalhes aprofundados sobre a engenharia reversa dos protocolos (Protocolo 
 1. **Auto-Detecção do Fone Conectado:**
    - Detecta automaticamente quando um fone JBL é pareado ou conectado via Bluetooth (BlueZ D-Bus).
    - Identifica o nome, endereço MAC e o **PID de Hardware** (ex: `0x210C` para o *JBL Tune Buds 2*).
-   - Exibe a porcentagem da bateria em tempo real no topo da janela.
+   - Exibe separadamente a carga dos fones esquerdo e direito e a última carga do estojo reportada pelo dispositivo.
+   - A carga do estojo pode estar desatualizada; não é calculada a partir da carga dos fones.
 
 2. **Controle de Som e Cancelamento de Ruído (ANC):**
    - 🔇 **ANC (Cancelamento Ativo de Ruído)**
@@ -28,8 +29,8 @@ Para detalhes aprofundados sobre a engenharia reversa dos protocolos (Protocolo 
      - `32Hz, 64Hz, 125Hz, 250Hz, 500Hz, 1kHz, 2kHz, 4kHz, 8kHz, 16kHz`.
    - Ajuste de ganho de **-10.0 dB a +10.0 dB** com aplicação instantânea nos fones via pacotes `EQSettings2` (0xAA 0xA2).
 
-4. **Recursos Avançados e Áudio (Engenharia Reversa Completa):**
-   - **Modo Áudio & Vídeo (Smart Audio & Video):** Alternância em tempo real entre qualidade máxima de áudio musical (Alta Fidelidade) e redução de latência no DSP para 100ms para sincronismo labial perfeito em vídeos, filmes e jogos (`0xAA 0x81`).
+4. **Recursos Avançados e Áudio (conforme o perfil do modelo):**
+   - **Modo Áudio & Vídeo (Smart Audio & Video):** a interface oferece Normal, Áudio ou Vídeo nos perfis Protocolo 3 com escrita implementada. O formato e os valores dependem do modelo; no Tune Buds 2 o comando é `0xAA 0x80`. A leitura do recurso Protocolo 4 existe, mas sua escrita ainda não está exposta sem validação do formato.
    - **Balanço Estéreo L/R (Left/Right Sound Balance):** Controle deslizante preciso de -16 (100% Esquerdo) a +16 (100% Direito) com valor central equilibrado (`0xAA 0xA8`).
    - **Desligamento Automático por Inatividade:** Temporizador configurável para economia de bateria (*Nunca, 15 min, 30 min, 1 hora, 2 horas*) enviado diretamente para o microcontrolador (`0xAA 0x33`).
    - **Proteção Auditiva Safe Sound (85 dB):** Limitador acústico automático conforme diretrizes da OMS para prevenção de perda auditiva (`0xAA 0xA5`).
@@ -47,14 +48,15 @@ Para detalhes aprofundados sobre a engenharia reversa dos protocolos (Protocolo 
    - O logo oficial da JBL aparece na dock, no switcher Alt-Tab e nas notificações de forma idêntica aos aplicativos nativos do sistema.
 
 7. **Arquitetura Dinâmica Universal:**
-   - Possui catálogo interno de **128 modelos da JBL** (linhas *Tune, Live, Tour, Wave, Vibe, Club, Everest, Endurance, Quantum*, etc.).
+   - Possui catálogo interno de **128 perfis** (linhas *Tune, Live, Tour, Wave, Vibe, Club, Everest, Endurance, Quantum*, etc.); o número descreve os perfis cadastrados, não uma certificação de suporte integral.
    - A interface oculta ou exibe os cards automaticamente com base nos recursos que o fone suporta.
-   - Inclui seletor/simulador de modelos para inspecionar a interface de outros fones.
+   - Há imagens locais para 67 dos 128 perfis; nos demais, a imagem grande é ocultada e permanece o ícone genérico.
+   - O seletor detecta o modelo Bluetooth quando possível. A escolha manual é uma simulação local da interface e bloqueia comandos para evitar enviar pacotes do modelo simulado ao fone conectado.
 
 8. **Camada de Comunicação Dual-Transport:**
    - **BLE GATT**: Conecta ao serviço proprietário Harman (`65786365-6c70-6f69-6e74-2e636f6d0000`) para comandos prioritários e notificações em tempo real de toques físicos. A descoberta também reconhece anúncios Harman `FDDf` e valida as características antes de liberar o controle.
    - **RFCOMM SPP (Porta 17)**: Telemetria contínua e compatibilidade de controle com dispositivos sem endpoint BLE identificado; não é usado como fallback silencioso quando o canal GATT Harman está disponível.
-   - **Suporte a Protocolo 3 e Protocolo 4**: Compatível com toda a linha tradicional BES e com a nova linha Harman (Tour Pro 2/3, Live 3).
+   - **Protocolo 3 e Protocolo 4**: há implementações para comandos comuns e perfis específicos; nem todos os recursos ou variantes regionais/firmware foram testados em hardware.
 
 9. **Detecção, Inicialização e Encerramento Automático:**
    - **Auto-Start na Barra Superior:** Ao ligar os fones JBL ou quando eles se conectarem ao Bluetooth, o aplicativo é disparado automaticamente na barra superior (em modo `--tray`) sem janelas invasivas, deixando todos os controles prontos para uso imediato.

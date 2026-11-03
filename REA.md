@@ -6,7 +6,7 @@
 ### Sumário Executivo
 Este documento consolida o processo completo de **engenharia reversa e análise estrutural** realizado sobre o aplicativo móvel oficial **JBL Headphones** (`jbl.stc.com.apk`), bem como a especificação detalhada dos protocolos proprietários da **Harman International / JBL** (Protocolos 3 e 4, telemetria BES TWS e ecossistema Airoha). 
 
-O resultado desta engenharia reversa serviu como base técnica para o desenvolvimento do **JBL Headphones Controller para Linux** (`jbl-linux-app`), um aplicativo desktop nativo em **Python + GTK4 + Libadwaita** com suporte a **128 modelos de fones de ouvido** da marca, contemplando cancelamento ativo de ruído (ANC), som ambiente, equalizador paramétrico de 10 bandas em tempo real, balanço estéreo L/R, modo áudio e vídeo de baixa latência, desligamento automático por inatividade e monitoramento de baterias.
+O resultado desta análise serviu como base técnica para o desenvolvimento do **JBL Headphones Controller para Linux** (`jbl-linux-app`), um aplicativo desktop nativo em **Python + GTK4 + Libadwaita** com **128 perfis cadastrados**. O catálogo não implica compatibilidade integral verificada: 121 perfis usam Protocolo 3, sete usam Protocolo 4 e somente o Tune Buds 2 tem atualmente um perfil Protocolo 3 específico. A validação física varia por modelo e recurso.
 
 ---
 
@@ -387,7 +387,7 @@ O cliente Linux foi desenhado com arquitetura desacoplada em três camadas:
                                      v
 +-------------------------------------------------------------------------+
 |                    Camada de Negócio e Protocolo                        |
-|   DeviceRegistry (128 Modelos)    |   Protocol3Handler / Protocol4      |
+|   DeviceRegistry (128 perfis)     |   Protocol3Handler / Protocol4      |
 +-----------------------------------+-------------------------------------+
                                      |
                                      v
@@ -398,7 +398,7 @@ O cliente Linux foi desenhado com arquitetura desacoplada em três camadas:
 ```
 
 1. **`core/protocol.py`**: Motor puro de serialização e decodificação dos quadros binários Harman Protocol 3 e 4. Não possui dependências gráficas, permitindo uso em CLI ou daemons.
-2. **`core/device_registry.py`**: Carrega o banco de dados de 128 modelos, indexando por nome e PID de hardware, mapeando capacidades dinamicamente.
+2. **`core/device_registry.py`**: Carrega 128 perfis, indexando por nome e PID de hardware e usando os recursos declarados para adaptar a interface. O seletor manual é uma simulação; não valida a compatibilidade física do modelo.
 3. **`core/bluetooth_backend.py` & `ble_controller.py`**: Comunicação híbrida assíncrona com os canais BlueZ D-Bus e BLE GATT.
 4. **`ui/main_window.py`**: Janela Adwaita moderna e responsiva com sliders cinéticos travados, suporte debounced a múltiplos comandos simultâneos e notificações elegantes (Toasts).
 5. **`ui/tray_indicator.py`**: Integração perfeita com a Top Bar do GNOME Shell através de D-Bus nativo sem travar a interface.
