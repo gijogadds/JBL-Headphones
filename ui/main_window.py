@@ -9,8 +9,10 @@ gi.require_version('Adw', '1')
 from gi.repository import Gtk, Adw, GLib, Gio
 
 import os
+import time
 from typing import Optional, List, Dict, Any
 from core.device_registry import DeviceRegistry, DeviceModel
+from core.equalizer import EQ_PRESET_GAINS, EQ_PRESET_NAMES, identify_eq_preset
 from core.protocol import Protocol3Handler, Protocol4Handler, AncMode, VoiceAwareLevel
 from core.bluetooth_backend import BluetoothBackend, BluetoothDevice
 from ui.tray_indicator import JBLTrayIndicator
@@ -44,6 +46,10 @@ class MainWindow(Adw.ApplicationWindow):
         self._updating_extra_ui = False
         self._eq_debounce_timer: Optional[int] = None
         self._balance_debounce_timer: Optional[int] = None
+        self._smart_mode_transition_deadline = 0.0
+        self._smart_mode_transition_timer: Optional[int] = None
+        self._smart_mode_disconnect_seen = False
+        self._smart_mode_last_reconnect_attempt = 0.0
         self.eq_sliders: List[Gtk.Scale] = []
         self.frequencies = [32, 64, 125, 250, 500, 1000, 2000, 4000, 8000, 16000]
 
@@ -96,6 +102,11 @@ class MainWindow(Adw.ApplicationWindow):
 
     def _do_auto_shutdown(self):
         self._shutdown_timer_id = None
+        if self._smart_mode_transition_deadline > time.monotonic():
+            self._shutdown_timer_id = GLib.timeout_add_seconds(
+                3, self._do_auto_shutdown
+            )
+            return False
         # Verifica se algum dispositivo JBL continua conectado no sistema
         devices = self.backend.scan_jbl_devices()
         connected = [d for d in devices if d.connected]
@@ -307,8 +318,7 @@ class MainWindow(Adw.ApplicationWindow):
 
         # Seletor de Presets
         self.preset_row = Adw.ComboRow(title="Predefinição de Equalização")
-        preset_names = ["Jazz", "Vocal", "Bass", "Extreme Bass", "Club", "Studio", "Pop", "Personalizado"]
-        self.preset_model = Gtk.StringList.new(preset_names)
+        self.preset_model = Gtk.StringList.new(list(EQ_PRESET_NAMES))
         self.preset_row.set_model(self.preset_model)
         self.preset_row.connect("notify::selected", self._on_preset_selected)
         self.eq_group.add(self.preset_row)
@@ -710,20 +720,8 @@ class MainWindow(Adw.ApplicationWindow):
         self.active_preset_idx = idx
         self.tray_indicator.update_eq_preset(idx)
 
-        preset_names = ["Jazz", "Vocal", "Bass", "Extreme Bass", "Club", "Studio", "Pop", "Personalizado"]
-        # Ganhos oficiais extraídos dos perfis JBL (jbl_tune_buds_tws.json & standard_preset_eq.json)
-        presets_gains = {
-            0: [4.0, 2.0, 1.0, 2.5, -1.5, -1.5, 0.0, 1.0, 2.0, 4.0],   # Jazz (Cat 1)
-            1: [-1.5, -3.0, -3.0, 1.0, 3.5, 3.5, 3.0, 1.5, 0.0, -1.5], # Vocal (Cat 2)
-            2: [6.0, 3.0, 3.0, 2.5, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0],    # Bass (Cat 3 - Tune Buds)
-            3: [4.0, 3.0, 5.0, 3.5, -1.0, 0.0, 0.0, 2.0, 2.0, 0.0],   # Extreme Bass (Cat 9 - Tune Buds)
-            4: [1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0],    # Club (Cat 6 - Tune Buds)
-            5: [-2.0, -1.0, -1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], # Studio (Cat 7 - Tune Buds)
-            6: [2.0, 2.0, 2.0, -2.0, 2.0, 0.0, 1.0, 2.0, 0.0, -3.0],  # Pop (Cat 13)
-        }
-
-        if idx in presets_gains:
-            gains = presets_gains[idx]
+        if idx in EQ_PRESET_GAINS:
+            gains = EQ_PRESET_GAINS[idx]
             self._updating_preset_ui = True
             try:
                 for slider, gain in zip(self.eq_sliders, gains):
@@ -738,7 +736,7 @@ class MainWindow(Adw.ApplicationWindow):
                 packets = [Protocol3Handler.set_eq_preset(idx)]
             if not self._send_packets(packets):
                 return
-            p_name = preset_names[idx] if idx < len(preset_names) else ""
+            p_name = EQ_PRESET_NAMES[idx] if idx < len(EQ_PRESET_NAMES) else ""
             toast = Adw.Toast.new(f"🎵 Predefinição JBL aplicada: {p_name}")
             toast.set_timeout(2)
             self.toast_overlay.add_toast(toast)
@@ -799,22 +797,12 @@ class MainWindow(Adw.ApplicationWindow):
             return
         if self.current_model and self.current_model.protocol_version == 4:
             return
+        if self._smart_mode_transition_deadline > time.monotonic():
+            return
         idx = combo.get_selected()
         mode_map = {0: "normal", 1: "audio", 2: "video"}
         mode = mode_map.get(idx, "normal")
-        pkt_p3 = self._smart_audio_video_packet(mode)
-        if not self._send_packets([pkt_p3]):
-            return
-        self.tray_indicator.update_smart_mode(mode)
-
-        labels = {
-            "normal": "Modo Normal (Padrão) ativado",
-            "audio": "🎵 Modo Áudio (Alta Fidelidade) ativado",
-            "video": "🎬 Modo Vídeo (Baixa Latência) ativado"
-        }
-        toast = Adw.Toast.new(labels.get(mode, "Modo de áudio e vídeo alterado"))
-        toast.set_timeout(2)
-        self.toast_overlay.add_toast(toast)
+        self._send_smart_audio_video_mode(mode)
 
     def _smart_audio_video_packet(self, mode: str) -> bytes:
         if self.current_model and self.current_model.uses_harman_ble_gen3_profile:
@@ -826,6 +814,8 @@ class MainWindow(Adw.ApplicationWindow):
         GLib.idle_add(self._do_apply_smart_mode_from_external, mode)
 
     def _do_apply_smart_mode_from_external(self, mode: str):
+        if self._smart_mode_transition_deadline > time.monotonic():
+            return
         mode_map = {"normal": 0, "audio": 1, "video": 2}
         if mode in mode_map and hasattr(self, 'smart_mode_row'):
             self._updating_extra_ui = True
@@ -833,10 +823,71 @@ class MainWindow(Adw.ApplicationWindow):
                 self.smart_mode_row.set_selected(mode_map[mode])
             finally:
                 self._updating_extra_ui = False
-        pkt_p3 = self._smart_audio_video_packet(mode)
-        if not self._send_packets([pkt_p3]):
+        self._send_smart_audio_video_mode(mode)
+
+    def _send_smart_audio_video_mode(self, mode: str):
+        if not self._send_packets([self._smart_audio_video_packet(mode)]):
             return
+
+        self._smart_mode_transition_deadline = time.monotonic() + 30
+        self._smart_mode_disconnect_seen = False
+        self._smart_mode_last_reconnect_attempt = time.monotonic()
+        self.smart_mode_row.set_sensitive(False)
+        self.smart_mode_row.set_subtitle(
+            "A conexão de áudio pode reiniciar; aguardando o fone reconectar."
+        )
+        if self._smart_mode_transition_timer is not None:
+            GLib.source_remove(self._smart_mode_transition_timer)
+        self._smart_mode_transition_timer = GLib.timeout_add_seconds(
+            30, self._on_smart_mode_transition_timeout
+        )
         self.tray_indicator.update_smart_mode(mode)
+
+    def _handle_smart_mode_connection(self, connected: bool):
+        now = time.monotonic()
+        if self._smart_mode_transition_deadline <= now:
+            return
+
+        if connected:
+            if self._smart_mode_disconnect_seen:
+                self._finish_smart_mode_transition(reconnected=True)
+            return
+
+        self._smart_mode_disconnect_seen = True
+        if now - self._smart_mode_last_reconnect_attempt < 5:
+            return
+
+        device = self.backend.connected_device
+        if device and self.backend.connect_bluez(device.mac):
+            self._smart_mode_last_reconnect_attempt = now
+
+    def _finish_smart_mode_transition(self, reconnected: bool = False):
+        timer_id = self._smart_mode_transition_timer
+        self._smart_mode_transition_timer = None
+        if reconnected and timer_id is not None:
+            GLib.source_remove(timer_id)
+        self._smart_mode_transition_deadline = 0.0
+        self.smart_mode_row.set_sensitive(True)
+        self.smart_mode_row.set_subtitle(
+            "Áudio prioriza fidelidade; vídeo e jogos reduzem a latência."
+        )
+        if reconnected:
+            toast = Adw.Toast.new(
+                "Conexão Bluetooth restaurada; retome a reprodução se necessário."
+            )
+        elif self._smart_mode_disconnect_seen:
+            toast = Adw.Toast.new(
+                "O áudio não reconectou automaticamente. Reconecte o fone pelo Bluetooth do sistema."
+            )
+        else:
+            return False
+        toast.set_timeout(4)
+        self.toast_overlay.add_toast(toast)
+        return False
+
+    def _on_smart_mode_transition_timeout(self):
+        self._smart_mode_transition_timer = None
+        return self._finish_smart_mode_transition()
 
     def _on_balance_changed(self, scale: Gtk.Scale):
         val = int(round(scale.get_value()))
@@ -943,6 +994,7 @@ class MainWindow(Adw.ApplicationWindow):
 
         if "bluez_connected" in status:
             is_conn = status["bluez_connected"]
+            self._handle_smart_mode_connection(is_conn)
             dev_name = status.get("device_name", "Fone JBL")
             if not is_conn:
                 self.title_widget.set_subtitle(f"Pareado: {dev_name} (Desconectado)")
@@ -1008,7 +1060,9 @@ class MainWindow(Adw.ApplicationWindow):
                 try:
                     for slider, gain in zip(self.eq_sliders, parsed["eq_gains"]):
                         slider.set_value(gain)
-                    self.preset_row.set_selected(7)
+                    self.preset_row.set_selected(
+                        identify_eq_preset(parsed.get("eq_category"), parsed["eq_gains"])
+                    )
                 finally:
                     self._updating_preset_ui = False
 

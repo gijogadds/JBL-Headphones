@@ -320,6 +320,21 @@ Decompilado de `com.harman.bluetooth.reqimp.CmdGen.generateSetSmartSwitch` e `Sm
 - **Modo Áudio**: Amplia o buffer de jitter e bitrate do codec AAC/SBC para priorizar estabilidade musical absoluta.
 - **Modo Vídeo**: Reduz o buffer para 100ms no DSP, sincronizando lábios e fala em vídeos, filmes e streaming sem atraso perceptível.
 
+### 7.3 Particularidades do Tune Buds 2
+
+O Tune Buds 2 usa `SmartSwitchCmd` (`AA 80`), com os quatro valores em
+little-endian; o helper `HexArray.shortToByteArray` do APK confirma essa
+serialização. Os valores de modo são obtidos pela configuração do produto no
+aplicativo oficial, não pelo arquivo local `assets/config/dash4/jbl_tune_buds_2.json`.
+Portanto, os valores genéricos acima não comprovam, por si só, a configuração
+específica deste modelo.
+
+Ao alterar o modo, o cartão oficial abre um estado de reconexão, inicia a
+verificação A2DP e a busca BLE após cerca de cinco segundos, e mantém a
+verificação por até 30 segundos. O cliente Linux tenta reconectar pelo BlueZ
+quando detecta a desconexão durante essa janela; a retomada da música continua
+dependendo do player do sistema.
+
 ---
 
 ## 8. Subsistema de Gestão de Energia e Desligamento Automático (`SET_AUTO_OFF` - `0xAA 0x33`)

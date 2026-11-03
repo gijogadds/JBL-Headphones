@@ -2,6 +2,7 @@ import struct
 import unittest
 
 from core.device_registry import DeviceModel, DeviceRegistry
+from core.equalizer import identify_eq_preset
 from core.protocol import (
     AncMode,
     Protocol3GroupPacketAssembler,
@@ -12,6 +13,19 @@ from core.protocol import (
 
 
 class Protocol3Tests(unittest.TestCase):
+    def test_equalizer_response_keeps_named_preset_selection(self):
+        self.assertEqual(identify_eq_preset(1, []), 0)
+        self.assertEqual(identify_eq_preset(13, []), 6)
+        self.assertEqual(identify_eq_preset(103, [0.0] * 10), 7)
+
+    def test_equalizer_response_matches_preset_gains_without_category(self):
+        gains = [4.0, 2.0, 1.0, 2.5, -1.5, -1.5, 0.0, 1.0, 2.0, 4.0]
+
+        self.assertEqual(identify_eq_preset(None, gains), 0)
+        self.assertEqual(identify_eq_preset(202, gains), 0)
+        self.assertEqual(identify_eq_preset(None, [0.0] * 10), 7)
+        self.assertEqual(identify_eq_preset(202, [0.0] * 10), 7)
+
     def test_battery_query_uses_status_subcommand(self):
         self.assertEqual(Protocol3Handler.REQ_BATTERY_INFO, bytes.fromhex("AA 25 01 01"))
 
@@ -123,6 +137,23 @@ class Protocol3Tests(unittest.TestCase):
 
         self.assertEqual(parsed["eq_category"], 103)
         self.assertEqual(parsed["eq_gains"], [float(index) for index in range(10)])
+
+    def test_eqsettings2_response_identifies_the_selected_named_preset(self):
+        response = bytearray(
+            Protocol3Handler.build_eq2_packet(
+                [4.0, 2.0, 1.0, 2.5, -1.5, -1.5, 0.0, 1.0, 2.0, 4.0],
+                preset_id=0,
+            )
+        )
+        response[4] = 0x04
+
+        parsed = Protocol3Handler.parse_packet(bytes(response))
+
+        self.assertEqual(parsed["eq_category"], 1)
+        self.assertEqual(
+            identify_eq_preset(parsed["eq_category"], parsed["eq_gains"]),
+            0,
+        )
 
     def test_reassembles_fragmented_protocol3_eq_response(self):
         response = bytearray(
