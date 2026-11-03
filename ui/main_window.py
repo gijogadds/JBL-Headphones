@@ -39,6 +39,9 @@ class MainWindow(Adw.ApplicationWindow):
         self.registry = registry
         self.backend = backend
         self.current_model: Optional[DeviceModel] = None
+        self._device_mac = ""
+        self._device_pid = ""
+        self._device_firmware = ""
         self.active_anc_mode: Optional[AncMode] = None
         self.active_preset_idx = 0
         self._updating_anc_ui = False
@@ -226,12 +229,16 @@ class MainWindow(Adw.ApplicationWindow):
         
         box_suffix_l = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         self.progress_battery_left = Gtk.ProgressBar()
-        self.progress_battery_left.set_size_request(80, 8)
+        self.progress_battery_left.set_size_request(72, 8)
         self.progress_battery_left.set_valign(Gtk.Align.CENTER)
         box_suffix_l.append(self.progress_battery_left)
         self.badge_battery_left = Gtk.Label(label="--%")
         self.badge_battery_left.add_css_class("title-3")
+        self.badge_battery_left.set_width_chars(6)
+        self.badge_battery_left.set_xalign(1.0)
         box_suffix_l.append(self.badge_battery_left)
+        box_suffix_l.set_size_request(152, -1)
+        box_suffix_l.set_halign(Gtk.Align.END)
         self.row_battery_left.add_suffix(box_suffix_l)
         status_group.add(self.row_battery_left)
 
@@ -243,12 +250,16 @@ class MainWindow(Adw.ApplicationWindow):
         
         box_suffix_r = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         self.progress_battery_right = Gtk.ProgressBar()
-        self.progress_battery_right.set_size_request(80, 8)
+        self.progress_battery_right.set_size_request(72, 8)
         self.progress_battery_right.set_valign(Gtk.Align.CENTER)
         box_suffix_r.append(self.progress_battery_right)
         self.badge_battery_right = Gtk.Label(label="--%")
         self.badge_battery_right.add_css_class("title-3")
+        self.badge_battery_right.set_width_chars(6)
+        self.badge_battery_right.set_xalign(1.0)
         box_suffix_r.append(self.badge_battery_right)
+        box_suffix_r.set_size_request(152, -1)
+        box_suffix_r.set_halign(Gtk.Align.END)
         self.row_battery_right.add_suffix(box_suffix_r)
         status_group.add(self.row_battery_right)
 
@@ -260,12 +271,16 @@ class MainWindow(Adw.ApplicationWindow):
         
         box_suffix_c = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         self.progress_battery_case = Gtk.ProgressBar()
-        self.progress_battery_case.set_size_request(80, 8)
+        self.progress_battery_case.set_size_request(72, 8)
         self.progress_battery_case.set_valign(Gtk.Align.CENTER)
         box_suffix_c.append(self.progress_battery_case)
         self.badge_battery_case = Gtk.Label(label="--%")
         self.badge_battery_case.add_css_class("title-3")
+        self.badge_battery_case.set_width_chars(6)
+        self.badge_battery_case.set_xalign(1.0)
         box_suffix_c.append(self.badge_battery_case)
+        box_suffix_c.set_size_request(152, -1)
+        box_suffix_c.set_halign(Gtk.Align.END)
         self.row_battery_case.add_suffix(box_suffix_c)
         status_group.add(self.row_battery_case)
 
@@ -499,7 +514,10 @@ class MainWindow(Adw.ApplicationWindow):
 
             self.title_widget.set_subtitle(f"Conectado: {dev.name}")
             self.device_banner.set_title(dev.name)
-            self.device_banner.set_subtitle(f"MAC: {dev.mac} | PID: {matched_model.pid.upper() if matched_model else 'N/A'}")
+            self._device_mac = dev.mac
+            self._device_pid = matched_model.pid.upper() if matched_model else "N/A"
+            self._device_firmware = ""
+            self._update_device_metadata()
             
             if dev.battery_percentage is not None:
                 self.battery_badge.set_text(f"{dev.battery_percentage}%")
@@ -509,7 +527,12 @@ class MainWindow(Adw.ApplicationWindow):
 
             self.tray_indicator.update_device(dev.name, True)
 
-            self._request_device_state()
+            if (
+                not matched_model
+                or not matched_model.uses_harman_ble_gen3_profile
+                or self.backend.ble_controller.is_connected
+            ):
+                self._request_device_state()
 
         elif paired:
             dev = paired[0]
@@ -534,12 +557,27 @@ class MainWindow(Adw.ApplicationWindow):
             self.title_widget.set_subtitle("Nenhum fone conectado")
             self.device_banner.set_title("Nenhum fone conectado")
             self.device_banner.set_subtitle("Conecte seu fone JBL pelo Bluetooth do sistema")
+            self.device_banner.set_tooltip_text(None)
             self.battery_badge.set_text("--%")
             self.tray_indicator.update_device("Nenhum fone conectado", False)
             self.current_model = None
             default_model = self.registry.find_by_name("JBL Tune Buds 2")
             if default_model:
                 self._apply_model(default_model)
+
+    def _update_device_metadata(self):
+        details = []
+        if self._device_pid:
+            details.append(f"PID: {self._device_pid}")
+        if self._device_firmware:
+            details.append(f"FW: {self._device_firmware}")
+        self.device_banner.set_subtitle(" | ".join(details) or "Conectado")
+
+        full_details = []
+        if self._device_mac:
+            full_details.append(f"MAC: {self._device_mac}")
+        full_details.extend(details)
+        self.device_banner.set_tooltip_text(" | ".join(full_details) or None)
 
     def _request_device_state(self):
         if self.current_model and self.current_model.protocol_version == 4:
@@ -1090,10 +1128,8 @@ class MainWindow(Adw.ApplicationWindow):
                 self.tray_indicator.update_device(dname, True)
 
             if "firmware_version" in parsed:
-                fw = parsed["firmware_version"]
-                curr_sub = self.device_banner.get_subtitle() or ""
-                if "FW:" not in curr_sub:
-                    self.device_banner.set_subtitle(f"{curr_sub} | FW: {fw}")
+                self._device_firmware = str(parsed["firmware_version"])
+                self._update_device_metadata()
 
             if "battery_left" in parsed or "battery_right" in parsed or "battery_case" in parsed:
                 l = parsed.get("battery_left")
@@ -1104,27 +1140,38 @@ class MainWindow(Adw.ApplicationWindow):
                 charging_c = parsed.get("charging_case", False)
 
                 if l is not None and l <= 100:
-                    txt_l = f"{l}%" + (" ⚡ Carregando" if charging_l else "")
+                    txt_l = f"{l}%" + (" ⚡" if charging_l else "")
                     self.badge_battery_left.set_text(txt_l)
+                    self.badge_battery_left.set_tooltip_text(
+                        f"{l}% — {'Carregando' if charging_l else 'Em uso'}"
+                    )
                     self.progress_battery_left.set_fraction(max(0.0, min(1.0, l / 100.0)))
                     self.row_battery_left.set_subtitle("⚡ No estojo (Carregando)" if charging_l else "Em uso")
 
                 if r is not None and r <= 100:
-                    txt_r = f"{r}%" + (" ⚡ Carregando" if charging_r else "")
+                    txt_r = f"{r}%" + (" ⚡" if charging_r else "")
                     self.badge_battery_right.set_text(txt_r)
+                    self.badge_battery_right.set_tooltip_text(
+                        f"{r}% — {'Carregando' if charging_r else 'Em uso'}"
+                    )
                     self.progress_battery_right.set_fraction(max(0.0, min(1.0, r / 100.0)))
                     self.row_battery_right.set_subtitle("⚡ No estojo (Carregando)" if charging_r else "Em uso")
 
                 if c is not None and c <= 100:
-                    txt_c = f"{c}%" + (" ⚡ Carregando" if charging_c else "")
+                    txt_c = f"{c}%" + (" ⚡" if charging_c else "")
                     self.badge_battery_case.set_text(txt_c)
+                    self.badge_battery_case.set_tooltip_text(
+                        f"{c}% — {'Carregando' if charging_c else 'Carga restante'}"
+                    )
                     self.progress_battery_case.set_fraction(max(0.0, min(1.0, c / 100.0)))
                     if charging_c:
                         self.row_battery_case.set_subtitle("⚡ Conectado à alimentação (Carregando)")
                     elif c == 100:
                         self.row_battery_case.set_subtitle("⚡ Estojo 100% carregado")
                     elif not charging_l and not charging_r:
-                        self.row_battery_case.set_subtitle(f"Última leitura ({c}%) | Coloque o fone no estojo para sincronizar")
+                        self.row_battery_case.set_subtitle(
+                            f"Última leitura ({c}%) · recoloque um fone no estojo para atualizar"
+                        )
                     else:
                         self.row_battery_case.set_subtitle("Carga restante do estojo (sincronizado)")
 
