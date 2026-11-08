@@ -16,6 +16,7 @@ from core.equalizer import EQ_PRESET_GAINS, EQ_PRESET_NAMES, identify_eq_preset
 from core.protocol import Protocol3Handler, Protocol4Handler, AncMode, VoiceAwareLevel
 from core.bluetooth_backend import BluetoothBackend, BluetoothDevice
 from ui.tray_indicator import JBLTrayIndicator
+from ui.battery_alerts import BatteryAlertTracker
 
 class MainWindow(Adw.ApplicationWindow):
     def __init__(
@@ -55,6 +56,7 @@ class MainWindow(Adw.ApplicationWindow):
         self._smart_mode_transition_timer: Optional[int] = None
         self._smart_mode_disconnect_seen = False
         self._smart_mode_last_reconnect_attempt = 0.0
+        self._battery_alert_tracker = BatteryAlertTracker()
         self.eq_sliders: List[Gtk.Scale] = []
         self.frequencies = [32, 64, 125, 250, 500, 1000, 2000, 4000, 8000, 16000]
 
@@ -104,6 +106,27 @@ class MainWindow(Adw.ApplicationWindow):
         if self._shutdown_timer_id is not None:
             GLib.source_remove(self._shutdown_timer_id)
             self._shutdown_timer_id = None
+
+    def _notify_low_battery(self, component: str, level: int, charging: bool = False):
+        if not self._battery_alert_tracker.should_alert(component, level, charging):
+            return
+
+        labels = {
+            "headphones": "Fones JBL",
+            "left": "Fone esquerdo",
+            "right": "Fone direito",
+            "case": "Estojo de carregamento",
+        }
+        title = f"Bateria baixa — {labels[component]}"
+        body = f"A carga está em {level}%. Conecte ou carregue o dispositivo."
+        GLib.idle_add(self._send_battery_notification, component, title, body)
+
+    def _send_battery_notification(self, component: str, title: str, body: str):
+        notification = Gio.Notification.new(title)
+        notification.set_body(body)
+        notification.set_icon(Gio.ThemedIcon.new("io.github.jbl.headphones.linux"))
+        self.get_application().send_notification(f"low-battery-{component}", notification)
+        return GLib.SOURCE_REMOVE
 
     def _do_auto_shutdown(self):
         self._shutdown_timer_id = None
@@ -1136,6 +1159,7 @@ class MainWindow(Adw.ApplicationWindow):
 
         if "battery_overall" in status:
             bat = status["battery_overall"]
+            self._notify_low_battery("headphones", bat)
             self.tray_indicator.update_battery(overall=bat)
             # Se ainda não recebemos telemetria individual dos fones L/R, reflete a bateria geral
             if self.badge_battery_left.get_text().startswith("--"):
@@ -1196,6 +1220,10 @@ class MainWindow(Adw.ApplicationWindow):
                 charging_l = parsed.get("charging_left", False)
                 charging_r = parsed.get("charging_right", False)
                 charging_c = parsed.get("charging_case", False)
+
+                self._notify_low_battery("left", l, charging_l)
+                self._notify_low_battery("right", r, charging_r)
+                self._notify_low_battery("case", c, charging_c)
 
                 if l is not None and l <= 100:
                     txt_l = f"{l}%" + (" ⚡" if charging_l else "")
