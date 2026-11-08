@@ -42,6 +42,7 @@ Para detalhes aprofundados sobre a engenharia reversa dos protocolos (Protocolo 
 5. **Menu Suspenso na Barra Superior (Top Bar Tray / StatusNotifierItem):**
    - Indicador nativo e persistente na bandeja do sistema (Top Bar) via `org.kde.StatusNotifierItem` e `com.canonical.dbusmenu`.
    - Exibição de carga de bateria em tempo real (`L: X%⚡ | R: Y%⚡ | Case: Z%⚡`).
+   - Notificações da área de trabalho quando a bateria de um fone ou do estojo chega a 20% ou menos, sem repetir o alerta até a recarga.
    - Submenus rápidos para alternar modos de ANC (*ANC, Ambient Aware, TalkThru, Off*), Presets de Equalizador e Modo Áudio & Vídeo diretamente da barra superior sem precisar abrir a janela principal.
    - Ao fechar a janela, o aplicativo continua em execução em segundo plano na barra superior, podendo ser reexibido com 1 clique no ícone ou no item "Abrir / Ocultar Janela".
 
